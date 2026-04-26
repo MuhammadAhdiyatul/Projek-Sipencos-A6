@@ -151,42 +151,30 @@
     ]
   },
   {
-    "nama_kos": "Kost Exclusive Cozzy Residence Cipedes Bandung, dekat NHI, UPI, Unpas, Telkom",
-    "harga": "Rp 3.500.000",
-    "telepon": "08986167431",
-    "alamat": "Cipedes Atas 86B Gegerkalong Bandung",
+    "nama_kos": "Kos telyu bubat",
+    "harga": "Rp 800.000",
+    "telepon": "085190002321",
+    "alamat": "Jl adyaksa raya no. 1, bandung kidul, bandung",
     "fasilitas_kamar": [
       "Spring Bed",
-      "Free WiFi",
-      "AC",
-      "TV",
-      "Kamar Mandi Dalam",
-      "Pemanas Air (Water Heater)"
+      "Perabot",
+      "Kamar Mandi Dalam"
     ],
     "fasilitas_bersama": [
+      "Ruang Makan",
+      "Dapur",
+      "Air Minum",
       "Keamanan",
       "Parkir Motor",
       "Parkir Mobil"
     ],
     "foto": [
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/11-2016/ad13038/kost-exclusive-dekost-cipedes-dekat-nhi-upi-574878525_large.jpg",
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/11-2016/ad13038/kost-exclusive-dekost-cipedes-dekat-nhi-upi-574878525.jpg",
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/11-2016/ad13038/kost-exclusive-cozzy-residence-cipedes-bandung-1329357368.jpg",
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/11-2016/ad13038/kost-exclusive-cozzy-residence-cipedes-bandung-1303322619.jpg",
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/11-2016/ad13038/kost-exclusive-cozzy-residence-cipedes-bandung-1153805567.jpg",
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/11-2016/ad13038/kost-exclusive-cozzy-residence-cipedes-bandung-573992903.jpg",
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/11-2016/ad13038/kost-exclusive-cozzy-residence-cipedes-bandung-1011987509.jpg",
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/11-2016/ad13038/kost-exclusive-cozzy-residence-cipedes-bandung-2100932172.jpg",
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/11-2016/ad13038/kost-exclusive-cozzy-residence-cipedes-bandung-1707507866.jpg",
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/11-2016/ad13038/kost-exclusive-cozzy-residence-cipedes-bandung-728544808.jpg",
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/11-2016/ad13038/kost-exclusive-cozzy-residence-cipedes-bandung-810039255.jpg",
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/11-2016/ad13038/kost-exclusive-cozzy-residence-cipedes-bandung-1291712698.jpg",
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/11-2016/ad13038/14802299021753711303.JPG",
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/11-2016/ad13038/14802299051289012010.jpg",
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/11-2016/ad13038/14802299051925356670.jpg",
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/11-2016/ad13038/14802299051165489843.JPG",
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/11-2016/ad13038/kost-exclusive-cozzy-residence-cipedes-bandung-2122930743.jpg",
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/11-2016/ad13038/kost-exclusive-cozzy-residence-cipedes-bandung-1771428659.jpg"
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/04-2026/ad10022826199/listing-1266262470_large.webp",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/04-2026/ad10022826199/listing-1266262470.webp",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/04-2026/ad10022826199/listing-257319390.webp",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/04-2026/ad10022826199/listing-699783783.webp",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/04-2026/ad10022826199/listing-1026154614.webp",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/04-2026/ad10022826199/listing-1002230883.webp"
     ]
   },
   {
@@ -445,6 +433,45 @@
     "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Max retries exceeded with url: /kost/bandung/rumah-kost-antapani-kidul-200814/ (Caused by NameResolutionError(\"HTTPSConnection(host='www.sewakost.com', port=443): Failed to resolve 'www.sewakost.com' ([Errno 11001] getaddrinfo failed)\"))"
   },
   {
+    "nama_kos": "Kost Exclusive Cozzy Residence Cipedes Bandung, dekat NHI, UPI, Unpas, Telkom",
+    "harga": "Rp 3.500.000",
+    "telepon": "08986167431",
+    "alamat": "Cipedes Atas 86B Gegerkalong Bandung",
+    "fasilitas_kamar": [
+      "Spring Bed",
+      "Free WiFi",
+      "AC",
+      "TV",
+      "Kamar Mandi Dalam",
+      "Pemanas Air (Water Heater)"
+    ],
+    "fasilitas_bersama": [
+      "Keamanan",
+      "Parkir Motor",
+      "Parkir Mobil"
+    ],
+    "foto": [
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/11-2016/ad13038/kost-exclusive-dekost-cipedes-dekat-nhi-upi-574878525_large.jpg",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/11-2016/ad13038/kost-exclusive-dekost-cipedes-dekat-nhi-upi-574878525.jpg",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/11-2016/ad13038/kost-exclusive-cozzy-residence-cipedes-bandung-1329357368.jpg",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/11-2016/ad13038/kost-exclusive-cozzy-residence-cipedes-bandung-1303322619.jpg",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/11-2016/ad13038/kost-exclusive-cozzy-residence-cipedes-bandung-1153805567.jpg",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/11-2016/ad13038/kost-exclusive-cozzy-residence-cipedes-bandung-573992903.jpg",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/11-2016/ad13038/kost-exclusive-cozzy-residence-cipedes-bandung-1011987509.jpg",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/11-2016/ad13038/kost-exclusive-cozzy-residence-cipedes-bandung-2100932172.jpg",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/11-2016/ad13038/kost-exclusive-cozzy-residence-cipedes-bandung-1707507866.jpg",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/11-2016/ad13038/kost-exclusive-cozzy-residence-cipedes-bandung-728544808.jpg",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/11-2016/ad13038/kost-exclusive-cozzy-residence-cipedes-bandung-810039255.jpg",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/11-2016/ad13038/kost-exclusive-cozzy-residence-cipedes-bandung-1291712698.jpg",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/11-2016/ad13038/14802299021753711303.JPG",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/11-2016/ad13038/14802299051289012010.jpg",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/11-2016/ad13038/14802299051925356670.jpg",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/11-2016/ad13038/14802299051165489843.JPG",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/11-2016/ad13038/kost-exclusive-cozzy-residence-cipedes-bandung-2122930743.jpg",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/11-2016/ad13038/kost-exclusive-cozzy-residence-cipedes-bandung-1771428659.jpg"
+    ]
+  },
+  {
     "nama_kos": "KOST MURAH CIKUTRA CIBEUNYING KALER",
     "link": "https://www.sewakost.com/kost/bandung/kost-murah-cikutra-cibeunying-kaler-200793/",
     "harga_listing": "",
@@ -488,10 +515,29 @@
   },
   {
     "nama_kos": "Kos Moder Minimalis, Cibogo 25 C - Pasteur Sukajadi Bandung",
-    "link": "https://www.sewakost.com/kost/bandung/kos-moder-minimalis-cibogo-25-c-pasteur-sukajadi-bandung-200589/",
-    "harga_listing": "",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Max retries exceeded with url: /kost/bandung/kos-moder-minimalis-cibogo-25-c-pasteur-sukajadi-bandung-200589/ (Caused by NameResolutionError(\"HTTPSConnection(host='www.sewakost.com', port=443): Failed to resolve 'www.sewakost.com' ([Errno 11001] getaddrinfo failed)\"))"
+    "harga": "Rp 9.000.000",
+    "telepon": "089655006979",
+    "alamat": "Jl. Cibogo Bawah no. 25 C, Pasteur - Sukajadi",
+    "fasilitas_kamar": [
+      "Spring Bed",
+      "Perabot",
+      "Free WiFi",
+      "Kamar Mandi Dalam"
+    ],
+    "fasilitas_bersama": [
+      "Spring Bed",
+      "Perabot",
+      "Free WiFi",
+      "Kamar Mandi Dalam"
+    ],
+    "foto": [
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/12-2025/ad10057000295/kos-moder-minimalis-cibogo-25-c-paste-1261267725_large.jpg",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/12-2025/ad10057000295/kos-moder-minimalis-cibogo-25-c-pasteu-260080236.jpg",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/12-2025/ad10057000295/kos-moder-minimalis-cibogo-25-c-paste-1158737554.jpg",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/12-2025/ad10057000295/kos-moder-minimalis-cibogo-25-c-pasteu-442658989.jpg",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/12-2025/ad10057000295/kos-moder-minimalis-cibogo-25-c-paste-1584657855.jpg",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/12-2025/ad10057000295/kos-moder-minimalis-cibogo-25-c-pasteur-49990098.jpg"
+    ]
   },
   {
     "nama_kos": "Kost Bapak Hamir",

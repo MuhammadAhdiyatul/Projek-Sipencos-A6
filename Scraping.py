@@ -286,4 +286,8 @@ class KosScraper:
 # ─── Jalankan Program ──────────────────────────────────────
 if __name__ == "__main__":
     scraper = KosScraper()  # Buat object dari class KosScraper
+<<<<<<< HEAD
     scraper.jalankan()      # Jalankan seluruh proses scraping
+=======
+    scraper.jalankan()      # Jalankan seluruh proses scraping
+>>>>>>> origin/main
