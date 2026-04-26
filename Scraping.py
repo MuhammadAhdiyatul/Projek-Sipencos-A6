@@ -26,6 +26,7 @@ class KosScraper:
         "Accept-Language": "id-ID,id;q=0.9",
     }
 
+    # ─── Constructor ───────────────────────────────────────
     def __init__(self):
         """Inisialisasi saat object KosScraper dibuat"""
         # Buat folder output jika belum ada

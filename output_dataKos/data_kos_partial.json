@@ -420,50 +420,17 @@
   },
   {
     "nama_kos": "Kost Putra & Putri Dekat ITB & UNPAD",
-    "harga": "Rp 600",
-    "telepon": "081220756552",
-    "alamat": "Jl. Cisitu Indah No. 3",
-    "fasilitas_kamar": [
-      "Spring Bed",
-      "Perabot",
-      "Free WiFi",
-      "Kamar Mandi Dalam",
-      "Pemanas Air (Water Heater)"
-    ],
-    "fasilitas_bersama": [
-      "Ruang Tamu",
-      "Dapur",
-      "Air Minum",
-      "Cuci Setrika",
-      "Keamanan",
-      "Parkir Motor",
-      "Parkir Mobil"
-    ],
-    "foto": [
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/01-2026/ad10038701956/kost-putra-amp-putri-dekat-itb-amp-u-1715507882_large.jpg",
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/01-2026/ad10038701956/kost-putra-amp-putri-dekat-itb-amp-un-953512328.jpg",
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/01-2026/ad10038701956/kost-putra-amp-putri-dekat-itb-amp-un-398257765.jpg",
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/01-2026/ad10038701956/kost-putra-amp-putri-dekat-itb-amp-un-415234690.jpg",
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/01-2026/ad10038701956/kost-putra-amp-putri-dekat-itb-amp-un-931832504.jpg"
-    ]
+    "link": "https://www.sewakost.com/kost/bandung/kost-putra-amp-putri-dekat-itb-amp-unpad-200831/",
+    "harga_listing": "",
+    "status": "error",
+    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Max retries exceeded with url: /kost/bandung/kost-putra-amp-putri-dekat-itb-amp-unpad-200831/ (Caused by NameResolutionError(\"HTTPSConnection(host='www.sewakost.com', port=443): Failed to resolve 'www.sewakost.com' ([Errno 11001] getaddrinfo failed)\"))"
   },
   {
     "nama_kos": "Rumah Kost Antapani Kidul",
-    "harga": "Rp 750.000",
-    "telepon": "082283131548",
-    "alamat": "Jalan. solo No.50  Antapani Kidul Kota Bandung",
-    "fasilitas_kamar": [
-      "Kamar Mandi Dalam"
-    ],
-    "fasilitas_bersama": [
-      "Parkir Motor"
-    ],
-    "foto": [
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/01-2026/ad10046617979/rumah-kost-antapani-kidul-1758096488_large.jpg",
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/01-2026/ad10046617979/rumah-kost-antapani-kidul-1337756378.jpg",
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/01-2026/ad10046617979/rumah-kost-antapani-kidul-1910512802.jpg",
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/01-2026/ad10046617979/rumah-kost-antapani-kidul-1079520318.jpg"
-    ]
+    "link": "https://www.sewakost.com/kost/bandung/rumah-kost-antapani-kidul-200814/",
+    "harga_listing": "",
+    "status": "error",
+    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Max retries exceeded with url: /kost/bandung/rumah-kost-antapani-kidul-200814/ (Caused by NameResolutionError(\"HTTPSConnection(host='www.sewakost.com', port=443): Failed to resolve 'www.sewakost.com' ([Errno 11001] getaddrinfo failed)\"))"
   },
   {
     "nama_kos": "Kost Exclusive Cozzy Residence Cipedes Bandung, dekat NHI, UPI, Unpas, Telkom",
@@ -506,46 +473,17 @@
   },
   {
     "nama_kos": "KOST MURAH CIKUTRA CIBEUNYING KALER",
-    "harga": "Rp 685.000",
-    "telepon": "082121929229",
-    "alamat": "Bojong Tengah No 11/149B",
-    "fasilitas_kamar": [
-      "Free WiFi"
-    ],
-    "fasilitas_bersama": [
-      "Pembantu",
-      "Parkir Motor"
-    ],
-    "foto": [
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/01-2026/ad10084176900/kost-murah-455187946_large.jpg",
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/01-2026/ad10084176900/kost-murah-471875365.jpg",
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/01-2026/ad10084176900/kost-murah-1387202656.jpg",
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/01-2026/ad10084176900/kost-murah-1925566571.jpg",
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/01-2026/ad10084176900/kost-murah-cikutra-cibeunying-kaler-1656346270.jpg",
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/01-2026/ad10084176900/kost-murah-cikutra-cibeunying-kaler-1285062621.jpg"
-    ]
+    "link": "https://www.sewakost.com/kost/bandung/kost-murah-cikutra-cibeunying-kaler-200793/",
+    "harga_listing": "",
+    "status": "error",
+    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Max retries exceeded with url: /kost/bandung/kost-murah-cikutra-cibeunying-kaler-200793/ (Caused by NameResolutionError(\"HTTPSConnection(host='www.sewakost.com', port=443): Failed to resolve 'www.sewakost.com' ([Errno 11001] getaddrinfo failed)\"))"
   },
   {
     "nama_kos": "Kost Samura",
-    "harga": "Dengan harga Rp 800.000/bulan",
-    "telepon": "085220606400",
-    "alamat": "Jl.Rancabolang Barat Rt.3/11 Kel.Sekejati Kec.Buahbatu (Depan Studio Musik Asterix)",
-    "fasilitas_kamar": [
-      "Free WiFi",
-      "Kamar Mandi Dalam"
-    ],
-    "fasilitas_bersama": [
-      "Keamanan",
-      "Parkir Motor"
-    ],
-    "foto": [
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/01-2026/ad10044074214/kost-samura-383218678_large.jpg",
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/01-2026/ad10044074214/kost-samura-775595389.jpg",
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/01-2026/ad10044074214/kost-samura-66318862.jpg",
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/01-2026/ad10044074214/kost-samura-225130275.jpg",
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/01-2026/ad10044074214/kost-samura-1638392095.jpg",
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/01-2026/ad10044074214/kost-samura-1567701326.jpg"
-    ]
+    "link": "https://www.sewakost.com/kost/bandung/kost-samura-200783/",
+    "harga_listing": "",
+    "status": "error",
+    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Max retries exceeded with url: /kost/bandung/kost-samura-200783/ (Caused by NameResolutionError(\"HTTPSConnection(host='www.sewakost.com', port=443): Failed to resolve 'www.sewakost.com' ([Errno 11001] getaddrinfo failed)\"))"
   },
   {
     "nama_kos": "Wisma penginapan dan kos di tengah kota",
@@ -574,5 +512,12 @@
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/01-2026/ad10080989748/wisma-penginapan-dan-kos-di-tengah-kota-2126042832.jpg",
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/01-2026/ad10080989748/wisma-penginapan-dan-kos-di-tengah-kota-335007992.jpg"
     ]
+  },
+  {
+    "nama_kos": "Tersedia 1 kamar kos khusus putera",
+    "link": "https://www.sewakost.com/kost/bandung/tersedia-1-kamar-kos-khusus-putera-200665/",
+    "harga_listing": "",
+    "status": "error",
+    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Max retries exceeded with url: /kost/bandung/tersedia-1-kamar-kos-khusus-putera-200665/ (Caused by NameResolutionError(\"HTTPSConnection(host='www.sewakost.com', port=443): Failed to resolve 'www.sewakost.com' ([Errno 11001] getaddrinfo failed)\"))"
   }
 ]
