@@ -76,9 +76,6 @@ class KosScraper:
             self.hasil.append(detail)
             time.sleep(self.DELAY)
 
-            if idx % 10 == 0:
-                self.simpan(self.hasil, "data_kos_partial.json")
-
         self.simpan(self.hasil, "data_kos.json")
         self.simpan_sqlite(self.hasil)
         self.preview()
