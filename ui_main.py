@@ -54,6 +54,9 @@ class App(ctk.CTk):
 
         self.entry_search = ctk.CTkEntry(search_container, placeholder_text="Cari berdasarkan lokasi atau nama...", height=40, corner_radius=8)
         self.entry_search.pack(side="left", fill="x", expand=True, padx=(0, 10))
+        
+        self.entry_search.bind("<Return>", lambda event: self.on_search_clicked())  # Enter key untuk cari
+        self.entry_search.focus()  # Fokus langsung ke input saat aplikasi dibuka
 
         self.btn_search = ctk.CTkButton(search_container, text="Cari", width=100, height=40, fg_color=PRIMARY_COLOR, corner_radius=8, command=self.on_search_clicked)
         self.btn_search.pack(side="right")
