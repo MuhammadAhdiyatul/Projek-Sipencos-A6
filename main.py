@@ -738,6 +738,58 @@ class DetailPage(ctk.CTkFrame):
             print("[WARNING] toggle_compare callback is not set")
 
 
+class PlaceholderPage(ctk.CTkFrame):
+    """Generic placeholder page untuk fitur yang belum diimplementasikan."""
+
+    def __init__(self, parent, title, message, *args, **kwargs):
+        super().__init__(parent, *args, **kwargs)
+        self.title_text = title
+        self.message_text = message
+
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_columnconfigure(0, weight=1)
+
+        container = ctk.CTkFrame(self, fg_color="transparent")
+        container.grid(row=0, column=0, sticky="nsew")
+        container.grid_rowconfigure(0, weight=1)
+        container.grid_columnconfigure(0, weight=1)
+
+        title_label = ctk.CTkLabel(
+            container,
+            text=title,
+            font=("Arial", 28, "bold"),
+            text_color=PRIMARY_COLOR,
+        )
+        title_label.grid(row=0, column=0, pady=(0, 16))
+
+        message_label = ctk.CTkLabel(
+            container,
+            text=message,
+            font=("Arial", 16),
+            text_color=TEXT_SUBTLE,
+        )
+        message_label.grid(row=1, column=0)
+
+    def refresh(self, *args, **kwargs):
+        """Placeholder refresh method."""
+        pass
+
+
+class AnalyticsPage(PlaceholderPage):
+    def __init__(self, parent, *args, **kwargs):
+        super().__init__(parent, "📊 Analytics", "Fitur Analytics belum tersedia\n\nComing soon...", *args, **kwargs)
+
+
+class HistoryPage(PlaceholderPage):
+    def __init__(self, parent, *args, **kwargs):
+        super().__init__(parent, "🕘 History", "Fitur History belum tersedia\n\nComing soon...", *args, **kwargs)
+
+
+class SettingsPage(PlaceholderPage):
+    def __init__(self, parent, *args, **kwargs):
+        super().__init__(parent, "⚙️ Settings", "Fitur Settings belum tersedia\n\nComing soon...", *args, **kwargs)
+
+
 class App(ctk.CTk):
     def __init__(self):
         super().__init__()
@@ -752,6 +804,7 @@ class App(ctk.CTk):
         self.favorites = []
         self.compare_list = []
         self.detail_item = None
+        self.active_menu = "search"
 
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=1)
@@ -799,51 +852,110 @@ class App(ctk.CTk):
         )
         subtitle.pack(fill="x", pady=(0, 22))
 
+        # Menu buttons container
+        self.menu_buttons = {}
+
+        # Search button
         self.btn_search = ctk.CTkButton(
             shell,
-            text="Search",
-            height=38,
-            corner_radius=12,
+            text="🔍  Search",
+            height=40,
+            corner_radius=8,
             anchor="w",
             font=("Arial", 13, "bold"),
-            text_color=PRIMARY_COLOR,
-            fg_color="#EAF1F7",
-            hover_color="#EAF1F7",
-            border_width=1,
-            border_color=BORDER_COLOR,
-            command=lambda: self.show_frame("search"),
+            text_color="#000000",
+            fg_color="#E5E7EB",
+            hover_color="#E5E7EB",
+            border_width=0,
+            command=lambda: self._show_menu("search"),
         )
         self.btn_search.pack(fill="x", pady=4)
+        self.menu_buttons["search"] = self.btn_search
 
+        # Analytics button
+        self.btn_analytics = ctk.CTkButton(
+            shell,
+            text="📊  Analytics",
+            height=40,
+            corner_radius=8,
+            anchor="w",
+            font=("Arial", 13),
+            text_color="#000000",
+            fg_color="transparent",
+            hover_color="#E5E7EB",
+            border_width=0,
+            command=lambda: self._show_menu("analytics"),
+        )
+        self.btn_analytics.pack(fill="x", pady=4)
+        self.menu_buttons["analytics"] = self.btn_analytics
+
+        # Compare button
         self.btn_compare = ctk.CTkButton(
             shell,
-            text="Compare",
-            height=38,
-            corner_radius=12,
+            text="⚖️  Compare",
+            height=40,
+            corner_radius=8,
             anchor="w",
             font=("Arial", 13),
-            text_color="#2F3B45",
+            text_color="#000000",
             fg_color="transparent",
-            hover_color="#EAF1F7",
+            hover_color="#E5E7EB",
             border_width=0,
-            command=lambda: self.show_frame("compare"),
+            command=lambda: self._show_menu("compare"),
         )
         self.btn_compare.pack(fill="x", pady=4)
+        self.menu_buttons["compare"] = self.btn_compare
 
+        # Favorites button
         self.btn_favorites = ctk.CTkButton(
             shell,
-            text="Favorites",
-            height=38,
-            corner_radius=12,
+            text="❤️  Favorites",
+            height=40,
+            corner_radius=8,
             anchor="w",
             font=("Arial", 13),
-            text_color="#2F3B45",
+            text_color="#000000",
             fg_color="transparent",
-            hover_color="#EAF1F7",
+            hover_color="#E5E7EB",
             border_width=0,
-            command=lambda: self.show_frame("favorites"),
+            command=lambda: self._show_menu("favorites"),
         )
         self.btn_favorites.pack(fill="x", pady=4)
+        self.menu_buttons["favorites"] = self.btn_favorites
+
+        # History button
+        self.btn_history = ctk.CTkButton(
+            shell,
+            text="🕘  History",
+            height=40,
+            corner_radius=8,
+            anchor="w",
+            font=("Arial", 13),
+            text_color="#000000",
+            fg_color="transparent",
+            hover_color="#E5E7EB",
+            border_width=0,
+            command=lambda: self._show_menu("history"),
+        )
+        self.btn_history.pack(fill="x", pady=4)
+        self.menu_buttons["history"] = self.btn_history
+
+        # Settings button
+        self.btn_settings = ctk.CTkButton(
+            shell,
+            text="⚙️  Settings",
+            height=40,
+            corner_radius=8,
+            anchor="w",
+            font=("Arial", 13),
+            text_color="#000000",
+            fg_color="transparent",
+            hover_color="#E5E7EB",
+            border_width=0,
+            command=lambda: self._show_menu("settings"),
+        )
+        self.btn_settings.pack(fill="x", pady=4)
+        self.menu_buttons["settings"] = self.btn_settings
 
         helper = ctk.CTkLabel(
             shell,
@@ -855,6 +967,19 @@ class App(ctk.CTk):
         )
         helper.pack(side="bottom", fill="x", pady=(0, 10))
 
+    def _show_menu(self, menu_name):
+        """Handle menu button clicks with highlight update."""
+        self._update_menu_highlight(menu_name)
+        self.show_frame(menu_name)
+
+    def _update_menu_highlight(self, active_menu):
+        """Update sidebar button highlights based on active menu."""
+        for menu_key, btn in self.menu_buttons.items():
+            if menu_key == active_menu:
+                btn.configure(fg_color="#E5E7EB")
+            else:
+                btn.configure(fg_color="transparent")
+
     def _build_pages(self):
         self.frames["search"] = SearchPage(
             self.content_frame,
@@ -862,6 +987,10 @@ class App(ctk.CTk):
             add_to_favorite=self.toggle_favorite,
             add_to_compare=self.toggle_compare,
             open_detail=self.open_detail,
+            fg_color="transparent",
+        )
+        self.frames["analytics"] = AnalyticsPage(
+            self.content_frame,
             fg_color="transparent",
         )
         self.frames["favorites"] = FavoritesPage(
@@ -875,6 +1004,14 @@ class App(ctk.CTk):
             self.content_frame,
             clear_compare=self.clear_compare,
             open_detail=self.open_detail,
+            fg_color="transparent",
+        )
+        self.frames["history"] = HistoryPage(
+            self.content_frame,
+            fg_color="transparent",
+        )
+        self.frames["settings"] = SettingsPage(
+            self.content_frame,
             fg_color="transparent",
         )
         self.frames["detail"] = DetailPage(
@@ -894,14 +1031,23 @@ class App(ctk.CTk):
             return
 
         self.active_frame = frame_name
+        self.active_menu = frame_name
+        self._update_menu_highlight(frame_name)
+
         if frame_name == "search":
             self.frames["search"].favorites = self.favorites
             self.frames["search"].compare_list = self.compare_list
             frame.refresh(self.kos_data, self.favorites, self.compare_list)
+        elif frame_name == "analytics":
+            frame.refresh()
         elif frame_name == "favorites":
             frame.refresh(self.favorites, self.compare_list)
         elif frame_name == "compare":
             frame.refresh(self.compare_list)
+        elif frame_name == "history":
+            frame.refresh()
+        elif frame_name == "settings":
+            frame.refresh()
         elif frame_name == "detail":
             if self.detail_item is not None:
                 frame.set_detail(
