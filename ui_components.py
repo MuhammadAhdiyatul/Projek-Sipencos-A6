@@ -398,5 +398,3 @@ class KosCard(ctk.CTkFrame):
             font=("Arial", 12, "bold"),
             command=lambda: DetailWindow(self, self.data_kos),
         )
-        btn_detail.grid(row=4, column=0, sticky="ew")
-
