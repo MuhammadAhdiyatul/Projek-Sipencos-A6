@@ -1,4 +1,6 @@
 import customtkinter as ctk
+from compare import CompareWindow
+from favorites import FavoritesWindow
 from ui_components import KosCard
 from threading_handler import ThreadingHandler
 
@@ -18,13 +20,28 @@ TEXT_SUBTLE = "#6F7C85"
 
 
 class App(ctk.CTk):
-    def __init__(self, search_callback=None, get_all_callback=None, scrape_callback=None):
+    def __init__(
+        self,
+        search_callback=None,
+        get_all_callback=None,
+        scrape_callback=None,
+        favorites_callback=None,
+        get_favorites_callback=None,
+        remove_favorite_callback=None,
+        compare_callback=None,
+        get_compare_callback=None,
+    ):
         super().__init__()
 
         # Keep backend callback compatibility.
         self.search_callback = search_callback
         self.get_all_callback = get_all_callback
         self.scrape_callback = scrape_callback
+        self.favorites_callback = favorites_callback
+        self.get_favorites_callback = get_favorites_callback
+        self.remove_favorite_callback = remove_favorite_callback
+        self.compare_callback = compare_callback
+        self.get_compare_callback = get_compare_callback
         self._current_results = []
         self._last_action = "default"
         self.thread_handler = ThreadingHandler(self)
@@ -85,6 +102,13 @@ class App(ctk.CTk):
         menu_items = ["Search", "Analytics", "Compare", "Favorites", "History", "Settings"]
         for item in menu_items:
             is_active = item == "Search"
+            if item == "Compare":
+                command = self.open_compare
+            elif item == "Favorites":
+                command = self.open_favorites
+            else:
+                command = lambda: None
+
             button = ctk.CTkButton(
                 menu_container,
                 text=item,
@@ -97,7 +121,7 @@ class App(ctk.CTk):
                 hover_color="#EAF1F7",
                 border_width=1 if is_active else 0,
                 border_color=BORDER_COLOR,
-                command=lambda: None,
+                command=command,
             )
             button.pack(fill="x", pady=4)
 
@@ -115,6 +139,20 @@ class App(ctk.CTk):
         self.btn_scrape = cta
         cta.pack(side="bottom", fill="x", pady=(10, 0))
 
+        btn_compare_view = ctk.CTkButton(
+            shell,
+            text="Lihat Perbandingan",
+            fg_color="#375A8B",
+            hover_color="#2D4B6E",
+            text_color="white",
+            corner_radius=12,
+            height=42,
+            font=("Arial", 13, "bold"),
+            command=self.on_compare_view_clicked,
+        )
+        self.btn_compare_view = btn_compare_view
+        btn_compare_view.pack(side="bottom", fill="x", pady=(10, 0))
+
         helper = ctk.CTkLabel(
             shell,
             text="Butuh bantuan? Hubungi admin",
@@ -124,6 +162,33 @@ class App(ctk.CTk):
             justify="left",
         )
         helper.pack(side="bottom", fill="x", pady=(0, 10))
+
+    def open_favorites(self):
+        if not self.get_favorites_callback:
+            print("[WARNING] Favorites callback not set")
+            return
+
+        FavoritesWindow(self, self)
+
+    def open_compare(self):
+        if not self.get_compare_callback:
+            print("[WARNING] Compare callback not set")
+            return
+
+        compare_items = self.get_compare_callback() or []
+        CompareWindow(self, items=compare_items)
+
+    def get_all_favorites(self):
+        if callable(self.get_favorites_callback):
+            return self.get_favorites_callback()
+        return []
+
+    def remove_favorite(self, kos_item):
+        if callable(self.remove_favorite_callback):
+            return self.remove_favorite_callback(kos_item)
+
+        print("[WARNING] remove_favorite_callback is not set")
+        return False
 
     def setup_main_area(self):
         self.main_frame = ctk.CTkFrame(self, fg_color="transparent")
@@ -298,6 +363,13 @@ class App(ctk.CTk):
             self._last_action = "search"
             self.display_data(self.search_callback(keyword))
 
+    def on_compare_view_clicked(self):
+        if not self.get_compare_callback:
+            return
+
+        compare_items = self.get_compare_callback() or []
+        CompareWindow(self, items=compare_items)
+
     def on_scrape_clicked(self):
         if not self.scrape_callback:
             return
@@ -386,7 +458,12 @@ class App(ctk.CTk):
             row = index // 3
             col = index % 3
 
-            card = KosCard(self.results_grid, data_kos=item)
+            card = KosCard(
+                self.results_grid,
+                data_kos=item,
+                favorites_callback=self.favorites_callback,
+                compare_callback=self.compare_callback,
+            )
             card.grid(row=row, column=col, padx=12, pady=12, sticky="n")
 
 
