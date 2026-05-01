@@ -29,6 +29,7 @@ class KosScraper:
         
     }
 
+    # ─── Constructor ───────────────────────────────────────
     def __init__(self):
         """Inisialisasi saat object KosScraper dibuat"""
         # Buat folder output jika belum ada

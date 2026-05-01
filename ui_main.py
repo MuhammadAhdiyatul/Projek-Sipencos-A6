@@ -1,5 +1,6 @@
 import customtkinter as ctk
 from ui_components import KosCard
+from threading_handler import ThreadingHandler
 
 
 # Force light mode for consistent dashboard look
@@ -26,6 +27,7 @@ class App(ctk.CTk):
         self.scrape_callback = scrape_callback
         self._current_results = []
         self._last_action = "default"
+        self.thread_handler = ThreadingHandler(self)
 
         # Main window
         self.title("SiPencos - Sistem Pencari Kos")
@@ -300,6 +302,9 @@ class App(ctk.CTk):
         if not self.scrape_callback:
             return
 
+        if str(self.btn_scrape.cget("state")) == "disabled":
+            return
+
         self.btn_scrape.configure(text="Scraping...", state="disabled")
 
         # Clear current cards first so scraping feels like a true live refresh.
@@ -308,16 +313,22 @@ class App(ctk.CTk):
         self.label_summary.configure(text="Mengambil data terbaru...")
         self.update_idletasks()
 
-        try:
-            scraped_data = self.scrape_callback()
-            self._last_action = "scrape"
-            self.display_data(scraped_data)
-        except Exception:
-            # Keep UI stable even when scrape fails.
-            self._last_action = "scrape"
-            self.display_data([])
-        finally:
-            self.btn_scrape.configure(text="Scrape Data", state="normal")
+        self.thread_handler.run_task(
+            task_func=self.scrape_callback,
+            on_success=self._handle_scrape_success,
+            on_error=self._handle_scrape_error,
+        )
+
+    def _handle_scrape_success(self, scraped_data):
+        self._last_action = "scrape"
+        self.display_data(scraped_data)
+        self.btn_scrape.configure(text="Scrape Data", state="normal")
+
+    def _handle_scrape_error(self, _exception):
+        # Keep UI stable even when scrape fails.
+        self._last_action = "scrape"
+        self.display_data([])
+        self.btn_scrape.configure(text="Scrape Data", state="normal")
 
     def _extract_location_keyword(self, data_list):
         if not data_list:
