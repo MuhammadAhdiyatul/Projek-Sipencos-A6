@@ -24,6 +24,9 @@ class KosScraper:
             "Chrome/124.0.0.0 Safari/537.36"
         ),
         "Accept-Language": "id-ID,id;q=0.9",
+        "Cache-Control" : "no-cache, no-store, must-revalidate",
+        "Pragma" : "no-cache",
+        
     }
 
     # ─── Constructor ───────────────────────────────────────
@@ -33,6 +36,23 @@ class KosScraper:
         os.makedirs(self.OUTPUT_DIR, exist_ok=True)
         # List untuk menyimpan semua hasil scraping
         self.hasil = []
+
+    def get(self, url: str):
+        """
+        HTTP GET tanpa retry dan tanpa cache.
+        Kalau internet mati → langsung error, tidak pakai data lama.
+        """
+        session = requests.Session()
+        session.headers.update(self.HEADERS)
+ 
+        # max_retries=0 memastikan requests tidak mencoba ulang sendiri
+        adapter = requests.adapters.HTTPAdapter(max_retries=0)
+        session.mount("http://",  adapter)
+        session.mount("https://", adapter)
+ 
+        r = session.get(url, timeout=20)
+        r.raise_for_status()
+        return r
 
     # ─── Method Utama ──────────────────────────────────────
     def jalankan(self):
@@ -58,9 +78,6 @@ class KosScraper:
             self.hasil.append(detail)
             time.sleep(self.DELAY)
 
-            if idx % 10 == 0:
-                self.simpan(self.hasil, "data_kos_partial.json")
-
         self.simpan(self.hasil, "data_kos.json")
         self.simpan_sqlite(self.hasil)
         self.preview()
@@ -76,8 +93,7 @@ class KosScraper:
             print(f" Halaman {page}: {url}")
 
             try:
-                r = requests.get(url, headers=self.HEADERS, timeout=20)
-                r.raise_for_status()
+                r = self.get(url)
             except Exception as e:
                 print(f" Gagal: {e}")
                 break
@@ -128,8 +144,7 @@ class KosScraper:
     def scrape_detail(self, item: dict) -> dict:
         """Mengambil detail data dari halaman kos"""
         try:
-            r = requests.get(item["link"], headers=self.HEADERS, timeout=20)
-            r.raise_for_status()
+            r = self.get(item["link"])
         except Exception as e:
             return {**item, "status": "error", "error_msg": str(e)}
 
