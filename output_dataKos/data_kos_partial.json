@@ -179,10 +179,27 @@
   },
   {
     "nama_kos": "KOSSAN NYAMAN DAN AMAN U/N MAHASISW",
-    "link": "https://www.sewakost.com/kost/bandung/kossan-nyaman-dan-aman-u-n-mahasisw-201105/",
-    "harga_listing": "",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out."
+    "harga": "Rp 850.000",
+    "telepon": "081809961103",
+    "alamat": "Kompleks Bumi Panyileukan Blok F9 n0 01",
+    "fasilitas_kamar": [
+      "Spring Bed",
+      "Perabot",
+      "Free WiFi",
+      "Kamar Mandi Dalam"
+    ],
+    "fasilitas_bersama": [
+      "Ruang Tamu",
+      "Dapur",
+      "Keamanan",
+      "Parkir Motor"
+    ],
+    "foto": [
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/04-2026/ad10012243815/listing-1012894156_large.webp",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/04-2026/ad10012243815/listing-1012894156.webp",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/04-2026/ad10012243815/listing-948621225.webp",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/04-2026/ad10012243815/listing-27338093.webp"
+    ]
   },
   {
     "nama_kos": "Ready Kamar Kost Putri di Telkom bojongsoang",
