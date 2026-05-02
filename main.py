@@ -21,7 +21,7 @@ APP_BG = "#F0F2F5"
 CARD_BG = "#FFFFFF"
 BORDER_COLOR = "#E7EAF0"
 TEXT_SUBTLE = "#6F7C85"
-
+TITLE_COLOR = "#002B49"
 
 def _item_key(kos_item):
     if not isinstance(kos_item, dict):
