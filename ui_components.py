@@ -110,149 +110,201 @@ class DetailWindow(ctk.CTkToplevel):
     def __init__(self, parent, data_kos, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
 
+        # --- 1. FIX JENDELA KAKU & FOKUS ---
+        self.transient(parent)
+        self.after(10, self.grab_set) 
+
+        # --- 2. EKSTRAKSI DATA ---
         nama = _safe_text(data_kos.get("nama_kos"), "Kos")
         harga = _format_price(data_kos.get("harga"))
         alamat = _safe_text(data_kos.get("alamat"))
-        telepon = _safe_text(data_kos.get("telepon"))
+        telepon = _safe_text(data_kos.get("telepon"), "Kontak tidak tersedia")
         tipe = _safe_text(data_kos.get("tipe"))
+        deskripsi = _safe_text(data_kos.get("deskripsi"), "Tidak ada deskripsi tambahan.")
+        last_updated = _safe_text(data_kos.get("last_updated"), "Baru saja diperbarui")
 
         fasilitas_kamar = _as_list(data_kos.get("fasilitas_kamar"))
         fasilitas_bersama = _as_list(data_kos.get("fasilitas_bersama"))
         foto_list = _normalize_foto(data_kos.get("foto"))
 
+        # --- 3. FIX POSISI TENGAH (PAKAI RESOLUSI LAYAR) ---
         self.title(f"Detail - {nama}")
-        self.geometry("560x700")
+        self.update_idletasks()
+        
+        w, h = 950, 700
+        
+        # Mengambil ukuran layar monitor secara langsung (Foolproof)
+        screen_w = self.winfo_screenwidth()
+        screen_h = self.winfo_screenheight()
+        
+        # Titik tengah absolut layar
+        pos_x = (screen_w // 2) - (w // 2)
+        pos_y = (screen_h // 2) - (h // 2)
+        
+        self.geometry(f"{w}x{h}+{pos_x}+{pos_y}")
         self.resizable(False, False)
         self.configure(fg_color=APP_BG)
 
+        # --- 4. PEMBUNGKUS UTAMA ---
         shell = ctk.CTkFrame(self, fg_color="transparent")
-        shell.pack(fill="both", expand=True, padx=18, pady=18)
+        shell.pack(fill="both", expand=True, padx=25, pady=25)
 
-        container = ctk.CTkFrame(
-            shell,
-            fg_color=CARD_BG,
-            corner_radius=18,
-            border_width=1,
-            border_color=BORDER_COLOR,
-        )
-        container.pack(fill="both", expand=True)
-
-        header = ctk.CTkFrame(container, fg_color="transparent")
-        header.pack(fill="x", padx=22, pady=(20, 12))
-        header.grid_columnconfigure(0, weight=1)
-
-        title = ctk.CTkLabel(
-            header,
-            text=nama,
-            font=("Arial", 24, "bold"),
-            text_color=PRIMARY_COLOR,
-            justify="left",
-            anchor="w",
-            wraplength=420,
-        )
-        title.grid(row=0, column=0, sticky="w")
-
-        badge_text = "PUTRI" if "PUTRI" in tipe.upper() else "PUTRA"
-        badge = ctk.CTkLabel(
-            header,
-            text=badge_text,
-            font=("Arial", 11, "bold"),
-            text_color="white",
-            fg_color=ACCENT_COLOR,
-            corner_radius=8,
-            width=58,
-            height=24,
-        )
-        badge.grid(row=0, column=1, sticky="e", padx=(10, 0), pady=(3, 0))
-
-        subtitle = ctk.CTkLabel(
-            container,
-            text="Informasi kos dengan tampilan ringkas dan rapi",
-            font=("Arial", 12),
-            text_color=TEXT_SUBTLE,
-            anchor="w",
-            justify="left",
-        )
-        subtitle.pack(fill="x", padx=22, pady=(0, 16))
+        # ============================================================
+        # KOLOM KIRI: Visual & Narasi (Gallery + Deskripsi)
+        # ============================================================
+        left_col = ctk.CTkFrame(shell, fg_color="transparent")
+        left_col.pack(side="left", fill="both", expand=True, padx=(0, 15))
 
         image_box = ctk.CTkFrame(
-            container,
-            fg_color=IMAGE_BG,
-            corner_radius=14,
-            height=190,
-            border_width=1,
-            border_color=BORDER_COLOR,
+            left_col, fg_color=IMAGE_BG, corner_radius=15, 
+            height=320, border_width=1, border_color=BORDER_COLOR
         )
-        image_box.pack(fill="x", padx=22, pady=(0, 10))
+        image_box.pack(fill="x", pady=(0, 15))
         image_box.pack_propagate(False)
 
-        preview_image = _load_remote_image(foto_list[0] if foto_list else "", (500, 190))
+        preview_image = _load_remote_image(foto_list[0] if foto_list else "", (580, 320))
         if preview_image:
             image_label = ctk.CTkLabel(image_box, text="", image=preview_image)
             image_label.image = preview_image
             image_label.pack(fill="both", expand=True)
         else:
-            ctk.CTkLabel(
-                image_box,
-                text="No Image",
-                font=("Arial", 12),
-                text_color=TEXT_SUBTLE,
-            ).pack(expand=True)
+            ctk.CTkLabel(image_box, text="Gambar tidak tersedia", font=("Arial", 14), text_color=TEXT_SUBTLE).pack(expand=True)
 
-        # Grouped sections keep details readable without a long text dump.
-        self._section(container, "Harga", f"{harga} / bulan")
-        self._section(container, "Lokasi", alamat)
-
-        fasilitas_text = (
-            f"Kamar: {', '.join(fasilitas_kamar)}\n"
-            f"Bersama: {', '.join(fasilitas_bersama)}"
+        ctk.CTkLabel(left_col, text="Deskripsi Kos", font=("Arial", 18, "bold"), text_color=TITLE_COLOR).pack(anchor="w", pady=(5, 5))
+        
+        desc_scroll = ctk.CTkTextbox(
+            left_col, font=("Arial", 13), text_color=TITLE_COLOR, 
+            fg_color=CARD_BG, corner_radius=12, height=180, 
+            border_width=1, border_color=BORDER_COLOR, wrap="word"
         )
-        self._section(container, "Fasilitas", fasilitas_text)
-        self._section(container, "Kontak", telepon)
+        desc_scroll.pack(fill="both", expand=True)
+        desc_scroll.insert("0.0", deskripsi)
+        desc_scroll.configure(state="disabled")
 
-        btn_close = ctk.CTkButton(
-            container,
-            text="Tutup",
-            fg_color=PRIMARY_COLOR,
-            hover_color="#013A62",
-            text_color="white",
-            corner_radius=10,
-            height=44,
-            font=("Arial", 13, "bold"),
-            command=self.destroy,
+        # ============================================================
+        # KOLOM KANAN: Container Utama untuk Scroll & Sticky
+        # ============================================================
+        # Frame biasa agar kita bisa membagi area atas (scroll) dan bawah (sticky)
+        right_col = ctk.CTkFrame(
+            shell, fg_color=CARD_BG, corner_radius=18, 
+            border_width=1, border_color=BORDER_COLOR, width=320
         )
-        btn_close.pack(fill="x", padx=22, pady=(16, 20))
+        right_col.pack(side="right", fill="y")
+        right_col.pack_propagate(False)
 
-    def _section(self, master, title, value):
-        box = ctk.CTkFrame(
-            master,
-            fg_color=SUCCESS_SURFACE,
-            corner_radius=12,
-            border_width=1,
-            border_color=BORDER_COLOR,
+        # ------------------------------------------------------------
+        # AREA SCROLL (Hanya untuk Info dan Fasilitas)
+        # ------------------------------------------------------------
+        self.scroll_area = ctk.CTkScrollableFrame(right_col, fg_color="transparent", width=300)
+        self.scroll_area.pack(fill="both", expand=True, padx=5, pady=(5, 0))
+
+        info_panel = ctk.CTkFrame(self.scroll_area, fg_color="transparent")
+        info_panel.pack(fill="both", expand=True, padx=10, pady=10)
+
+        # Header Info: Badge & Last Updated
+        status_row = ctk.CTkFrame(info_panel, fg_color="transparent")
+        status_row.pack(fill="x", pady=(0, 10))
+        
+        badge_text = "PUTRI" if "PUTRI" in tipe.upper() else "PUTRA"
+        ctk.CTkLabel(
+            status_row, text=badge_text, font=("Arial", 10, "bold"), 
+            text_color="white", fg_color=ACCENT_COLOR, corner_radius=6, 
+            width=55, height=22
+        ).pack(side="left")
+        
+        ctk.CTkLabel(
+            status_row, text=last_updated, font=("Arial", 10), 
+            text_color=TEXT_SUBTLE
+        ).pack(side="right")
+
+        # Info Group: Title & Alamat
+        ctk.CTkLabel(
+            info_panel, text=nama, font=("Arial", 22, "bold"), 
+            text_color=PRIMARY_COLOR, justify="left", wraplength=270
+        ).pack(anchor="w", pady=(5, 2))
+        
+        ctk.CTkLabel(
+            info_panel, text=alamat, font=("Arial", 11), 
+            text_color=TEXT_SUBTLE, justify="left", wraplength=270
+        ).pack(anchor="w", pady=(0, 15))
+
+        # Info Group: Harga
+        ctk.CTkLabel(info_panel, text="HARGA SEWA", font=("Arial", 10, "bold"), text_color=TEXT_SUBTLE).pack(anchor="w")
+        price_row = ctk.CTkFrame(info_panel, fg_color="transparent")
+        price_row.pack(fill="x", pady=(0, 20))
+        ctk.CTkLabel(price_row, text=harga, font=("Arial", 26, "bold"), text_color=TITLE_COLOR).pack(side="left")
+        ctk.CTkLabel(price_row, text=" / bln", font=("Arial", 12), text_color=TEXT_SUBTLE).pack(side="left", pady=(8, 0))
+
+        # Fasilitas Group
+        self._build_facility_chips(info_panel, "Fasilitas Kamar", fasilitas_kamar)
+        self._build_facility_chips(info_panel, "Fasilitas Bersama", fasilitas_bersama)
+
+        # Spacer
+        ctk.CTkFrame(info_panel, fg_color="transparent", height=20).pack(fill="x")
+
+        # ============================================================
+        # AKSI: Tombol Hubungi & Favorit (Ikut di dalam Scroll)
+        # ============================================================
+        
+        # 1. Tombol Hubungi - Orange (Aksi Utama)
+        self.btn_contact = ctk.CTkButton(
+            info_panel, text=f"📞 Hubungi: {telepon}", 
+            fg_color="#D35400", hover_color="#A04000",
+            height=48, corner_radius=12, font=("Arial", 14, "bold")
         )
-        box.pack(fill="x", padx=22, pady=6)
+        self.btn_contact.pack(fill="x", pady=(0, 12))
 
-        label_title = ctk.CTkLabel(
-            box,
-            text=title,
+        # 2. Tombol Favorit - Dark Blue (Aksi Sekunder)
+        self.btn_fav = ctk.CTkButton(
+            info_panel, text="♥ Simpan ke Favorit", 
+            fg_color="#1A3A5A", hover_color="#12283E", 
+            height=48, corner_radius=12, font=("Arial", 14, "bold")
+        )
+        self.btn_fav.pack(fill="x", pady=(0, 10))
+
+        # ============================================================
+        # STICKY BOTTOM (Di luar Scroll) - Tombol Tutup
+        # ============================================================
+        sticky_bottom = ctk.CTkFrame(right_col, fg_color="transparent", height=65)
+        sticky_bottom.pack(fill="x", side="bottom", padx=20, pady=(5, 20))
+        sticky_bottom.pack_propagate(False)
+
+        # Tombol Tutup - Merah Bata, Lebar lebih kecil (width=140) agar mencolok
+        self.btn_tutup = ctk.CTkButton(
+            sticky_bottom, text="TUTUP", 
+            fg_color="#C0392B", hover_color="#962D22",
+            text_color="white", width=140, height=42, corner_radius=8,
             font=("Arial", 12, "bold"),
-            text_color=PRIMARY_COLOR,
-            anchor="w",
+            command=self.destroy
         )
-        label_title.pack(fill="x", padx=14, pady=(10, 2))
+        self.btn_tutup.pack(expand=True)
 
-        label_value = ctk.CTkLabel(
-            box,
-            text=_safe_text(value),
-            font=("Arial", 13),
-            text_color=TITLE_COLOR,
-            justify="left",
-            anchor="w",
-            wraplength=470,
+        # --- Fungsi Scroll (Tetap dipertahankan agar baris tetap banyak) ---
+        def _force_scroll(event=None, direction=0, unit="units"):
+            if event and hasattr(event, "delta") and event.delta != 0:
+                direction = int(-1 * (event.delta / 120))
+            try:
+                # Target diganti ke self.scroll_area karena right_col bukan kanvas lagi
+                self.scroll_area._parent_canvas.yview_scroll(direction, unit)
+            except: pass
+
+        self.bind("<MouseWheel>", _force_scroll)
+        self.bind("<Up>", lambda e: _force_scroll(direction=-1))
+        self.bind("<Down>", lambda e: _force_scroll(direction=1))
+        self.bind("<Prior>", lambda e: _force_scroll(direction=-1, unit="pages")) 
+        self.bind("<Next>", lambda e: _force_scroll(direction=1, unit="pages"))
+        self.focus_set()
+
+    def _build_facility_chips(self, master, title, items):
+        ctk.CTkLabel(master, text=title.upper(), font=("Arial", 10, "bold"), text_color=TEXT_SUBTLE).pack(anchor="w", pady=(5, 2))
+        text = ", ".join(items) if items else "Informasi tidak tersedia"
+        chip_box = ctk.CTkFrame(master, fg_color=SUCCESS_SURFACE, corner_radius=8)
+        chip_row = ctk.CTkLabel(
+            chip_box, text=text, font=("Arial", 11), 
+            text_color=TITLE_COLOR, wraplength=250, justify="left"
         )
-        label_value.pack(fill="x", padx=14, pady=(0, 10))
-
+        chip_box.pack(fill="x", pady=(0, 12))
+        chip_row.pack(padx=10, pady=8)
 
 class KosCard(ctk.CTkFrame):
     def __init__(self, master, data_kos, **kwargs):
