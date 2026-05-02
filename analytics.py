@@ -29,11 +29,12 @@ class KosAnalytics:
     def __init__(self, path: str = DATA_PATH): #load data saat objek dibuat
         self.path = path
         self.data = self.load_data()
+        self.setup_style()
 
     def setup_style(self) -> None:
         plt.rcParams.update({
             "font.family"       : "sans-serif",
-            "font.size"         : 10,
+            "font.size"         : 8,
             "axes.facecolor"    : self.WARNA["putih"],
             "figure.facecolor"  : self.WARNA["abu"],
             "axes.edgecolor"    : "#E5E7EB",
@@ -53,24 +54,37 @@ class KosAnalytics:
         print(f" Data berhasil dimuat: {len(data)} kos")
         return data
     
-    def ekstrak_harga(self, harga_str: str) -> int | None: #mengubah string harga ke integer & mengembalikan ke none kalau format tidak dikenali
+    def ekstrak_harga(self, harga_str: str): #mengubah string harga ke integer & mengembalikan ke none kalau format tidak dikenali
         if not harga_str or harga_str == "-":
             return None
         angka = re.sub(r"[^\d]", "", harga_str)
         return int(angka) if angka else None
     
-    def ekstrak_area(self, alamat: str) ->: #mengambil nama area dari string alamat
+    def ekstrak_area(self, alamat: str): #mengambil nama area dari string alamat
         if not alamat or alamat == "-":
             return "Tidak Diketahui"
         bagian = [b.strip() for b in alamat.split(",")]
 
+        kata_buang = [
+        "BANDUNG", "JAWA BARAT", "JL", "JALAN", "GANG", "GG",
+        "NO", "RT", "RW", "KEL", "KELURAHAN", "KEC", "KECAMATAN",
+        "BLOK", "KOMPLEK", "PERUMAHAN", "KP", "KAVLING"
+        ]
+
         for b in reversed(bagian):
-            b_upper = b.upper()
-            if "BANDUNG" in b_upper or "JL" in b_upper or len(b) < 3:
+            b_upper = b.upper().strip()
+
+            if any(k in b_upper for k in kata_buang): #skip kalau ada kata buang
                 continue
-            b_clean = re.sub(r"^\d+\s*", "", b).strip().title()
+            if re.search(r"\d", b_upper): #skip kalau ada angka (seperti jalan/RT/RW)
+                continue
+            if len(b_upper) < 3: #skip kalau terlalu pendek
+                continue
+
+            b_clean = b.strip().title()
             if b_clean:
                 return b_clean
+
         return "Bandung"
     
     def grafikDistribusiHarga(self, ax: plt.Axes) -> None: 
@@ -115,7 +129,7 @@ class KosAnalytics:
                     color=self.WARNA["navy"]
                 )
  
-        ax.set_title("Distribusi Harga Kos", fontsize=13, fontweight="bold", pad=15, color=self.WARNA["navy"])
+        ax.set_title("Distribusi Harga Kos", fontsize=11, fontweight="bold", pad=15, color=self.WARNA["navy"])
         ax.set_xlabel("Rentang Harga", fontsize=10, labelpad=8)
         ax.set_ylabel("Jumlah Kos", fontsize=10, labelpad=8)
         ax.yaxis.set_major_locator(mticker.MaxNLocator(integer=True))
@@ -123,6 +137,7 @@ class KosAnalytics:
         ax.spines[["top", "right"]].set_visible(False)
         ax.spines[["left", "bottom"]].set_color("#E5E7EB")
         ax.grid(axis="y", zorder=1)
+        plt.setp(ax.get_xticklabels(), rotation=15, ha="right", fontsize=9)
  
         patch = mpatches.Patch(color=self.WARNA["orange"], label="Terbanyak")
         ax.legend(handles=[patch], fontsize=9, loc="upper right",
@@ -131,7 +146,7 @@ class KosAnalytics:
     def grafikKosPerArea(self, ax: plt.Axes) -> None:
         area_list = [self.ekstrak_area(item.get("alamat", "-")) for item in self.data]
         counter = Counter(area_list)
-        top = counter.most.common(10)
+        top = counter.most_common(10)
         label = [item[0] for item in top]
         jumlah = [item[1] for item in top]
 
@@ -158,7 +173,7 @@ class KosAnalytics:
                 color=self.WARNA["navy"]
             )
 
-        ax.set_title("Jumlah Kos per Area", fontsize=13, fontweight="bold",pad=15, color=self.WARNA["navy"])
+        ax.set_title("Jumlah Kos per Area", fontsize=11, fontweight="bold",pad=15, color=self.WARNA["navy"])
         ax.set_xlabel("Jumlah Kos", fontsize=10, labelpad=8)
         ax.xaxis.set_major_locator(mticker.MaxNLocator(integer=True))
         ax.set_xlim(0, maks + 2)
@@ -166,7 +181,7 @@ class KosAnalytics:
         ax.spines[["left", "bottom"]].set_color("#E5E7EB")
         ax.grid(axis="x", zorder=1)
 
-     def grafikFasilitas(self, ax: plt.Axes) -> None:
+    def grafikFasilitas(self, ax: plt.Axes) -> None:
         semua_fasilitas = []
  
         for item in self.data:
@@ -206,7 +221,7 @@ class KosAnalytics:
                 color=self.WARNA["navy"]
             )
  
-        ax.set_title("Fasilitas Paling Umum", fontsize=13, fontweight="bold",pad=15, color=self.WARNA["navy"])
+        ax.set_title("Fasilitas Paling Umum", fontsize=11, fontweight="bold",pad=15, color=self.WARNA["navy"])
         ax.set_xlabel("Fasilitas", fontsize=10, labelpad=8)
         ax.set_ylabel("Jumlah Kos", fontsize=10, labelpad=8)
         ax.yaxis.set_major_locator(mticker.MaxNLocator(integer=True))
@@ -225,7 +240,7 @@ class KosAnalytics:
  
         fig.suptitle(
             "Analitik Pasar Kos · Bandung",
-            fontsize=16, fontweight="bold",
+            fontsize=13, fontweight="bold",
             color=self.WARNA["navy"], y=1.01
         )
         fig.text(
