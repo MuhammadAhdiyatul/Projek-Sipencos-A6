@@ -98,6 +98,13 @@ def _load_remote_image(url, size):
     except Exception:
         return None
 
+ctk.set_appearance_mode("Light")
+ctk.set_default_color_theme("blue")
+
+PRIMARY_COLOR = "#002B49"   # Biru gelap elegan
+TEXT_SUBTLE = "#6F7C85"     # Abu-abu untuk alamat
+CARD_BG = "#FFFFFF"         # Putih bersih untuk Card
+APP_BG = "#F0F2F5"          # Abu-abu sangat muda untuk background utama
 
 class DetailWindow(ctk.CTkToplevel):
     def __init__(self, parent, data_kos, *args, **kwargs):
