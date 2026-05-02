@@ -5,6 +5,7 @@ import re
 import customtkinter as ctk
 from ui_components import KosCard
 from backend import BackendManager
+from search_page import SearchPage
 
 try:
     from Scraping import KosScraper
@@ -279,129 +280,6 @@ class IntegrationController:
 
         self.active_data = self.dummy_data
         return [self._to_ui_item(item) for item in self.dummy_data]
-
-
-class SearchPage(ctk.CTkFrame):
-    def __init__(
-        self,
-        parent,
-        search_callback,
-        add_to_favorite,
-        add_to_compare,
-        open_detail,
-        *args,
-        **kwargs,
-    ):
-        super().__init__(parent, *args, **kwargs)
-        self.search_callback = search_callback
-        self.add_to_favorite = add_to_favorite
-        self.add_to_compare = add_to_compare
-        self.open_detail = open_detail
-        self._current_results = []
-        self.favorites = []
-        self.compare_list = []
-
-        self.grid_rowconfigure(2, weight=1)
-        self.grid_columnconfigure(0, weight=1)
-
-        header = ctk.CTkFrame(self, fg_color="transparent")
-        header.grid(row=0, column=0, sticky="ew", pady=(0, 14))
-        header.grid_columnconfigure(0, weight=1)
-
-        self.entry_search = ctk.CTkEntry(
-            header,
-            placeholder_text="Cari kos berdasarkan nama atau lokasi...",
-            height=44,
-            corner_radius=14,
-            fg_color=CARD_BG,
-            border_width=1,
-            border_color=BORDER_COLOR,
-            text_color=PRIMARY_COLOR,
-            font=("Arial", 13),
-        )
-        self.entry_search.grid(row=0, column=0, sticky="ew", padx=(0, 12))
-        self.entry_search.bind("<Return>", lambda event: self._on_search())
-
-        btn_search = ctk.CTkButton(
-            header,
-            text="Cari",
-            fg_color=ACCENT_COLOR,
-            hover_color="#B45E24",
-            text_color="white",
-            corner_radius=14,
-            height=44,
-            font=("Arial", 13, "bold"),
-            command=self._on_search,
-        )
-        btn_search.grid(row=0, column=1, sticky="e")
-
-        self.label_summary = ctk.CTkLabel(
-            self,
-            text="Menampilkan 0 kos",
-            font=("Arial", 12),
-            text_color=TEXT_SUBTLE,
-            anchor="w",
-        )
-        self.label_summary.grid(row=1, column=0, sticky="ew", pady=(0, 10))
-
-        self.scroll_frame = ctk.CTkScrollableFrame(
-            self,
-            fg_color="transparent",
-            corner_radius=0,
-        )
-        self.scroll_frame.grid(row=2, column=0, sticky="nsew")
-        self.scroll_frame.grid_columnconfigure(0, weight=1)
-
-        self.results_grid = ctk.CTkFrame(self.scroll_frame, fg_color="transparent")
-        self.results_grid.pack(fill="both", expand=True, padx=6, pady=6)
-        for col in range(3):
-            self.results_grid.grid_columnconfigure(col, weight=1, uniform="cards")
-
-    def _on_search(self):
-        keyword = self.entry_search.get().strip()
-        results = self.search_callback(keyword)
-        self.refresh(results, self.favorites, self.compare_list)
-
-    def refresh(self, data_list, favorites, compare_list):
-        self._current_results = data_list or []
-        self._update_summary(self._current_results)
-
-        for widget in self.results_grid.winfo_children():
-            widget.destroy()
-
-        if not self._current_results:
-            empty = ctk.CTkLabel(
-                self.results_grid,
-                text="Tidak ada data kos yang ditemukan.",
-                font=("Arial", 15, "bold"),
-                text_color=TEXT_SUBTLE,
-            )
-            empty.grid(row=0, column=0, columnspan=3, pady=70)
-            return
-
-        favorites_keys = { _item_key(item) for item in (favorites or []) }
-        compare_keys = { _item_key(item) for item in (compare_list or []) }
-
-        for index, item in enumerate(self._current_results):
-            row = index // 3
-            col = index % 3
-            card = KosCard(
-                self.results_grid,
-                data_kos=item,
-                is_favorite=_item_key(item) in favorites_keys,
-                is_compared=_item_key(item) in compare_keys,
-                add_to_favorite=self.add_to_favorite,
-                add_to_compare=self.add_to_compare,
-                open_detail=self.open_detail,
-            )
-            card.grid(row=row, column=col, padx=12, pady=12, sticky="n")
-
-    def _update_summary(self, data_list):
-        count = len(data_list)
-        if count == 0:
-            self.label_summary.configure(text="Tidak ada kos yang cocok dengan pencarian")
-        else:
-            self.label_summary.configure(text=f"Menampilkan {count} kos")
 
 
 class FavoritesPage(ctk.CTkFrame):
@@ -855,107 +733,32 @@ class App(ctk.CTk):
         # Menu buttons container
         self.menu_buttons = {}
 
-        # Search button
-        self.btn_search = ctk.CTkButton(
-            shell,
-            text="🔍  Search",
-            height=40,
-            corner_radius=8,
-            anchor="w",
-            font=("Arial", 13, "bold"),
-            text_color="#000000",
-            fg_color="#E5E7EB",
-            hover_color="#E5E7EB",
-            border_width=0,
-            command=lambda: self._show_menu("search"),
-        )
-        self.btn_search.pack(fill="x", pady=4)
-        self.menu_buttons["search"] = self.btn_search
-
-        # Analytics button
-        self.btn_analytics = ctk.CTkButton(
-            shell,
-            text="📊  Analytics",
-            height=40,
-            corner_radius=8,
-            anchor="w",
-            font=("Arial", 13),
-            text_color="#000000",
-            fg_color="transparent",
-            hover_color="#E5E7EB",
-            border_width=0,
-            command=lambda: self._show_menu("analytics"),
-        )
-        self.btn_analytics.pack(fill="x", pady=4)
-        self.menu_buttons["analytics"] = self.btn_analytics
-
-        # Compare button
-        self.btn_compare = ctk.CTkButton(
-            shell,
-            text="⚖️  Compare",
-            height=40,
-            corner_radius=8,
-            anchor="w",
-            font=("Arial", 13),
-            text_color="#000000",
-            fg_color="transparent",
-            hover_color="#E5E7EB",
-            border_width=0,
-            command=lambda: self._show_menu("compare"),
-        )
-        self.btn_compare.pack(fill="x", pady=4)
-        self.menu_buttons["compare"] = self.btn_compare
-
-        # Favorites button
-        self.btn_favorites = ctk.CTkButton(
-            shell,
-            text="❤️  Favorites",
-            height=40,
-            corner_radius=8,
-            anchor="w",
-            font=("Arial", 13),
-            text_color="#000000",
-            fg_color="transparent",
-            hover_color="#E5E7EB",
-            border_width=0,
-            command=lambda: self._show_menu("favorites"),
-        )
-        self.btn_favorites.pack(fill="x", pady=4)
-        self.menu_buttons["favorites"] = self.btn_favorites
-
-        # History button
-        self.btn_history = ctk.CTkButton(
-            shell,
-            text="🕘  History",
-            height=40,
-            corner_radius=8,
-            anchor="w",
-            font=("Arial", 13),
-            text_color="#000000",
-            fg_color="transparent",
-            hover_color="#E5E7EB",
-            border_width=0,
-            command=lambda: self._show_menu("history"),
-        )
-        self.btn_history.pack(fill="x", pady=4)
-        self.menu_buttons["history"] = self.btn_history
-
-        # Settings button
-        self.btn_settings = ctk.CTkButton(
-            shell,
-            text="⚙️  Settings",
-            height=40,
-            corner_radius=8,
-            anchor="w",
-            font=("Arial", 13),
-            text_color="#000000",
-            fg_color="transparent",
-            hover_color="#E5E7EB",
-            border_width=0,
-            command=lambda: self._show_menu("settings"),
-        )
-        self.btn_settings.pack(fill="x", pady=4)
-        self.menu_buttons["settings"] = self.btn_settings
+        menu_items = [
+            ("🔍  Search", "search"),
+            ("📊  Analytics", "analytics"),
+            ("⚖️  Compare", "compare"),
+            ("❤️  Favorites", "favorites"),
+            ("🕘  History", "history"),
+            ("⚙️  Settings", "settings"),
+        ]
+        
+        for label, page_name in menu_items:
+            is_active = page_name == "search"
+            button = ctk.CTkButton(
+                shell,
+                text=label,
+                height=40,
+                corner_radius=8,
+                anchor="w",
+                font=("Arial", 13, "bold" if is_active else "normal"),
+                text_color="#000000",
+                fg_color="#E5E7EB" if is_active else "transparent",
+                hover_color="#E5E7EB",
+                border_width=0,
+                command=lambda p=page_name: self._show_menu(p),
+            )
+            button.pack(fill="x", pady=4)
+            self.menu_buttons[page_name] = button
 
         helper = ctk.CTkLabel(
             shell,
