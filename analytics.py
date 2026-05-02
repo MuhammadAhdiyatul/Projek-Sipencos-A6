@@ -239,12 +239,12 @@ class KosAnalytics:
         fig, axes = plt.subplots(1, 3, figsize=(20, 7))
  
         fig.suptitle(
-            "Analitik Pasar Kos · Bandung",
+            "Analitik Pasar Kos · Kota Bandung",
             fontsize=13, fontweight="bold",
-            color=self.WARNA["navy"], y=1.01
+            color=self.WARNA["navy"], y=0.98
         )
         fig.text(
-            0.5, 0.97,
+            0.5, 0.94,
             "Sumber data: sewakost.com",
             ha="center", fontsize=9,
             color=self.WARNA["teks_muda"]
