@@ -3,7 +3,7 @@ import os
 import re
 
 import customtkinter as ctk
-from ui_components import KosCard
+from ui_components import KosCard, TITLE_COLOR
 from backend import BackendManager
 
 try:
