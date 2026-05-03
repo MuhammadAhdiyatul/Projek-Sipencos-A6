@@ -1,6 +1,7 @@
 import customtkinter as ctk
 from compare import CompareManager
 from favorites import FavoritesWindow
+from logger import get_scrape_status_text
 from ui_components import KosCard
 from threading_handler import ThreadingHandler
 
@@ -30,6 +31,7 @@ class App(ctk.CTk):
         remove_favorite_callback=None,
         compare_callback=None,
         get_compare_callback=None,
+        get_scrape_log_callback=None,
     ):
         super().__init__()
 
@@ -42,6 +44,7 @@ class App(ctk.CTk):
         self.remove_favorite_callback = remove_favorite_callback
         self.compare_callback = compare_callback
         self.get_compare_callback = get_compare_callback
+        self.get_scrape_log_callback = get_scrape_log_callback or get_scrape_status_text
         self._current_results = []
         self._last_action = "default"
         self.thread_handler = ThreadingHandler(self)
@@ -132,8 +135,12 @@ class App(ctk.CTk):
             button.pack(fill="x", pady=4)
             self.menu_buttons[page_name] = button
 
-        cta = ctk.CTkButton(
-            shell,
+        footer = ctk.CTkFrame(shell, fg_color="transparent")
+        footer.pack(side="bottom", fill="x")
+        footer.grid_columnconfigure(0, weight=1)
+
+        self.btn_scrape = ctk.CTkButton(
+            footer,
             text="Scrape Data",
             fg_color=ACCENT_COLOR,
             hover_color="#B45E24",
@@ -143,18 +150,77 @@ class App(ctk.CTk):
             font=("Arial", 13, "bold"),
             command=self.on_scrape_clicked,
         )
-        self.btn_scrape = cta
-        cta.pack(side="bottom", fill="x", pady=(10, 0))
+        self.btn_scrape.grid(row=0, column=0, sticky="ew", pady=(0, 10))
+
+        self.scrape_log_card = ctk.CTkFrame(
+            footer,
+            fg_color="#F7FAFC",
+            corner_radius=12,
+            border_width=1,
+            border_color=BORDER_COLOR,
+        )
+        self.scrape_log_card.grid(row=1, column=0, sticky="ew", pady=(0, 10))
+
+        self.scrape_log_title = ctk.CTkLabel(
+            self.scrape_log_card,
+            text="Last Scraped",
+            font=("Arial", 12, "bold"),
+            text_color=PRIMARY_COLOR,
+            anchor="w",
+        )
+        self.scrape_log_title.pack(fill="x", padx=12, pady=(10, 2))
+
+        self.scrape_log_timestamp = ctk.CTkLabel(
+            self.scrape_log_card,
+            text="-",
+            font=("Arial", 12, "bold"),
+            text_color="#1F2937",
+            anchor="w",
+        )
+        self.scrape_log_timestamp.pack(fill="x", padx=12, pady=(0, 2))
+
+        self.scrape_log_summary = ctk.CTkLabel(
+            self.scrape_log_card,
+            text="No scraping activity yet",
+            font=("Arial", 11),
+            text_color=TEXT_SUBTLE,
+            anchor="w",
+            justify="left",
+        )
+        self.scrape_log_summary.pack(fill="x", padx=12, pady=(0, 10))
+
+        self.refresh_scrape_log()
 
         helper = ctk.CTkLabel(
-            shell,
+            footer,
             text="Butuh bantuan? Hubungi admin",
             font=("Arial", 11),
             text_color=TEXT_SUBTLE,
             anchor="w",
             justify="left",
         )
-        helper.pack(side="bottom", fill="x", pady=(0, 10))
+        helper.grid(row=2, column=0, sticky="ew")
+
+    def _get_scrape_log_data(self):
+        try:
+            data = self.get_scrape_log_callback()
+        except Exception:
+            data = None
+
+        if not isinstance(data, dict):
+            return get_scrape_status_text()
+
+        return {
+            "title": data.get("title", "Last Scraped"),
+            "timestamp": data.get("timestamp", "-"),
+            "summary": data.get("summary", "No scraping activity yet"),
+        }
+
+    def refresh_scrape_log(self):
+        log_data = self._get_scrape_log_data()
+        self.scrape_log_title.configure(text=log_data.get("title", "Last Scraped"))
+        self.scrape_log_timestamp.configure(text=log_data.get("timestamp", "-"))
+        self.scrape_log_summary.configure(text=log_data.get("summary", "No scraping activity yet"))
 
     def switch_page(self, page_name):
         """Route to different pages based on page_name."""
@@ -657,12 +723,14 @@ class App(ctk.CTk):
     def _handle_scrape_success(self, scraped_data):
         self._last_action = "scrape"
         self.display_data(scraped_data)
+        self.refresh_scrape_log()
         self.btn_scrape.configure(text="Scrape Data", state="normal")
 
     def _handle_scrape_error(self, _exception):
         # Keep UI stable even when scrape fails.
         self._last_action = "scrape"
         self.display_data([])
+        self.refresh_scrape_log()
         self.btn_scrape.configure(text="Scrape Data", state="normal")
 
     def _extract_location_keyword(self, data_list):

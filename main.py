@@ -3,6 +3,8 @@ import os
 import re
 
 import customtkinter as ctk
+from logger import get_scrape_status_text, log_scrape
+from threading_handler import ThreadingHandler
 from ui_components import KosCard, TITLE_COLOR
 from backend import BackendManager
 
@@ -181,6 +183,15 @@ class IntegrationController:
             print(f"[WARN] Gagal baca {path}: {e}")
             return []
 
+    def _write_scrape_log(self, status, total_data=0, message=""):
+        try:
+            return log_scrape(status=status, total_data=total_data, message=message)
+        except Exception:
+            return get_scrape_status_text()
+
+    def get_scrape_log_for_ui(self):
+        return get_scrape_status_text()
+
     def _load_scraped_data(self):
         json_path = os.path.join("output_dataKos", "data_kos.json")
 
@@ -259,25 +270,38 @@ class IntegrationController:
 
     def scrape_for_ui(self):
         json_path = os.path.join("output_dataKos", "data_kos.json")
+        scrape_succeeded = False
+        scrape_message = ""
 
         if KosScraper is not None:
             try:
                 scraper = KosScraper()
                 scraper.jalankan()
+                scrape_succeeded = True
+                scrape_message = "Scraping completed successfully"
             except Exception as e:
-                print(f"[WARN] Scrape manual gagal: {e}")
+                scrape_message = f"Scrape manual gagal: {e}"
+                print(f"[WARN] {scrape_message}")
+        else:
+            scrape_message = "Scraper tidak tersedia"
 
         fresh_scraped = self._normalize_list(self._load_json_if_exists(json_path))
         if fresh_scraped:
             self.scraped_data = fresh_scraped
             self.active_data = fresh_scraped
+            if scrape_succeeded:
+                self._write_scrape_log("success", len(fresh_scraped), scrape_message)
+            else:
+                self._write_scrape_log("failed", len(fresh_scraped), scrape_message or "Menggunakan data scraping yang sudah tersimpan")
             return [self._to_ui_item(item) for item in fresh_scraped]
 
         if self.backend_data:
             self.active_data = self.backend_data
+            self._write_scrape_log("failed", len(self.backend_data), scrape_message or "Scrape gagal, menampilkan data backend")
             return [self._to_ui_item(item) for item in self.backend_data]
 
         self.active_data = self.dummy_data
+        self._write_scrape_log("failed", len(self.dummy_data), scrape_message or "Scrape gagal, menampilkan data bawaan")
         return [self._to_ui_item(item) for item in self.dummy_data]
 
 
@@ -791,7 +815,7 @@ class SettingsPage(PlaceholderPage):
 
 
 class App(ctk.CTk):
-    def __init__(self):
+    def __init__(self, get_scrape_log_callback=None):
         super().__init__()
 
         self.title("SiPencos - Sistem Pencari Kos")
@@ -800,6 +824,8 @@ class App(ctk.CTk):
         self.configure(fg_color=APP_BG)
 
         self.controller = IntegrationController()
+        self.get_scrape_log_callback = get_scrape_log_callback or self.controller.get_scrape_log_for_ui
+        self.thread_handler = ThreadingHandler(self)
         self.kos_data = self.controller.get_all_for_ui()
         self.favorites = []
         self.compare_list = []
@@ -957,15 +983,115 @@ class App(ctk.CTk):
         self.btn_settings.pack(fill="x", pady=4)
         self.menu_buttons["settings"] = self.btn_settings
 
+        footer = ctk.CTkFrame(shell, fg_color="transparent")
+        footer.pack(side="bottom", fill="x")
+        footer.grid_columnconfigure(0, weight=1)
+
+        self.btn_scrape = ctk.CTkButton(
+            footer,
+            text="Scrape Data",
+            fg_color=ACCENT_COLOR,
+            hover_color="#B45E24",
+            text_color="white",
+            corner_radius=12,
+            height=42,
+            font=("Arial", 13, "bold"),
+            command=self.on_scrape_clicked,
+        )
+        self.btn_scrape.grid(row=0, column=0, sticky="ew", pady=(0, 10))
+
+        self.scrape_log_card = ctk.CTkFrame(
+            footer,
+            fg_color="#F7FAFC",
+            corner_radius=12,
+            border_width=1,
+            border_color=BORDER_COLOR,
+        )
+        self.scrape_log_card.grid(row=1, column=0, sticky="ew", pady=(0, 10))
+
+        self.scrape_log_title = ctk.CTkLabel(
+            self.scrape_log_card,
+            text="Last Scraped",
+            font=("Arial", 12, "bold"),
+            text_color=PRIMARY_COLOR,
+            anchor="w",
+        )
+        self.scrape_log_title.pack(fill="x", padx=12, pady=(10, 2))
+
+        self.scrape_log_timestamp = ctk.CTkLabel(
+            self.scrape_log_card,
+            text="-",
+            font=("Arial", 12, "bold"),
+            text_color="#1F2937",
+            anchor="w",
+        )
+        self.scrape_log_timestamp.pack(fill="x", padx=12, pady=(0, 2))
+
+        self.scrape_log_summary = ctk.CTkLabel(
+            self.scrape_log_card,
+            text="No scraping activity yet",
+            font=("Arial", 11),
+            text_color=TEXT_SUBTLE,
+            anchor="w",
+            justify="left",
+        )
+        self.scrape_log_summary.pack(fill="x", padx=12, pady=(0, 10))
+
         helper = ctk.CTkLabel(
-            shell,
+            footer,
             text="Pilih kos terbaik dan bandingkan dengan mudah.",
             font=("Arial", 11),
             text_color=TEXT_SUBTLE,
             anchor="w",
             justify="left",
         )
-        helper.pack(side="bottom", fill="x", pady=(0, 10))
+        helper.grid(row=2, column=0, sticky="ew")
+
+        self.refresh_scrape_log()
+
+    def _get_scrape_log_data(self):
+        try:
+            data = self.get_scrape_log_callback()
+        except Exception:
+            data = None
+
+        if not isinstance(data, dict):
+            return get_scrape_status_text()
+
+        return {
+            "title": data.get("title", "Last Scraped"),
+            "timestamp": data.get("timestamp", "-"),
+            "summary": data.get("summary", "No scraping activity yet"),
+        }
+
+    def refresh_scrape_log(self):
+        log_data = self._get_scrape_log_data()
+        self.scrape_log_title.configure(text=log_data.get("title", "Last Scraped"))
+        self.scrape_log_timestamp.configure(text=log_data.get("timestamp", "-"))
+        self.scrape_log_summary.configure(text=log_data.get("summary", "No scraping activity yet"))
+
+    def on_scrape_clicked(self):
+        if str(self.btn_scrape.cget("state")) == "disabled":
+            return
+
+        self.btn_scrape.configure(text="Scraping...", state="disabled")
+        self.thread_handler.run_task(
+            task_func=self.controller.scrape_for_ui,
+            on_success=self._handle_scrape_success,
+            on_error=self._handle_scrape_error,
+        )
+
+    def _handle_scrape_success(self, scraped_data):
+        self.kos_data = scraped_data or []
+        self.refresh_scrape_log()
+        self.btn_scrape.configure(text="Scrape Data", state="normal")
+        self.show_frame("search")
+
+    def _handle_scrape_error(self, exception):
+        log_scrape("failed", len(self.kos_data), str(exception) or "Scrape gagal")
+        self.refresh_scrape_log()
+        self.btn_scrape.configure(text="Scrape Data", state="normal")
+        self.show_frame("search")
 
     def _show_menu(self, menu_name):
         """Handle menu button clicks with highlight update."""
@@ -1057,6 +1183,9 @@ class App(ctk.CTk):
                 )
 
         frame.tkraise()
+
+    def get_scrape_log_for_ui(self):
+        return self.controller.get_scrape_log_for_ui()
 
     def search_items(self, keyword):
         if not keyword:

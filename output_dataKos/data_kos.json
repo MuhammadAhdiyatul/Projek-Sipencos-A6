@@ -1,7 +1,7 @@
 [
   {
     "nama_kos": "KOST SINGLE & PASUTRI DEKAT RSHS BANDUNG",
-    "harga": "Rp 1.800.000",
+    "harga": "Rp 1.750.000",
     "telepon": "081223338550",
     "alamat": "JL. DR.CIPTO NO.28, CICENDO, PASIRKALIKI, BANDUNG.",
     "fasilitas_kamar": [
@@ -76,50 +76,6 @@
     ]
   },
   {
-    "nama_kos": "Holis Homestay Exclusive",
-    "harga": "Rp 2.600.000",
-    "telepon": "082318559955",
-    "alamat": "Jl. Taman Holis Indah I Blk. C3 No.2, Cigondewah Rahayu, Kec. Bandung Kulon, Kota Bandung, Jawa Barat 40215",
-    "fasilitas_kamar": [
-      "Spring Bed",
-      "Perabot",
-      "Free WiFi",
-      "AC",
-      "TV",
-      "Kamar Mandi Dalam",
-      "Pemanas Air (Water Heater)"
-    ],
-    "fasilitas_bersama": [
-      "Spring Bed",
-      "Perabot",
-      "Free WiFi",
-      "AC",
-      "TV",
-      "Kamar Mandi Dalam",
-      "Pemanas Air (Water Heater)"
-    ],
-    "foto": [
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/01-2026/ad10013386041/holis-homestay-exclusive-678271107_large.jpg",
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/01-2026/ad10013386041/holis-homestay-exclusive-678271107.jpg",
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/01-2026/ad10013386041/listing-696571796.jpg",
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/01-2026/ad10013386041/listing-1328756141.jpg",
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/01-2026/ad10013386041/listing-648187969.jpg",
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/01-2026/ad10013386041/listing-298945784.jpg",
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/01-2026/ad10013386041/listing-1177027571.jpg",
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/01-2026/ad10013386041/listing-2034722511.jpg",
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/01-2026/ad10013386041/listing-1773932795.jpg",
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/01-2026/ad10013386041/listing-1373813944.jpg",
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/01-2026/ad10013386041/listing-2081355925.jpg",
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/01-2026/ad10013386041/listing-1574714045.jpg",
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/01-2026/ad10013386041/listing-1606043234.jpg",
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/01-2026/ad10013386041/listing-1418412244.jpg",
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/01-2026/ad10013386041/listing-1291473651.jpg",
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/01-2026/ad10013386041/holis-homestay-exclusive-748621814.jpg",
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/01-2026/ad10013386041/holis-homestay-exclusive-689376672.jpg",
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/01-2026/ad10013386041/holis-homestay-exclusive-2097777541.jpg"
-    ]
-  },
-  {
     "nama_kos": "Kost Putri AR Cikutra Dekat Widyatama ITENAS",
     "harga": "Rp 900.000",
     "telepon": "08156062602",
@@ -148,6 +104,61 @@
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/04-2021/ad53845/kost-putri-ar-cikutra-dekat-widyatama-1151953440.JPG",
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/04-2021/ad53845/kost-putri-ar-cikutra-dekat-widyatama-1310467251.JPG",
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/04-2021/ad53845/kost-putri-ar-cikutra-dekat-widyatama-666872088.JPG"
+    ]
+  },
+  {
+    "nama_kos": "KOST JOIS PARAKAN SAAT BANDUNG",
+    "harga": "Rp 475.000",
+    "telepon": "083863901634",
+    "alamat": "JL PARAKAN SAAT II NO 15",
+    "fasilitas_kamar": [
+      "-"
+    ],
+    "fasilitas_bersama": [
+      "Dapur",
+      "Parkir Motor"
+    ],
+    "foto": [
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/04-2026/ad10066318935/listing-2125798323_large.webp",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/04-2026/ad10066318935/listing-2125798323.webp",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/04-2026/ad10066318935/listing-703943923.webp",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/04-2026/ad10066318935/listing-1973275009.webp",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/04-2026/ad10066318935/listing-827727149.webp",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/04-2026/ad10066318935/listing-804895306.webp"
+    ]
+  },
+  {
+    "nama_kos": "Kost Putra Area Kampus ITB dan Unpad Daerah Tubagus Ismail",
+    "harga": "Rp 1.500.000",
+    "telepon": "085121575039",
+    "alamat": "Jl. Tubagus Ismail V No.11, Sekeloa, Kecamatan Coblong, Kota Bandung, Jawa Barat 40134",
+    "fasilitas_kamar": [
+      "Perabot",
+      "Free WiFi",
+      "Kamar Mandi Dalam",
+      "Pemanas Air (Water Heater)"
+    ],
+    "fasilitas_bersama": [
+      "Perabot",
+      "Free WiFi",
+      "Kamar Mandi Dalam",
+      "Pemanas Air (Water Heater)"
+    ],
+    "foto": [
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/04-2026/ad10038493745/listing-351699930_large.webp",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/04-2026/ad10038493745/listing-351699930.webp",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/04-2026/ad10038493745/listing-1538727836.webp",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/04-2026/ad10038493745/listing-693831884.webp",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/04-2026/ad10038493745/listing-530703299.webp",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/04-2026/ad10038493745/listing-1341289378.webp",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/04-2026/ad10038493745/listing-1399525925.webp",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/04-2026/ad10038493745/listing-497163724.webp",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/04-2026/ad10038493745/listing-1097696199.webp",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/04-2026/ad10038493745/listing-1116395240.webp",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/04-2026/ad10038493745/listing-743019936.webp",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/04-2026/ad10038493745/listing-703617671.webp",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/04-2026/ad10038493745/listing-614279318.webp",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/04-2026/ad10038493745/listing-1895005291.webp"
     ]
   },
   {
@@ -367,6 +378,50 @@
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/02-2026/ad10027223362/kost-bulanan-daerah-sukajadi-1122185067.jpg",
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/02-2026/ad10027223362/kost-bulanan-daerah-sukajadi-1938548094.jpg",
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/02-2026/ad10027223362/kost-bulanan-daerah-sukajadi-412802271.jpg"
+    ]
+  },
+  {
+    "nama_kos": "Holis Homestay Exclusive",
+    "harga": "Rp 2.600.000",
+    "telepon": "082318559955",
+    "alamat": "Jl. Taman Holis Indah I Blk. C3 No.2, Cigondewah Rahayu, Kec. Bandung Kulon, Kota Bandung, Jawa Barat 40215",
+    "fasilitas_kamar": [
+      "Spring Bed",
+      "Perabot",
+      "Free WiFi",
+      "AC",
+      "TV",
+      "Kamar Mandi Dalam",
+      "Pemanas Air (Water Heater)"
+    ],
+    "fasilitas_bersama": [
+      "Spring Bed",
+      "Perabot",
+      "Free WiFi",
+      "AC",
+      "TV",
+      "Kamar Mandi Dalam",
+      "Pemanas Air (Water Heater)"
+    ],
+    "foto": [
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/01-2026/ad10013386041/holis-homestay-exclusive-678271107_large.jpg",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/01-2026/ad10013386041/holis-homestay-exclusive-678271107.jpg",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/01-2026/ad10013386041/listing-696571796.jpg",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/01-2026/ad10013386041/listing-1328756141.jpg",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/01-2026/ad10013386041/listing-648187969.jpg",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/01-2026/ad10013386041/listing-298945784.jpg",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/01-2026/ad10013386041/listing-1177027571.jpg",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/01-2026/ad10013386041/listing-2034722511.jpg",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/01-2026/ad10013386041/listing-1773932795.jpg",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/01-2026/ad10013386041/listing-1373813944.jpg",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/01-2026/ad10013386041/listing-2081355925.jpg",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/01-2026/ad10013386041/listing-1574714045.jpg",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/01-2026/ad10013386041/listing-1606043234.jpg",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/01-2026/ad10013386041/listing-1418412244.jpg",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/01-2026/ad10013386041/listing-1291473651.jpg",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/01-2026/ad10013386041/holis-homestay-exclusive-748621814.jpg",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/01-2026/ad10013386041/holis-homestay-exclusive-689376672.jpg",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/01-2026/ad10013386041/holis-homestay-exclusive-2097777541.jpg"
     ]
   },
   {
@@ -615,53 +670,6 @@
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/12-2025/ad200647/kost-pak-edwin-224094146_large.jpg",
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/12-2025/ad200647/kost-pak-edwin-224094146.jpg",
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/12-2025/ad200647/kost-pak-edwin-1858652773.jpg"
-    ]
-  },
-  {
-    "nama_kos": "Rumah kost Arra",
-    "harga": "Rp 600.000",
-    "telepon": "087770055675",
-    "alamat": "Jl. Sayuran I No.130, Gempolsari, Bandung Kulon.",
-    "fasilitas_kamar": [
-      "Spring Bed",
-      "Free WiFi"
-    ],
-    "fasilitas_bersama": [
-      "Dapur",
-      "Parkir Motor"
-    ],
-    "foto": [
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/12-2025/ad10067538441/rumah-kost-arra-1340006039_large.jpg",
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/12-2025/ad10067538441/rumah-kost-arra-1965377444.jpg",
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/12-2025/ad10067538441/rumah-kost-arra-1873807846.jpg",
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/12-2025/ad10067538441/rumah-kost-arra-1714409035.jpg",
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/12-2025/ad10067538441/rumah-kost-arra-902936201.jpg"
-    ]
-  },
-  {
-    "nama_kos": "Kos Moder Minimalis, Cibogo 25 C - Pasteur Sukajadi Bandung",
-    "harga": "Rp 9.000.000",
-    "telepon": "089655006979",
-    "alamat": "Jl. Cibogo Bawah no. 25 C, Pasteur - Sukajadi",
-    "fasilitas_kamar": [
-      "Spring Bed",
-      "Perabot",
-      "Free WiFi",
-      "Kamar Mandi Dalam"
-    ],
-    "fasilitas_bersama": [
-      "Spring Bed",
-      "Perabot",
-      "Free WiFi",
-      "Kamar Mandi Dalam"
-    ],
-    "foto": [
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/12-2025/ad10057000295/kos-moder-minimalis-cibogo-25-c-paste-1261267725_large.jpg",
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/12-2025/ad10057000295/kos-moder-minimalis-cibogo-25-c-pasteu-260080236.jpg",
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/12-2025/ad10057000295/kos-moder-minimalis-cibogo-25-c-paste-1158737554.jpg",
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/12-2025/ad10057000295/kos-moder-minimalis-cibogo-25-c-pasteu-442658989.jpg",
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/12-2025/ad10057000295/kos-moder-minimalis-cibogo-25-c-paste-1584657855.jpg",
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/12-2025/ad10057000295/kos-moder-minimalis-cibogo-25-c-pasteur-49990098.jpg"
     ]
   }
 ]
