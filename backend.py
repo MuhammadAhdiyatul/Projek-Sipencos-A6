@@ -31,8 +31,7 @@ class BackendManager:
             
         hasil_angka = int(angka_saja)
         
-        # LOGIKA PINTAR: Memperbaiki format "600rb" yang terpotong menjadi 600
-        # Jika angkanya di bawah 10.000 (tidak masuk akal untuk harga kos), otomatis kalikan 1000
+    
         if 0 < hasil_angka < 10000:
             hasil_angka *= 1000
             
