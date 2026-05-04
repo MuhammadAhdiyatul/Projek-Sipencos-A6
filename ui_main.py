@@ -152,44 +152,47 @@ class App(ctk.CTk):
         )
         self.btn_scrape.grid(row=0, column=0, sticky="ew", pady=(0, 10))
 
+        # Scrape status card (polished styling)
         self.scrape_log_card = ctk.CTkFrame(
             footer,
             fg_color="#F7FAFC",
             corner_radius=12,
             border_width=1,
-            border_color=BORDER_COLOR,
+            border_color="#E2E8F0",
         )
-        self.scrape_log_card.grid(row=1, column=0, sticky="ew", pady=(0, 10))
+        self.scrape_log_card.grid(row=1, column=0, sticky="ew", pady=(2, 12))
 
+        # Stronger section label
         self.scrape_log_title = ctk.CTkLabel(
             self.scrape_log_card,
             text="Last Scraped",
-            font=("Arial", 12, "bold"),
+            font=("Arial", 13, "bold"),
             text_color=PRIMARY_COLOR,
             anchor="w",
         )
-        self.scrape_log_title.pack(fill="x", padx=12, pady=(10, 2))
+        self.scrape_log_title.pack(fill="x", padx=14, pady=(12, 6))
 
+        # Emphasized timestamp (primary value)
         self.scrape_log_timestamp = ctk.CTkLabel(
             self.scrape_log_card,
             text="-",
-            font=("Arial", 12, "bold"),
-            text_color="#1F2937",
+            font=("Arial", 13, "bold"),
+            text_color=PRIMARY_COLOR,
             anchor="w",
+            justify="left",
         )
-        self.scrape_log_timestamp.pack(fill="x", padx=12, pady=(0, 2))
+        self.scrape_log_timestamp.pack(fill="x", padx=14, pady=(0, 6))
 
+        # Secondary summary (lighter than timestamp)
         self.scrape_log_summary = ctk.CTkLabel(
             self.scrape_log_card,
             text="No scraping activity yet",
             font=("Arial", 11),
-            text_color=TEXT_SUBTLE,
+            text_color="#4B5563",
             anchor="w",
             justify="left",
         )
-        self.scrape_log_summary.pack(fill="x", padx=12, pady=(0, 10))
-
-        self.refresh_scrape_log()
+        self.scrape_log_summary.pack(fill="x", padx=14, pady=(0, 12))
 
         helper = ctk.CTkLabel(
             footer,
@@ -201,6 +204,8 @@ class App(ctk.CTk):
         )
         helper.grid(row=2, column=0, sticky="ew")
 
+        self.refresh_scrape_log()
+
     def _get_scrape_log_data(self):
         try:
             data = self.get_scrape_log_callback()
@@ -210,14 +215,14 @@ class App(ctk.CTk):
         if not isinstance(data, dict):
             return get_scrape_status_text()
 
-        return {
-            "title": data.get("title", "Last Scraped"),
-            "timestamp": data.get("timestamp", "-"),
-            "summary": data.get("summary", "No scraping activity yet"),
-        }
+        return data
 
     def refresh_scrape_log(self):
-        log_data = self._get_scrape_log_data()
+        try:
+            log_data = self.get_scrape_log_callback()
+        except Exception:
+            log_data = get_scrape_status_text()
+
         self.scrape_log_title.configure(text=log_data.get("title", "Last Scraped"))
         self.scrape_log_timestamp.configure(text=log_data.get("timestamp", "-"))
         self.scrape_log_summary.configure(text=log_data.get("summary", "No scraping activity yet"))
@@ -618,8 +623,8 @@ class App(ctk.CTk):
             card = KosCard(
                 results_grid,
                 data_kos=item,
-                favorites_callback=self.favorites_callback,
-                compare_callback=self.compare_callback,
+                add_to_favorite=self.favorites_callback,
+                add_to_compare=self.compare_callback,
             )
             card.grid(row=row, column=col, padx=12, pady=12, sticky="n")
 
@@ -709,6 +714,9 @@ class App(ctk.CTk):
         self.btn_scrape.configure(text="Scraping...", state="disabled")
 
         # Clear current cards first so scraping feels like a true live refresh.
+        if not hasattr(self, "results_grid") or not hasattr(self, "label_summary"):
+            self.switch_page("search")
+
         for widget in self.results_grid.winfo_children():
             widget.destroy()
         self.label_summary.configure(text="Mengambil data terbaru...")
@@ -792,8 +800,8 @@ class App(ctk.CTk):
             card = KosCard(
                 self.results_grid,
                 data_kos=item,
-                favorites_callback=self.favorites_callback,
-                compare_callback=self.compare_callback,
+                add_to_favorite=self.favorites_callback,
+                add_to_compare=self.compare_callback,
             )
             card.grid(row=row, column=col, padx=12, pady=12, sticky="n")
 

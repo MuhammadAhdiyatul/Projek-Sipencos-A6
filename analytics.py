@@ -1,6 +1,7 @@
 #visualisasi dengan menampilkan 3 grafik : distrbusi harga, jumlah kosa per area, fasilitas menarik
 
 import json
+import os
 import re
 from collections import Counter
 import matplotlib.pyplot as plt
@@ -49,10 +50,57 @@ class KosAnalytics:
 
 
     def load_data(self) -> list: #baca data kos dari JSON
-        with open(self.path, "r", encoding="utf-8") as f:
-            data = json.load(f)
-        print(f" Data berhasil dimuat: {len(data)} kos")
-        return data
+        if not os.path.exists(self.path):
+            return []
+
+        try:
+            with open(self.path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            return data if isinstance(data, list) else []
+        except (json.JSONDecodeError, OSError):
+            return []
+
+    def _safe_counter_max(self, values: list) -> int:
+        if not values:
+            return 0
+        return max(values)
+
+    def get_summary_data(self) -> dict:
+        total = len(self.data)
+        if total == 0:
+            return {
+                "total": 0,
+                "avg_price": 0,
+                "top_area": "-",
+                "top_facility": "-",
+            }
+
+        prices = []
+        areas = []
+        facilities = []
+
+        for item in self.data:
+            price_value = self.ekstrak_harga(item.get("harga", "-"))
+            if price_value:
+                prices.append(price_value)
+
+            areas.append(self.ekstrak_area(item.get("alamat", "-")))
+
+            for key in ("fasilitas_kamar", "fasilitas_bersama"):
+                value = item.get(key, [])
+                if isinstance(value, list):
+                    facilities.extend([x for x in value if str(x).strip() and str(x).strip() != "-"])
+
+        top_area = Counter(areas).most_common(1)[0][0] if areas else "-"
+        top_facility = Counter(facilities).most_common(1)[0][0] if facilities else "-"
+        avg_price = int(sum(prices) / len(prices)) if prices else 0
+
+        return {
+            "total": total,
+            "avg_price": avg_price,
+            "top_area": top_area,
+            "top_facility": top_facility,
+        }
     
     def ekstrak_harga(self, harga_str: str): #mengubah string harga ke integer & mengembalikan ke none kalau format tidak dikenali
         if not harga_str or harga_str == "-":
@@ -106,7 +154,7 @@ class KosAnalytics:
             else:
                 rentang_count[4] +=1
 
-        maks = max(rentang_count)
+        maks = self._safe_counter_max(rentang_count)
         warna = [
             self.WARNA["orange"] if c == maks else self.WARNA["navy_muda"]
             for c in rentang_count
@@ -133,7 +181,7 @@ class KosAnalytics:
         ax.set_xlabel("Rentang Harga", fontsize=10, labelpad=8)
         ax.set_ylabel("Jumlah Kos", fontsize=10, labelpad=8)
         ax.yaxis.set_major_locator(mticker.MaxNLocator(integer=True))
-        ax.set_ylim(0, maks + 3)
+        ax.set_ylim(0, (maks + 3) if maks > 0 else 1)
         ax.spines[["top", "right"]].set_visible(False)
         ax.spines[["left", "bottom"]].set_color("#E5E7EB")
         ax.grid(axis="y", zorder=1)
@@ -150,10 +198,16 @@ class KosAnalytics:
         label = [item[0] for item in top]
         jumlah = [item[1] for item in top]
 
+        if not jumlah:
+            ax.text(0.5, 0.5, "Data belum tersedia", ha="center", va="center", transform=ax.transAxes)
+            ax.set_title("Jumlah Kos per Area", fontsize=11, fontweight="bold", pad=15, color=self.WARNA["navy"])
+            ax.axis("off")
+            return
+
         label.reverse()
         jumlah.reverse()
 
-        maks = max(jumlah)
+        maks = self._safe_counter_max(jumlah)
         warna = [self.WARNA["orange"] if j == maks else self.WARNA["navy_muda"]
                  for j in jumlah
         ]
@@ -198,8 +252,14 @@ class KosAnalytics:
  
         label  = [item[0] for item in top]
         jumlah = [item[1] for item in top]
+
+        if not jumlah:
+            ax.text(0.5, 0.5, "Data belum tersedia", ha="center", va="center", transform=ax.transAxes)
+            ax.set_title("Fasilitas Paling Umum", fontsize=11, fontweight="bold", pad=15, color=self.WARNA["navy"])
+            ax.axis("off")
+            return
  
-        maks  = max(jumlah)
+        maks  = self._safe_counter_max(jumlah)
         warna = [
             self.WARNA["orange"] if j == maks else self.WARNA["hijau"]
             for j in jumlah
@@ -225,16 +285,14 @@ class KosAnalytics:
         ax.set_xlabel("Fasilitas", fontsize=10, labelpad=8)
         ax.set_ylabel("Jumlah Kos", fontsize=10, labelpad=8)
         ax.yaxis.set_major_locator(mticker.MaxNLocator(integer=True))
-        ax.set_ylim(0, maks + 3)
+        ax.set_ylim(0, (maks + 3) if maks > 0 else 1)
         ax.spines[["top", "right"]].set_visible(False)
         ax.spines[["left", "bottom"]].set_color("#E5E7EB")
         ax.grid(axis="y", zorder=1)
         plt.setp(ax.get_xticklabels(), rotation=30, ha="right", fontsize=9)
  
-    def tampilkan_analytics(self) -> None: #method utama
-        print("\n" + "=" * 55)
-        print("  Analitik Data Kos Bandung — KosFinder")
-        print("=" * 55)
+    def generate_chart(self, show=False) -> str:
+        os.makedirs(os.path.dirname(self.OUTPUT_PATH), exist_ok=True)
  
         fig, axes = plt.subplots(1, 3, figsize=(20, 7))
  
@@ -260,8 +318,19 @@ class KosAnalytics:
             bbox_inches="tight",
             facecolor=self.WARNA["abu"]
         )
-        print(f"\n  Grafik disimpan: {self.OUTPUT_PATH}")
-        plt.show()
+        if show:
+            plt.show()
+        else:
+            plt.close(fig)
+
+        return self.OUTPUT_PATH
+
+    def tampilkan_analytics(self) -> None: #method utama
+        print("\n" + "=" * 55)
+        print("  Analitik Data Kos Bandung — KosFinder")
+        print("=" * 55)
+        output_path = self.generate_chart(show=True)
+        print(f"\n  Grafik disimpan: {output_path}")
  
 if __name__ == "__main__":
     analytics = KosAnalytics()         
