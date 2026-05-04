@@ -31,7 +31,7 @@ class BackendManager:
             
         hasil_angka = int(angka_saja)
         
-    
+        
         if 0 < hasil_angka < 10000:
             hasil_angka *= 1000
             
