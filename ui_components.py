@@ -1,153 +1,295 @@
-import customtkinter as ctk
-import os
-import json
+﻿import customtkinter as ctk
+from io import BytesIO
+from urllib.request import urlopen
 
-# --- PAKSA TEMA TERANG ---
+try:
+    from PIL import Image
+except Exception:
+    Image = None
+
+# Force light mode for consistent dashboard look
 ctk.set_appearance_mode("Light")
 ctk.set_default_color_theme("blue")
 
-# --- KONFIGURASI STYLING ---
+PRIMARY_COLOR = "#002B49"
+ACCENT_COLOR = "#C96A28"
+APP_BG = "#F0F2F5"
+CARD_BG = "#FFFFFF"
+BORDER_COLOR = "#E7EAF0"
+TEXT_SUBTLE = "#6F7C85"
+IMAGE_BG = "#E9EDF3"
+TITLE_COLOR = "#1B2630"
+
+_IMAGE_CACHE = {}
+
+
+def _format_price(value):
+    if isinstance(value, (int, float)):
+        return f"Rp {int(value):,}".replace(",", ".")
+
+    if isinstance(value, str):
+        text = value.strip()
+        return text if text else "-"
+
+    return "-"
+
+
+def _safe_text(value, fallback="-"):
+    if value is None:
+        return fallback
+
+    text = str(value).strip()
+    return text if text else fallback
+
+
+def _normalize_foto(value):
+    if isinstance(value, list):
+        return [str(url).strip() for url in value if str(url).strip()]
+
+    if isinstance(value, str):
+        return [part.strip() for part in value.split(",") if part.strip()]
+
+    return []
+
+
+def _to_facility_text(fasilitas):
+    if isinstance(fasilitas, list):
+        items = [str(item).strip() for item in fasilitas if str(item).strip()]
+        return " • ".join(items[:3]) if items else "-"
+
+    if isinstance(fasilitas, str):
+        text = fasilitas.strip()
+        return text if text else "-"
+
+    return "-"
+
+
+def _load_remote_image(url, size):
+    if not url or Image is None:
+        return None
+
+    cache_key = (url, size)
+    if cache_key in _IMAGE_CACHE:
+        return _IMAGE_CACHE[cache_key]
+
+    try:
+        with urlopen(url, timeout=8) as response:
+            raw = response.read()
+        pil_image = Image.open(BytesIO(raw)).convert("RGB")
+        image = ctk.CTkImage(light_image=pil_image, dark_image=pil_image, size=size)
+        _IMAGE_CACHE[cache_key] = image
+        return image
+    except Exception:
+        return None
+
+ctk.set_appearance_mode("Light")
+ctk.set_default_color_theme("blue")
+
 PRIMARY_COLOR = "#002B49"   # Biru gelap elegan
 TEXT_SUBTLE = "#6F7C85"     # Abu-abu untuk alamat
 CARD_BG = "#FFFFFF"         # Putih bersih untuk Card
 APP_BG = "#F0F2F5"          # Abu-abu sangat muda untuk background utama
 
-class DetailWindow(ctk.CTkToplevel):
-    def __init__(self, parent, data_kos, *args, **kwargs):
-        super().__init__(parent, *args, **kwargs)
-        
-        self.title(f"Detail - {data_kos.get('nama_kos', 'Kos')}")
-        self.geometry("450x600")
-        self.attributes("-topmost", True)
-        self.configure(fg_color=CARD_BG) # Paksa background putih
-
-        # 1. Header Judul
-        self.label_title = ctk.CTkLabel(
-            self, 
-            text=data_kos.get('nama_kos', 'N/A'), 
-            font=("Arial", 20, "bold"),
-            text_color=PRIMARY_COLOR,
-            wraplength=400,
-            justify="center"
-        )
-        self.label_title.pack(pady=(25, 15), padx=20)
-
-        # 2. Kotak Info
-        self.info_text = ctk.CTkTextbox(
-            self, 
-            width=400, 
-            height=380, 
-            fg_color="#F8F9FA",   # Background textbox abu muda
-            text_color="#333333", # Teks gelap
-            font=("Arial", 14),
-            corner_radius=10
-        )
-        self.info_text.pack(pady=10, padx=20)
-
-        # 3. Merapikan Data dari JSON
-        fasilitas_kamar = ", ".join(data_kos.get('fasilitas_kamar', ['-']))
-        fasilitas_bersama = ", ".join(data_kos.get('fasilitas_bersama', ['-']))
-        harga = data_kos.get('harga', '-')
-        
-        content = (
-            f"💰 Harga: {harga}\n"
-            f"📍 Alamat: {data_kos.get('alamat', '-')}\n"
-            f"📞 Telepon: {data_kos.get('telepon', '-')}\n"
-            f"----------------------------------------\n"
-            f"✨ Fasilitas Kamar:\n{fasilitas_kamar}\n\n"
-            f"🏠 Fasilitas Bersama:\n{fasilitas_bersama}\n"
-        )
-        
-        self.info_text.insert("0.0", content)
-        self.info_text.configure(state="disabled") # Buat jadi Read-Only
-
-        # 4. Tombol Tutup
-        self.btn_close = ctk.CTkButton(
-            self, text="Tutup", 
-            fg_color=PRIMARY_COLOR, 
-            command=self.destroy
-        )
-        self.btn_close.pack(pady=15)
-
 class KosCard(ctk.CTkFrame):
-    def __init__(self, master, data_kos, **kwargs):
-        # Frame Card Putih dengan border tipis
-        super().__init__(master, fg_color=CARD_BG, corner_radius=15, border_width=1, border_color="#E0E0E0", **kwargs)
-        
+    def __init__(
+        self,
+        master,
+        data_kos,
+        add_to_favorite=None,
+        add_to_compare=None,
+        open_detail=None,
+        is_favorite=False,
+        is_compared=False,
+        **kwargs,
+    ):
+        super().__init__(
+            master,
+            fg_color=CARD_BG,
+            corner_radius=16,
+            border_width=1,
+            border_color=BORDER_COLOR,
+            width=320,
+            **kwargs,
+        )
+        self.data_kos = data_kos
+        self.add_to_favorite = add_to_favorite
+        self.add_to_compare = add_to_compare
+        self.open_detail = open_detail
+        self.is_favorite = is_favorite
+        self.is_compared = is_compared
+
         self.grid_columnconfigure(0, weight=1)
-        self.grid_columnconfigure(1, weight=0)
 
-        # 1. Judul Kos
-        self.label_nama = ctk.CTkLabel(
-            self, 
-            text=data_kos.get('nama_kos', 'Nama tidak tersedia'), 
-            font=("Arial", 16, "bold"), 
+        nama_kos = _safe_text(data_kos.get("nama_kos") or data_kos.get("nama"), "Kos Tanpa Nama")
+        alamat = _safe_text(data_kos.get("alamat") or data_kos.get("lokasi"), "Lokasi tidak tersedia")
+        harga = _format_price(data_kos.get("harga"))
+        tipe = _safe_text(data_kos.get("tipe"), "PUTRA").upper()
+        fasilitas_ringkas = _to_facility_text(data_kos.get("fasilitas_kamar"))
+        foto_list = _normalize_foto(data_kos.get("foto"))
+
+        image_box = ctk.CTkFrame(
+            self,
+            fg_color=IMAGE_BG,
+            corner_radius=14,
+            height=150,
+            border_width=0,
+        )
+        image_box.grid(row=0, column=0, sticky="ew", padx=10, pady=(10, 8))
+        image_box.grid_propagate(False)
+        image_box.grid_columnconfigure(0, weight=1)
+
+        overlay = ctk.CTkFrame(image_box, fg_color="transparent")
+        overlay.grid(row=0, column=0, sticky="ew", padx=10, pady=10)
+        overlay.grid_columnconfigure(0, weight=1)
+
+        badge = ctk.CTkLabel(
+            overlay,
+            text="PUTRI" if "PUTRI" in tipe else "PUTRA",
+            fg_color=ACCENT_COLOR,
+            text_color="white",
+            corner_radius=8,
+            font=("Arial", 11, "bold"),
+            width=56,
+            height=24,
+        )
+        badge.grid(row=0, column=0, sticky="w")
+
+        favorite_icon = "❤️" if self.is_favorite else "♡"
+        favorite_btn = ctk.CTkButton(
+            overlay,
+            text=favorite_icon,
+            width=30,
+            height=30,
+            corner_radius=999,
+            fg_color=CARD_BG,
             text_color=PRIMARY_COLOR,
-            wraplength=350,
-            justify="left"
+            hover_color="#EEF2F7",
+            border_width=1,
+            border_color=BORDER_COLOR,
+            font=("Arial", 14, "bold"),
+            command=self._on_save_favorite,
         )
-        self.label_nama.grid(row=0, column=0, columnspan=2, pady=(15, 2), padx=20, sticky="w")
+        favorite_btn.grid(row=0, column=1, sticky="e")
 
-        # 2. Alamat
-        self.label_alamat = ctk.CTkLabel(
-            self, 
-            text=f"📍 {data_kos.get('alamat', '-')}", 
-            font=("Arial", 12), 
+        thumbnail = _load_remote_image(foto_list[0] if foto_list else "", (296, 150))
+        if thumbnail:
+            image_label = ctk.CTkLabel(image_box, text="", image=thumbnail)
+            image_label.image = thumbnail
+            image_label.grid(row=0, column=0, rowspan=2, sticky="nsew")
+        else:
+            no_image = ctk.CTkLabel(
+                image_box,
+                text="No Image",
+                font=("Arial", 12),
+                text_color=TEXT_SUBTLE,
+            )
+            no_image.grid(row=1, column=0, pady=(24, 0))
+
+        content = ctk.CTkFrame(self, fg_color="transparent")
+        content.grid(row=1, column=0, sticky="ew", padx=14, pady=(0, 12))
+        content.grid_columnconfigure(0, weight=1)
+
+        title = ctk.CTkLabel(
+            content,
+            text=nama_kos,
+            font=("Arial", 16, "bold"),
+            text_color=PRIMARY_COLOR,
+            justify="left",
+            anchor="w",
+            wraplength=272,
+        )
+        title.grid(row=0, column=0, sticky="ew")
+
+        location = ctk.CTkLabel(
+            content,
+            text=alamat,
+            font=("Arial", 12),
             text_color=TEXT_SUBTLE,
-            wraplength=350,
-            justify="left"
+            justify="left",
+            anchor="w",
+            wraplength=272,
         )
-        self.label_alamat.grid(row=1, column=0, columnspan=2, padx=20, pady=(0, 10), sticky="w")
+        location.grid(row=1, column=0, sticky="ew", pady=(3, 8))
 
-        # 3. Harga
-        self.label_harga = ctk.CTkLabel(
-            self, 
-            text=data_kos.get('harga', 'Harga N/A'), 
-            font=("Arial", 18, "bold"), 
-            text_color="#222222"
+        facilities = ctk.CTkLabel(
+            content,
+            text=fasilitas_ringkas,
+            font=("Arial", 11),
+            text_color="#4B5563",
+            anchor="w",
+            justify="left",
+            wraplength=272,
         )
-        self.label_harga.grid(row=2, column=0, padx=20, pady=(0, 15), sticky="w")
+        facilities.grid(row=2, column=0, sticky="ew", pady=(0, 10))
 
-        # 4. Tombol Detail
-        self.btn_detail = ctk.CTkButton(
-            self, text="Lihat Detail", 
-            fg_color="transparent", border_color=PRIMARY_COLOR, 
-            border_width=2, text_color=PRIMARY_COLOR, 
-            command=lambda: DetailWindow(self, data_kos)
+        price_row = ctk.CTkFrame(content, fg_color="transparent")
+        price_row.grid(row=3, column=0, sticky="ew", pady=(0, 10))
+        price_row.grid_columnconfigure(0, weight=1)
+
+        price = ctk.CTkLabel(
+            price_row,
+            text=harga,
+            font=("Arial", 20, "bold"),
+            text_color=TITLE_COLOR,
+            anchor="w",
         )
-        self.btn_detail.grid(row=2, column=1, padx=20, pady=(0, 15), sticky="e")
+        price.grid(row=0, column=0, sticky="w")
 
-# --- MAIN RUNNER (Integrasi dengan data_kos.json) ---
-if __name__ == "__main__":
-    root = ctk.CTk()
-    root.geometry("600x800")
-    root.title("SiPencos - Frontend Preview")
-    root.configure(fg_color=APP_BG) # Background aplikasi abu-abu muda
+        per_month = ctk.CTkLabel(
+            price_row,
+            text="/ bulan",
+            font=("Arial", 11),
+            text_color=TEXT_SUBTLE,
+            anchor="w",
+        )
+        per_month.grid(row=1, column=0, sticky="w")
 
-    # Area Scrollable untuk nampung banyak data
-    scroll_frame = ctk.CTkScrollableFrame(root, fg_color="transparent")
-    scroll_frame.pack(pady=20, padx=20, fill="both", expand=True)
+        button_row = ctk.CTkFrame(content, fg_color="transparent")
+        button_row.grid(row=4, column=0, sticky="ew")
+        button_row.grid_columnconfigure(0, weight=1)
+        button_row.grid_columnconfigure(1, weight=1)
 
-    # Path menuju file JSON hasil scraping
-    json_path = os.path.join("output_dataKos", "data_kos.json")
+        btn_detail = ctk.CTkButton(
+            button_row,
+            text="Detail",
+            fg_color=PRIMARY_COLOR,
+            hover_color="#013A62",
+            text_color="white",
+            corner_radius=10,
+            height=38,
+            font=("Arial", 12, "bold"),
+            command=self._on_detail,
+        )
+        btn_detail.grid(row=0, column=0, sticky="ew", padx=(0, 8))
 
-    # Mengecek keberadaan file dan membuat card
-    if os.path.exists(json_path):
-        try:
-            with open(json_path, "r", encoding="utf-8") as f:
-                data_list = json.load(f)
-                
-            for item in data_list:
-                card = KosCard(scroll_frame, item)
-                card.pack(pady=10, fill="x")
-                
-        except Exception as e:
-            ctk.CTkLabel(scroll_frame, text=f"Error baca JSON: {e}", text_color="red").pack()
-    else:
-        ctk.CTkLabel(
-            scroll_frame, 
-            text="File data_kos.json tidak ditemukan.\nPastikan Scraping.py sudah dijalankan!", 
-            text_color="red", font=("Arial", 14)
-        ).pack(pady=50)
+        compare_label = "✓ Bandingkan" if self.is_compared else "Bandingkan"
+        btn_compare = ctk.CTkButton(
+            button_row,
+            text=compare_label,
+            fg_color=ACCENT_COLOR,
+            hover_color="#B45E24",
+            text_color="white",
+            corner_radius=10,
+            height=38,
+            font=("Arial", 12, "bold"),
+            command=self._on_compare,
+        )
+        btn_compare.grid(row=0, column=1, sticky="ew")
 
-    root.mainloop()
+    def _on_save_favorite(self):
+        if callable(self.add_to_favorite):
+            self.add_to_favorite(self.data_kos)
+        else:
+            print("[WARNING] add_to_favorite callback is not set")
+
+    def _on_compare(self):
+        if callable(self.add_to_compare):
+            self.add_to_compare(self.data_kos)
+        else:
+            print("[WARNING] add_to_compare callback is not set")
+
+    def _on_detail(self):
+        if callable(self.open_detail):
+            self.open_detail(self.data_kos)
+        else:
+            print("[WARNING] open_detail callback is not set")
