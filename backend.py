@@ -15,10 +15,10 @@ class BackendManager:
         try:
             with open(filepath, "r", encoding="utf-8") as f:
                 self.data_kos = json.load(f)
-            print(f"[Backend Inffo] Beerhasil memuuat {len(self.data_kos)} data kos dari json.")
+            print(f"[Backend Info] Berhasil memuat {len(self.data_kos)} data kos dari json.")
         except FileNotFoundError:
-            print("[Backend eror] File data_kos.json tidak ditemukan!")
-            print("Pastikan Scraper.py sudah dijalankan dan foldearnya beanr.")
+            print("[Backend Error] File data_kos.json tidak ditemukan!")
+            print("Pastikan Scraper.py sudah dijalankan dan foldernya benar.")
     
     def bersihkan_harga(self, harga_str):
         """Untuk mengubah teks harga menjadi angka agar bisa di filter, contoh: "Rp 1.500.000/bulan" menjadi 1500000"""
@@ -29,7 +29,7 @@ class BackendManager:
         return int(angka_saja) if angka_saja else 0
     
     def cari_kos(self, keyword="", harga_maks=None):
-        """Berfungsi untuk mencari berdasarkan nama/alamat, dan batas harga mnaksimalnya"""
+        """Berfungsi untuk mencari berdasarkan nama/alamat, dan batas harga maksimalnya"""
         hasil_pencarian = []
 
         for kos in self.data_kos:
