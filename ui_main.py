@@ -1,4 +1,6 @@
 import customtkinter as ctk
+from compare import CompareManager
+from favorites import FavoritesWindow
 from ui_components import KosCard
 from threading_handler import ThreadingHandler
 
@@ -18,16 +20,36 @@ TEXT_SUBTLE = "#6F7C85"
 
 
 class App(ctk.CTk):
-    def __init__(self, search_callback=None, get_all_callback=None, scrape_callback=None):
+    def __init__(
+        self,
+        search_callback=None,
+        get_all_callback=None,
+        scrape_callback=None,
+        favorites_callback=None,
+        get_favorites_callback=None,
+        remove_favorite_callback=None,
+        compare_callback=None,
+        get_compare_callback=None,
+    ):
         super().__init__()
 
         # Keep backend callback compatibility.
         self.search_callback = search_callback
         self.get_all_callback = get_all_callback
         self.scrape_callback = scrape_callback
+        self.favorites_callback = favorites_callback
+        self.get_favorites_callback = get_favorites_callback
+        self.remove_favorite_callback = remove_favorite_callback
+        self.compare_callback = compare_callback
+        self.get_compare_callback = get_compare_callback
         self._current_results = []
         self._last_action = "default"
         self.thread_handler = ThreadingHandler(self)
+        
+        # Navigation state
+        self.active_menu = "search"
+        self.menu_buttons = {}
+        self.compare_manager = CompareManager()
 
         # Main window
         self.title("SiPencos - Sistem Pencari Kos")
@@ -43,14 +65,13 @@ class App(ctk.CTk):
         self.setup_sidebar()
         self.setup_main_area()
 
-        # Load initial data
-        if self.get_all_callback:
-            self.display_data(self.get_all_callback())
+        # Load initial data - render search page
+        self.render_search_page()
 
     def setup_sidebar(self):
         self.sidebar = ctk.CTkFrame(
             self,
-            width=260,
+            width=240,
             corner_radius=0,
             fg_color=CARD_BG,
             border_width=0,
@@ -59,7 +80,7 @@ class App(ctk.CTk):
         self.sidebar.grid_propagate(False)
 
         shell = ctk.CTkFrame(self.sidebar, fg_color="transparent")
-        shell.pack(fill="both", expand=True, padx=22, pady=24)
+        shell.pack(fill="both", expand=True, padx=20, pady=24)
 
         logo = ctk.CTkLabel(
             shell,
@@ -82,24 +103,34 @@ class App(ctk.CTk):
         menu_container = ctk.CTkFrame(shell, fg_color="transparent")
         menu_container.pack(fill="x", pady=(8, 12))
 
-        menu_items = ["Search", "Analytics", "Compare", "Favorites", "History", "Settings"]
-        for item in menu_items:
-            is_active = item == "Search"
+        menu_items = [
+            ("🔍 Search", "search"),
+            ("📊 Analytics", "analytics"),
+            ("⚖️ Compare", "compare"),
+            ("❤️ Favorites", "favorites"),
+            ("🕘 History", "history"),
+            ("⚙️ Settings", "settings"),
+        ]
+        
+        for label, page_name in menu_items:
+            is_active = page_name == "search"
             button = ctk.CTkButton(
                 menu_container,
-                text=item,
-                height=38,
-                corner_radius=12,
+                text=label,
+                height=45,
+                corner_radius=10,
                 anchor="w",
                 font=("Arial", 13, "bold" if is_active else "normal"),
                 text_color=PRIMARY_COLOR if is_active else "#2F3B45",
                 fg_color="#EAF1F7" if is_active else "transparent",
-                hover_color="#EAF1F7",
+                hover_color="#E5E7EB",
+                active_color="#DDE6F2",
                 border_width=1 if is_active else 0,
                 border_color=BORDER_COLOR,
-                command=lambda: None,
+                command=lambda p=page_name: self.switch_page(p),
             )
             button.pack(fill="x", pady=4)
+            self.menu_buttons[page_name] = button
 
         cta = ctk.CTkButton(
             shell,
@@ -125,12 +156,71 @@ class App(ctk.CTk):
         )
         helper.pack(side="bottom", fill="x", pady=(0, 10))
 
+    def switch_page(self, page_name):
+        """Route to different pages based on page_name."""
+        self.active_menu = page_name
+        
+        # Update button states
+        for name, button in self.menu_buttons.items():
+            is_active = name == page_name
+            button.configure(
+                fg_color="#EAF1F7" if is_active else "transparent",
+                text_color=PRIMARY_COLOR if is_active else "#2F3B45",
+                font=("Arial", 13, "bold" if is_active else "normal"),
+                border_width=1 if is_active else 0,
+            )
+        
+        # Clear main content and render appropriate page
+        self.clear_main_content()
+
+        if page_name == "search":
+            self.render_search_page()
+        elif page_name == "compare":
+            self.render_compare_page()
+        elif page_name == "favorites":
+            self.render_favorites_page()
+        elif page_name == "analytics":
+            self.render_analytics_page()
+        elif page_name == "history":
+            self.render_history_page()
+        elif page_name == "settings":
+            self.render_settings_page()
+
+    def clear_main_content(self):
+        """Clear all widgets from main_frame."""
+        for widget in self.main_frame.winfo_children():
+            widget.destroy()
+
+    def open_favorites(self):
+        if not self.get_favorites_callback:
+            print("[WARNING] Favorites callback not set")
+            return
+
+        FavoritesWindow(self, self)
+
+    def get_all_favorites(self):
+        if callable(self.get_favorites_callback):
+            return self.get_favorites_callback()
+        return []
+
+    def remove_favorite(self, kos_item):
+        if callable(self.remove_favorite_callback):
+            return self.remove_favorite_callback(kos_item)
+
+        print("[WARNING] remove_favorite_callback is not set")
+        return False
+
     def setup_main_area(self):
         self.main_frame = ctk.CTkFrame(self, fg_color="transparent")
         self.main_frame.grid(row=0, column=1, sticky="nsew", padx=24, pady=20)
         self.main_frame.grid_rowconfigure(4, weight=1)
         self.main_frame.grid_columnconfigure(0, weight=1)
 
+
+    def render_search_page(self):
+        """Render the search page with hero section and results grid."""
+        self.main_frame.grid_rowconfigure(4, weight=1)
+        
         self.top_nav = ctk.CTkFrame(self.main_frame, fg_color="transparent")
         self.top_nav.grid(row=0, column=0, sticky="ew")
         self.top_nav.grid_columnconfigure(0, weight=1)
@@ -192,7 +282,7 @@ class App(ctk.CTk):
         self.entry_search = ctk.CTkEntry(
             search_row,
             placeholder_text="Masukkan wilayah, kecamatan, atau kota...",
-            height=52,
+            height=50,
             corner_radius=14,
             fg_color=CARD_BG,
             border_width=1,
@@ -208,7 +298,7 @@ class App(ctk.CTk):
             search_row,
             text="Cari Kos",
             width=150,
-            height=52,
+            height=50,
             fg_color=ACCENT_COLOR,
             hover_color="#B45E24",
             text_color="white",
@@ -228,7 +318,6 @@ class App(ctk.CTk):
             ("AC", False),
             ("KM Dalam", False),
             ("Parkir", False),
-            ("Sort by Lowest Price", False),
         ]
         for label, is_active in filters:
             chip = ctk.CTkButton(
@@ -279,6 +368,252 @@ class App(ctk.CTk):
 
         for col in range(3):
             self.results_grid.grid_columnconfigure(col, weight=1, uniform="cards")
+        
+        # Load initial data
+        if self.get_all_callback:
+            self.display_data(self.get_all_callback())
+
+    def render_compare_page(self):
+        """Render the compare page in the main content area."""
+        # Title
+        title_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
+        title_frame.grid(row=0, column=0, sticky="ew", pady=(0, 20))
+
+        title = ctk.CTkLabel(
+            title_frame,
+            text="Perbandingan Kos",
+            font=("Arial", 36, "bold"),
+            text_color=PRIMARY_COLOR,
+            anchor="w",
+        )
+        title.pack(fill="x")
+
+        # Get compare items
+        compare_items = self.get_compare_callback() or [] if self.get_compare_callback else []
+
+        if not compare_items:
+            # Empty state
+            empty_container = ctk.CTkFrame(self.main_frame, fg_color="transparent")
+            empty_container.grid(row=1, column=0, sticky="nsew", pady=100)
+
+            empty_label = ctk.CTkLabel(
+                empty_container,
+                text="Belum ada kos yang dibandingkan",
+                font=("Arial", 18, "bold"),
+                text_color=TEXT_SUBTLE,
+                anchor="center",
+            )
+            empty_label.pack()
+
+            back_button = ctk.CTkButton(
+                empty_container,
+                text="← Kembali ke Search",
+                width=200,
+                height=40,
+                fg_color=ACCENT_COLOR,
+                hover_color="#B45E24",
+                text_color="white",
+                corner_radius=10,
+                font=("Arial", 12, "bold"),
+                command=lambda: self.switch_page("search"),
+            )
+            back_button.pack(pady=20)
+        else:
+            # Show comparison table
+            content_frame = ctk.CTkFrame(
+                self.main_frame,
+                fg_color=CARD_BG,
+                corner_radius=16,
+                border_width=1,
+                border_color=BORDER_COLOR,
+            )
+            content_frame.grid(row=1, column=0, sticky="nsew", pady=(0, 20))
+
+            # Build comparison table
+            scroll_frame = ctk.CTkScrollableFrame(
+                content_frame,
+                fg_color="transparent",
+                corner_radius=0,
+            )
+            scroll_frame.pack(fill="both", expand=True, padx=10, pady=10)
+
+            # Header row with kos names
+            header_frame = ctk.CTkFrame(scroll_frame, fg_color=CARD_BG)
+            header_frame.pack(fill="x", padx=8, pady=8)
+
+            ctk.CTkLabel(
+                header_frame,
+                text="Fitur",
+                font=("Arial", 12, "bold"),
+                text_color=PRIMARY_COLOR,
+                width=150,
+            ).pack(side="left", padx=5)
+
+            for kos in compare_items:
+                kos_name = kos.get("nama_kos") or kos.get("nama") or "Kos"
+                ctk.CTkLabel(
+                    header_frame,
+                    text=kos_name[:15],
+                    font=("Arial", 11, "bold"),
+                    text_color=PRIMARY_COLOR,
+                    width=120,
+                ).pack(side="left", padx=5)
+
+            # Comparison fields
+            fields = [
+                ("Harga", "harga"),
+                ("Alamat", "alamat"),
+                ("Tipe", "tipe"),
+                ("WiFi", "wifi"),
+                ("AC", "ac"),
+                ("Fasilitas Kamar", "fasilitas_kamar"),
+            ]
+
+            for field_label, field_key in fields:
+                row_frame = ctk.CTkFrame(scroll_frame, fg_color="transparent")
+                row_frame.pack(fill="x", padx=8, pady=4)
+
+                ctk.CTkLabel(
+                    row_frame,
+                    text=field_label,
+                    font=("Arial", 11),
+                    text_color="#2F3B45",
+                    width=150,
+                ).pack(side="left", padx=5)
+
+                for kos in compare_items:
+                    value = kos.get(field_key) or "-"
+                    if isinstance(value, list):
+                        value = ", ".join(str(v) for v in value)
+                    ctk.CTkLabel(
+                        row_frame,
+                        text=str(value)[:20],
+                        font=("Arial", 10),
+                        text_color=TEXT_SUBTLE,
+                        width=120,
+                    ).pack(side="left", padx=5)
+
+            # Back button
+            button_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
+            button_frame.grid(row=2, column=0, sticky="ew")
+
+            back_button = ctk.CTkButton(
+                button_frame,
+                text="← Kembali ke Search",
+                width=200,
+                height=40,
+                fg_color=ACCENT_COLOR,
+                hover_color="#B45E24",
+                text_color="white",
+                corner_radius=10,
+                font=("Arial", 12, "bold"),
+                command=lambda: self.switch_page("search"),
+            )
+            back_button.pack(side="left", padx=0, pady=0)
+
+    def render_favorites_page(self):
+        """Render the favorites page."""
+        title_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
+        title_frame.grid(row=0, column=0, sticky="ew", pady=(0, 20))
+
+        title = ctk.CTkLabel(
+            title_frame,
+            text="❤️ Favorit Saya",
+            font=("Arial", 36, "bold"),
+            text_color=PRIMARY_COLOR,
+            anchor="w",
+        )
+        title.pack(fill="x")
+
+        # Get favorites
+        favorites = self.get_all_favorites()
+
+        if not favorites:
+            empty_label = ctk.CTkLabel(
+                self.main_frame,
+                text="Belum ada kos favorit",
+                font=("Arial", 18, "bold"),
+                text_color=TEXT_SUBTLE,
+            )
+            empty_label.grid(row=1, column=0, sticky="nsew", pady=100)
+            return
+
+        # Create grid for favorites
+        results_grid = ctk.CTkFrame(self.main_frame, fg_color="transparent")
+        results_grid.grid(row=1, column=0, sticky="nsew")
+
+        for col in range(3):
+            results_grid.grid_columnconfigure(col, weight=1, uniform="cards")
+
+        for index, item in enumerate(favorites):
+            row = index // 3
+            col = index % 3
+
+            card = KosCard(
+                results_grid,
+                data_kos=item,
+                favorites_callback=self.favorites_callback,
+                compare_callback=self.compare_callback,
+            )
+            card.grid(row=row, column=col, padx=12, pady=12, sticky="n")
+
+    def render_analytics_page(self):
+        """Render the analytics page."""
+        title = ctk.CTkLabel(
+            self.main_frame,
+            text="📊 Analytics",
+            font=("Arial", 36, "bold"),
+            text_color=PRIMARY_COLOR,
+            anchor="w",
+        )
+        title.grid(row=0, column=0, sticky="ew", pady=(0, 20))
+
+        placeholder = ctk.CTkLabel(
+            self.main_frame,
+            text="Halaman Analytics akan segera hadir",
+            font=("Arial", 16),
+            text_color=TEXT_SUBTLE,
+        )
+        placeholder.grid(row=1, column=0, sticky="nsew", pady=100)
+
+    def render_history_page(self):
+        """Render the history page."""
+        title = ctk.CTkLabel(
+            self.main_frame,
+            text="🕘 Riwayat Pencarian",
+            font=("Arial", 36, "bold"),
+            text_color=PRIMARY_COLOR,
+            anchor="w",
+        )
+        title.grid(row=0, column=0, sticky="ew", pady=(0, 20))
+
+        placeholder = ctk.CTkLabel(
+            self.main_frame,
+            text="Halaman Riwayat akan segera hadir",
+            font=("Arial", 16),
+            text_color=TEXT_SUBTLE,
+        )
+        placeholder.grid(row=1, column=0, sticky="nsew", pady=100)
+
+    def render_settings_page(self):
+        """Render the settings page."""
+        title = ctk.CTkLabel(
+            self.main_frame,
+            text="⚙️ Pengaturan",
+            font=("Arial", 36, "bold"),
+            text_color=PRIMARY_COLOR,
+            anchor="w",
+        )
+        title.grid(row=0, column=0, sticky="ew", pady=(0, 20))
+
+        placeholder = ctk.CTkLabel(
+            self.main_frame,
+            text="Halaman Pengaturan akan segera hadir",
+            font=("Arial", 16),
+            text_color=TEXT_SUBTLE,
+        )
+        placeholder.grid(row=1, column=0, sticky="nsew", pady=100)
+
 
     def _circle_icon(self, master, text, size=32, fg=CARD_BG, text_color=PRIMARY_COLOR):
         return ctk.CTkLabel(
@@ -386,7 +721,12 @@ class App(ctk.CTk):
             row = index // 3
             col = index % 3
 
-            card = KosCard(self.results_grid, data_kos=item)
+            card = KosCard(
+                self.results_grid,
+                data_kos=item,
+                favorites_callback=self.favorites_callback,
+                compare_callback=self.compare_callback,
+            )
             card.grid(row=row, column=col, padx=12, pady=12, sticky="n")
 
 

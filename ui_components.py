@@ -1,4 +1,4 @@
-import customtkinter as ctk
+﻿import customtkinter as ctk
 from io import BytesIO
 from urllib.request import urlopen
 
@@ -6,7 +6,6 @@ try:
     from PIL import Image
 except Exception:
     Image = None
-
 
 # Force light mode for consistent dashboard look
 ctk.set_appearance_mode("Light")
@@ -98,23 +97,13 @@ def _load_remote_image(url, size):
     except Exception:
         return None
 
-ctk.set_appearance_mode("Light")
-ctk.set_default_color_theme("blue")
-
-PRIMARY_COLOR = "#002B49"   # Biru gelap elegan
-TEXT_SUBTLE = "#6F7C85"     # Abu-abu untuk alamat
-CARD_BG = "#FFFFFF"         # Putih bersih untuk Card
-APP_BG = "#F0F2F5"          # Abu-abu sangat muda untuk background utama
-
 class DetailWindow(ctk.CTkToplevel):
     def __init__(self, parent, data_kos, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
 
-        # --- 1. FIX JENDELA KAKU & FOKUS ---
         self.transient(parent)
         self.after(10, self.grab_set) 
 
-        # --- 2. EKSTRAKSI DATA ---
         nama = _safe_text(data_kos.get("nama_kos"), "Kos")
         harga = _format_price(data_kos.get("harga"))
         alamat = _safe_text(data_kos.get("alamat"))
@@ -133,11 +122,9 @@ class DetailWindow(ctk.CTkToplevel):
         
         w, h = 950, 700
         
-        # Mengambil ukuran layar monitor secara langsung (Foolproof)
         screen_w = self.winfo_screenwidth()
         screen_h = self.winfo_screenheight()
         
-        # Titik tengah absolut layar
         pos_x = (screen_w // 2) - (w // 2)
         pos_y = (screen_h // 2) - (h // 2)
         
@@ -149,9 +136,6 @@ class DetailWindow(ctk.CTkToplevel):
         shell = ctk.CTkFrame(self, fg_color="transparent")
         shell.pack(fill="both", expand=True, padx=25, pady=25)
 
-        # ============================================================
-        # KOLOM KIRI: Visual & Narasi (Gallery + Deskripsi)
-        # ============================================================
         left_col = ctk.CTkFrame(shell, fg_color="transparent")
         left_col.pack(side="left", fill="both", expand=True, padx=(0, 15))
 
@@ -181,10 +165,6 @@ class DetailWindow(ctk.CTkToplevel):
         desc_scroll.insert("0.0", deskripsi)
         desc_scroll.configure(state="disabled")
 
-        # ============================================================
-        # KOLOM KANAN: Container Utama untuk Scroll & Sticky
-        # ============================================================
-        # Frame biasa agar kita bisa membagi area atas (scroll) dan bawah (sticky)
         right_col = ctk.CTkFrame(
             shell, fg_color=CARD_BG, corner_radius=18, 
             border_width=1, border_color=BORDER_COLOR, width=320
@@ -192,16 +172,12 @@ class DetailWindow(ctk.CTkToplevel):
         right_col.pack(side="right", fill="y")
         right_col.pack_propagate(False)
 
-        # ------------------------------------------------------------
-        # AREA SCROLL (Hanya untuk Info dan Fasilitas)
-        # ------------------------------------------------------------
         self.scroll_area = ctk.CTkScrollableFrame(right_col, fg_color="transparent", width=300)
         self.scroll_area.pack(fill="both", expand=True, padx=5, pady=(5, 0))
 
         info_panel = ctk.CTkFrame(self.scroll_area, fg_color="transparent")
         info_panel.pack(fill="both", expand=True, padx=10, pady=10)
 
-        # Header Info: Badge & Last Updated
         status_row = ctk.CTkFrame(info_panel, fg_color="transparent")
         status_row.pack(fill="x", pady=(0, 10))
         
@@ -217,7 +193,6 @@ class DetailWindow(ctk.CTkToplevel):
             text_color=TEXT_SUBTLE
         ).pack(side="right")
 
-        # Info Group: Title & Alamat
         ctk.CTkLabel(
             info_panel, text=nama, font=("Arial", 22, "bold"), 
             text_color=PRIMARY_COLOR, justify="left", wraplength=270
@@ -228,25 +203,17 @@ class DetailWindow(ctk.CTkToplevel):
             text_color=TEXT_SUBTLE, justify="left", wraplength=270
         ).pack(anchor="w", pady=(0, 15))
 
-        # Info Group: Harga
         ctk.CTkLabel(info_panel, text="HARGA SEWA", font=("Arial", 10, "bold"), text_color=TEXT_SUBTLE).pack(anchor="w")
         price_row = ctk.CTkFrame(info_panel, fg_color="transparent")
         price_row.pack(fill="x", pady=(0, 20))
         ctk.CTkLabel(price_row, text=harga, font=("Arial", 26, "bold"), text_color=TITLE_COLOR).pack(side="left")
         ctk.CTkLabel(price_row, text=" / bln", font=("Arial", 12), text_color=TEXT_SUBTLE).pack(side="left", pady=(8, 0))
 
-        # Fasilitas Group
         self._build_facility_chips(info_panel, "Fasilitas Kamar", fasilitas_kamar)
         self._build_facility_chips(info_panel, "Fasilitas Bersama", fasilitas_bersama)
 
-        # Spacer
         ctk.CTkFrame(info_panel, fg_color="transparent", height=20).pack(fill="x")
-
-        # ============================================================
-        # AKSI: Tombol Hubungi & Favorit (Ikut di dalam Scroll)
-        # ============================================================
         
-        # 1. Tombol Hubungi - Orange (Aksi Utama)
         self.btn_contact = ctk.CTkButton(
             info_panel, text=f"📞 Hubungi: {telepon}", 
             fg_color="#D35400", hover_color="#A04000",
@@ -254,7 +221,6 @@ class DetailWindow(ctk.CTkToplevel):
         )
         self.btn_contact.pack(fill="x", pady=(0, 12))
 
-        # 2. Tombol Favorit - Dark Blue (Aksi Sekunder)
         self.btn_fav = ctk.CTkButton(
             info_panel, text="♥ Simpan ke Favorit", 
             fg_color="#1A3A5A", hover_color="#12283E", 
@@ -262,14 +228,10 @@ class DetailWindow(ctk.CTkToplevel):
         )
         self.btn_fav.pack(fill="x", pady=(0, 10))
 
-        # ============================================================
-        # STICKY BOTTOM (Di luar Scroll) - Tombol Tutup
-        # ============================================================
         sticky_bottom = ctk.CTkFrame(right_col, fg_color="transparent", height=65)
         sticky_bottom.pack(fill="x", side="bottom", padx=20, pady=(5, 20))
         sticky_bottom.pack_propagate(False)
 
-        # Tombol Tutup - Merah Bata, Lebar lebih kecil (width=140) agar mencolok
         self.btn_tutup = ctk.CTkButton(
             sticky_bottom, text="TUTUP", 
             fg_color="#C0392B", hover_color="#962D22",
@@ -279,12 +241,10 @@ class DetailWindow(ctk.CTkToplevel):
         )
         self.btn_tutup.pack(expand=True)
 
-        # --- Fungsi Scroll (Tetap dipertahankan agar baris tetap banyak) ---
         def _force_scroll(event=None, direction=0, unit="units"):
             if event and hasattr(event, "delta") and event.delta != 0:
                 direction = int(-1 * (event.delta / 120))
             try:
-                # Target diganti ke self.scroll_area karena right_col bukan kanvas lagi
                 self.scroll_area._parent_canvas.yview_scroll(direction, unit)
             except: pass
 
@@ -307,7 +267,7 @@ class DetailWindow(ctk.CTkToplevel):
         chip_row.pack(padx=10, pady=8)
 
 class KosCard(ctk.CTkFrame):
-    def __init__(self, master, data_kos, **kwargs):
+    def __init__(self, master, data_kos, is_favorite=False, is_compared=False, add_to_favorite=None, add_to_compare=None, open_detail=None, **kwargs):
         super().__init__(
             master,
             fg_color=CARD_BG,
