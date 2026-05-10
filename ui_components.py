@@ -116,6 +116,7 @@ class DetailWindow(ctk.CTkToplevel):
         fasilitas_bersama = _as_list(data_kos.get("fasilitas_bersama"))
         foto_list = _normalize_foto(data_kos.get("foto"))
 
+        # --- 3. FIX POSISI TENGAH (PAKAI RESOLUSI LAYAR) ---
         self.title(f"Detail - {nama}")
         self.update_idletasks()
         
@@ -131,6 +132,7 @@ class DetailWindow(ctk.CTkToplevel):
         self.resizable(False, False)
         self.configure(fg_color=APP_BG)
 
+        # --- 4. PEMBUNGKUS UTAMA ---
         shell = ctk.CTkFrame(self, fg_color="transparent")
         shell.pack(fill="both", expand=True, padx=25, pady=25)
 
