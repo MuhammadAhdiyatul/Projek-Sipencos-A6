@@ -1,11 +1,18 @@
 ﻿import json
 import os
 import re
+import requests
+from io import BytesIO
 
 import customtkinter as ctk
 from ui_components import KosCard
 from backend import BackendManager
 from search_page import SearchPage
+
+try:
+    from PIL import Image
+except Exception:
+    Image = None
 
 try:
     from Scraping import KosScraper
@@ -29,6 +36,9 @@ NAVY = PRIMARY_COLOR
 ORANGE = ACCENT_COLOR
 BG = APP_BG
 GRAY_TEXT = TEXT_SUBTLE
+BORDER = "#E5E7EB"
+GREEN = "#22C55E"
+RED = "#EF4444"
 GREEN_BADGE = "#DCFCE7"
 BLUE_BADGE = "#DBEAFE"
 
@@ -296,6 +306,7 @@ class FavoritesPage(ctk.CTkFrame):
         parent,
         toggle_favorite,
         add_to_compare,
+        go_to_search,
         open_detail,
         *args,
         **kwargs,
@@ -303,58 +314,358 @@ class FavoritesPage(ctk.CTkFrame):
         super().__init__(parent, *args, **kwargs)
         self.toggle_favorite = toggle_favorite
         self.add_to_compare = add_to_compare
+        self.go_to_search = go_to_search
         self.open_detail = open_detail
+        self._image_cache = {}
 
         self.grid_rowconfigure(1, weight=1)
         self.grid_columnconfigure(0, weight=1)
 
-        title = ctk.CTkLabel(
-            self,
+        header = ctk.CTkFrame(self, fg_color="transparent")
+        header.grid(row=0, column=0, sticky="ew", padx=20, pady=(20, 10))
+        header.grid_columnconfigure(0, weight=1)
+
+        header_left = ctk.CTkFrame(header, fg_color="transparent")
+        header_left.grid(row=0, column=0, sticky="nsew")
+        header_left.grid_rowconfigure(1, weight=0)
+
+        title_label = ctk.CTkLabel(
+            header_left,
             text="Favorit Kos",
-            font=("Arial", 24, "bold"),
-            text_color=PRIMARY_COLOR,
+            font=("Arial", 28, "bold"),
+            text_color=NAVY,
             anchor="w",
         )
-        title.grid(row=0, column=0, sticky="ew", pady=(0, 14))
+        title_label.grid(row=0, column=0, sticky="w")
+
+        subtitle_label = ctk.CTkLabel(
+            header_left,
+            text="Simpan kos favorit untuk dibandingkan nanti.",
+            font=("Arial", 13),
+            text_color=GRAY_TEXT,
+            anchor="w",
+            wraplength=520,
+            justify="left",
+        )
+        subtitle_label.grid(row=1, column=0, sticky="w", pady=(8, 0))
+
+        header_right = ctk.CTkFrame(header, fg_color="transparent")
+        header_right.grid(row=0, column=1, sticky="e", padx=(12, 0))
+
+        search_button = ctk.CTkButton(
+            header_right,
+            text="+ Cari Kos",
+            width=140,
+            height=44,
+            corner_radius=16,
+            fg_color=ORANGE,
+            hover_color="#D96A1F",
+            text_color="white",
+            font=("Arial", 12, "bold"),
+            command=self.go_to_search,
+        )
+        search_button.grid(row=0, column=0, sticky="e")
 
         self.scroll_frame = ctk.CTkScrollableFrame(
             self,
-            fg_color="transparent",
+            fg_color=BG,
             corner_radius=0,
+            border_width=0,
         )
         self.scroll_frame.grid(row=1, column=0, sticky="nsew")
         self.scroll_frame.grid_columnconfigure(0, weight=1)
 
         self.list_container = ctk.CTkFrame(self.scroll_frame, fg_color="transparent")
-        self.list_container.pack(fill="both", expand=True, padx=6, pady=6)
+        self.list_container.pack(fill="both", expand=True, padx=20, pady=(0, 20))
         self.list_container.grid_columnconfigure(0, weight=1)
 
     def refresh(self, favorites, compare_list):
         for widget in self.list_container.winfo_children():
             widget.destroy()
 
+        favorites = favorites or []
+        compare_keys = { _item_key(item) for item in (compare_list or []) }
+
         if not favorites:
-            empty = ctk.CTkLabel(
-                self.list_container,
-                text="Belum ada kos favorit.",
-                font=("Arial", 15, "bold"),
-                text_color=TEXT_SUBTLE,
-            )
-            empty.pack(fill="both", expand=True, pady=70)
+            self._create_empty_state()
             return
 
-        compare_keys = { _item_key(item) for item in (compare_list or []) }
-        for item in favorites:
-            card = KosCard(
-                self.list_container,
-                data_kos=item,
-                is_favorite=True,
-                is_compared=_item_key(item) in compare_keys,
-                add_to_favorite=self.toggle_favorite,
-                add_to_compare=self.add_to_compare,
-                open_detail=self.open_detail,
+        for kos_item in favorites:
+            card = self._create_favorite_card(self.list_container, kos_item)
+            card.pack(fill="x", pady=(0, 18))
+            card.grid_columnconfigure(1, weight=1)
+            card.grid_columnconfigure(2, weight=0)
+
+            if _item_key(kos_item) in compare_keys:
+                badge = ctk.CTkLabel(
+                    card,
+                    text="Sudah ditambahkan ke bandingkan",
+                    fg_color=BLUE_BADGE,
+                    text_color=NAVY,
+                    corner_radius=12,
+                    font=("Arial", 10, "bold"),
+                    anchor="w",
+                    padx=10,
+                    pady=6,
+                )
+                badge.grid(row=1, column=0, columnspan=3, sticky="w", padx=18, pady=(0, 12))
+
+    def _create_empty_state(self):
+        empty_state = ctk.CTkFrame(
+            self.list_container,
+            fg_color=CARD_BG,
+            corner_radius=24,
+            border_width=1,
+            border_color=BORDER,
+            width=760,
+        )
+        empty_state.pack(fill="x", expand=True, pady=40, padx=40)
+
+        empty_state.grid_columnconfigure(0, weight=1)
+
+        icon_label = ctk.CTkLabel(
+            empty_state,
+            text="❤️",
+            font=("Arial", 48),
+            anchor="center",
+        )
+        icon_label.grid(row=0, column=0, pady=(32, 12))
+
+        message_title = ctk.CTkLabel(
+            empty_state,
+            text="Belum ada kos favorit",
+            font=("Arial", 22, "bold"),
+            text_color=NAVY,
+            anchor="center",
+        )
+        message_title.grid(row=1, column=0, pady=(0, 8))
+
+        message_subtitle = ctk.CTkLabel(
+            empty_state,
+            text="Tambahkan kos dari halaman Search.",
+            font=("Arial", 13),
+            text_color=GRAY_TEXT,
+            anchor="center",
+            wraplength=520,
+            justify="center",
+        )
+        message_subtitle.grid(row=2, column=0, pady=(0, 24), padx=32)
+
+        action_button = ctk.CTkButton(
+            empty_state,
+            text="Cari Kos",
+            width=160,
+            height=44,
+            corner_radius=16,
+            fg_color=ORANGE,
+            hover_color="#D96A1F",
+            text_color="white",
+            font=("Arial", 12, "bold"),
+            command=self.go_to_search,
+        )
+        action_button.grid(row=3, column=0, pady=(0, 28))
+
+    def _create_favorite_card(self, parent, kos_item):
+        card = ctk.CTkFrame(
+            parent,
+            fg_color=CARD_BG,
+            corner_radius=24,
+            border_width=1,
+            border_color=BORDER,
+        )
+        card.grid_columnconfigure(1, weight=1)
+        card.grid_rowconfigure(0, weight=1)
+
+        image_frame = ctk.CTkFrame(
+            card,
+            fg_color=BG,
+            corner_radius=20,
+            width=180,
+            height=130,
+        )
+        image_frame.grid(row=0, column=0, sticky="nsew", padx=(18, 12), pady=18)
+        image_frame.grid_propagate(False)
+
+        foto_list = kos_item.get("foto") or []
+        image_source = None
+        if isinstance(foto_list, list) and foto_list:
+            image_source = foto_list[0]
+        elif isinstance(foto_list, str) and foto_list.strip():
+            image_source = foto_list.strip()
+
+        image_asset = self._load_image(image_source)
+        if image_asset:
+            image_label = ctk.CTkLabel(image_frame, image=image_asset, text="")
+            image_label.image = image_asset
+            image_label.place(relx=0.5, rely=0.5, anchor="center")
+        else:
+            placeholder = ctk.CTkLabel(
+                image_frame,
+                text="🏠",
+                font=("Arial", 32),
+                text_color=GRAY_TEXT,
             )
-            card.pack(fill="x", pady=10)
+            placeholder.place(relx=0.5, rely=0.45, anchor="center")
+
+            subtitle = ctk.CTkLabel(
+                image_frame,
+                text="No Image",
+                font=("Arial", 11),
+                text_color=GRAY_TEXT,
+            )
+            subtitle.place(relx=0.5, rely=0.75, anchor="center")
+
+        info_frame = ctk.CTkFrame(card, fg_color="transparent")
+        info_frame.grid(row=0, column=1, sticky="nsew", pady=18)
+        info_frame.grid_columnconfigure(0, weight=1)
+
+        title = ctk.CTkLabel(
+            info_frame,
+            text=_safe_text(kos_item.get("nama_kos") or kos_item.get("nama"), "Kos Tanpa Nama"),
+            font=("Arial", 18, "bold"),
+            text_color=NAVY,
+            anchor="w",
+            wraplength=520,
+            justify="left",
+        )
+        title.grid(row=0, column=0, sticky="ew")
+
+        location = ctk.CTkLabel(
+            info_frame,
+            text=_safe_text(kos_item.get("alamat") or kos_item.get("lokasi"), "Lokasi tidak tersedia"),
+            font=("Arial", 12),
+            text_color=GRAY_TEXT,
+            anchor="w",
+            wraplength=520,
+            justify="left",
+        )
+        location.grid(row=1, column=0, sticky="ew", pady=(8, 10))
+
+        price = ctk.CTkLabel(
+            info_frame,
+            text=self._format_price(kos_item.get("harga")),
+            font=("Arial", 18, "bold"),
+            text_color=ORANGE,
+            anchor="w",
+        )
+        price.grid(row=2, column=0, sticky="w")
+
+        badge_row = ctk.CTkFrame(info_frame, fg_color="transparent")
+        badge_row.grid(row=3, column=0, sticky="w", pady=(12, 0))
+
+        facilities = []
+        kamar = kos_item.get("fasilitas_kamar") or []
+        bersama = kos_item.get("fasilitas_bersama") or []
+        if isinstance(kamar, list):
+            facilities.extend([str(x).strip() for x in kamar if str(x).strip()])
+        if isinstance(bersama, list):
+            facilities.extend([str(x).strip() for x in bersama if str(x).strip()])
+
+        preferred = ["WiFi", "AC", "KM Dalam", "Parkir"]
+        badge_texts = []
+        for facility in preferred:
+            if any(facility.lower() == str(item).strip().lower() for item in facilities):
+                badge_texts.append(facility)
+        if not badge_texts:
+            badge_texts = [facilities[0]] if facilities else ["-"]
+
+        for index, badge_text in enumerate(badge_texts[:4]):
+            badge = ctk.CTkLabel(
+                badge_row,
+                text=badge_text,
+                fg_color=BLUE_BADGE,
+                text_color=NAVY,
+                corner_radius=12,
+                font=("Arial", 11, "bold"),
+                padx=10,
+                pady=6,
+            )
+            badge.grid(row=0, column=index, padx=(0 if index == 0 else 8, 0), sticky="w")
+
+        action_frame = ctk.CTkFrame(card, fg_color="transparent")
+        action_frame.grid(row=0, column=2, sticky="n", padx=(12, 18), pady=18)
+        action_frame.grid_rowconfigure(3, weight=1)
+
+        detail_btn = ctk.CTkButton(
+            action_frame,
+            text="Lihat Detail",
+            width=140,
+            height=38,
+            corner_radius=16,
+            fg_color="transparent",
+            border_width=1,
+            border_color=NAVY,
+            text_color=NAVY,
+            hover_color="#F0F5FB",
+            font=("Arial", 11, "bold"),
+            command=lambda item=kos_item: self.open_detail(item),
+        )
+        detail_btn.grid(row=0, column=0, pady=(0, 10), sticky="ew")
+
+        compare_btn = ctk.CTkButton(
+            action_frame,
+            text="Bandingkan",
+            width=140,
+            height=38,
+            corner_radius=16,
+            fg_color=ORANGE,
+            hover_color="#D96A1F",
+            text_color="white",
+            font=("Arial", 11, "bold"),
+            command=lambda item=kos_item: self.add_to_compare(item),
+        )
+        compare_btn.grid(row=1, column=0, pady=(0, 10), sticky="ew")
+
+        remove_btn = ctk.CTkButton(
+            action_frame,
+            text="Hapus",
+            width=140,
+            height=38,
+            corner_radius=16,
+            fg_color=RED,
+            hover_color="#DC2626",
+            text_color="white",
+            font=("Arial", 11, "bold"),
+            command=lambda item=kos_item: self.toggle_favorite(item),
+        )
+        remove_btn.grid(row=2, column=0, sticky="ew")
+
+        return card
+
+    def _load_image(self, image_source):
+        if not image_source or Image is None:
+            return None
+
+        cache_key = str(image_source).strip()
+        if cache_key in self._image_cache:
+            return self._image_cache[cache_key]
+
+        try:
+            if isinstance(image_source, str) and os.path.exists(image_source):
+                pil_image = Image.open(image_source).convert("RGB")
+            elif isinstance(image_source, str) and image_source.lower().startswith(("http://", "https://")):
+                response = requests.get(image_source, timeout=6)
+                response.raise_for_status()
+                pil_image = Image.open(BytesIO(response.content)).convert("RGB")
+            else:
+                return None
+
+            pil_image = pil_image.resize((180, 130), Image.Resampling.LANCZOS if hasattr(Image, "Resampling") else Image.ANTIALIAS)
+            asset = ctk.CTkImage(light_image=pil_image, dark_image=pil_image, size=(180, 130))
+            self._image_cache[cache_key] = asset
+            return asset
+        except Exception:
+            return None
+
+    def _format_price(self, value):
+        if isinstance(value, (int, float)):
+            nilai = int(value)
+        elif isinstance(value, str):
+            digits = "".join(ch for ch in value if ch.isdigit())
+            nilai = int(digits) if digits else 0
+        else:
+            nilai = 0
+        return f"Rp {nilai:,}".replace(",", ".") if nilai > 0 else "Rp -"
 
 
 class ComparePage(ctk.CTkFrame):
@@ -1214,6 +1525,7 @@ class App(ctk.CTk):
             self.content_frame,
             toggle_favorite=self.toggle_favorite,
             add_to_compare=self.toggle_compare,
+            go_to_search=lambda: self.show_frame("search"),
             open_detail=self.open_detail,
             fg_color="transparent",
         )
