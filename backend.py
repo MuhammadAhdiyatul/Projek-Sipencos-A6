@@ -10,33 +10,15 @@ class BackendManager:
 
     def load_data(self):
         """membaca file data_kos.json hasil dari scraping"""
-        candidates = [
-            os.path.join("output_dataKos", "data_kos.json"),
-            os.path.join("output_datakos", "data_kos.json"),
-        ]
-
-        filepath = None
-        for candidate in candidates:
-            if os.path.exists(candidate):
-                filepath = candidate
-                break
+        filepath = os.path.join("output_datakos", "data_kos.json")
 
         try:
-            if not filepath:
-                raise FileNotFoundError("data_kos.json tidak ditemukan")
-
             with open(filepath, "r", encoding="utf-8") as f:
                 self.data_kos = json.load(f)
-            if not isinstance(self.data_kos, list):
-                self.data_kos = []
             print(f"[Backend Info] Berhasil memuat {len(self.data_kos)} data kos dari json.")
         except FileNotFoundError:
-            self.data_kos = []
             print("[Backend Error] File data_kos.json tidak ditemukan!")
-            print("Pastikan scraper sudah dijalankan dan folder output benar.")
-        except (json.JSONDecodeError, OSError) as exc:
-            self.data_kos = []
-            print(f"[Backend Error] Gagal membaca data json: {exc}")
+            print("Pastikan Scraper.py sudah dijalankan dan foldernya benar.")
     
     def bersihkan_harga(self, harga_str):
         """Untuk mengubah teks harga menjadi angka agar bisa di filter, contoh: "Rp 1.500.000/bulan" menjadi 1500000"""
@@ -47,7 +29,7 @@ class BackendManager:
         return int(angka_saja) if angka_saja else 0
     
     def cari_kos(self, keyword="", harga_maks=None):
-        """Berfungsi untuk mencari berdasarkan nama/alamat, dan batas harga mnaksimalnya"""
+        """Berfungsi untuk mencari berdasarkan nama/alamat, dan batas harga maksimalnya"""
         hasil_pencarian = []
 
         for kos in self.data_kos:

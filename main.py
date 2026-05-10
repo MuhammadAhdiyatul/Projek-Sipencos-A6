@@ -1,25 +1,11 @@
 ﻿import json
 import os
 import re
-from datetime import datetime
 
 import customtkinter as ctk
-from favorites import FavoritesManager
-from logger import get_scrape_status_text, log_scrape
-from threading_handler import ThreadingHandler
-from ui_components import KosCard, TITLE_COLOR
+from ui_components import KosCard
 from backend import BackendManager
 from search_page import SearchPage
-
-try:
-    from analytics import KosAnalytics
-except Exception:
-    KosAnalytics = None
-
-try:
-    from PIL import Image
-except Exception:
-    Image = None
 
 try:
     from Scraping import KosScraper
@@ -54,6 +40,14 @@ def _safe_text(value, default="-"):
         text = value.strip()
         return text if text else default
     return str(value)
+
+
+def _display_name(user):
+    if not isinstance(user, dict):
+        return "Guest"
+
+    username = str(user.get("display_name") or user.get("username") or "Guest").strip()
+    return username.title() if username else "Guest"
 
 
 class IntegrationController:
@@ -196,15 +190,6 @@ class IntegrationController:
             print(f"[WARN] Gagal baca {path}: {e}")
             return []
 
-    def _write_scrape_log(self, status, total_data=0, message="", source_updated_at=None):
-        try:
-            return log_scrape(status=status, total_data=total_data, message=message)
-        except Exception:
-            return get_scrape_status_text()
-
-    def get_scrape_log_for_ui(self):
-        return get_scrape_status_text()
-
     def _load_scraped_data(self):
         json_path = os.path.join("output_dataKos", "data_kos.json")
 
@@ -219,28 +204,6 @@ class IntegrationController:
             scraper = KosScraper()
             scraper.jalankan()
             scraped = self._normalize_list(self._load_json_if_exists(json_path))
-
-            # If scraping produced results, write a scrape log including source_updated_at
-            try:
-                if scraped:
-                    # determine mtime of saved data file
-                    source_updated_at = "-"
-                    try:
-                        if os.path.exists(json_path):
-                            mtime = os.path.getmtime(json_path)
-                            source_updated_at = datetime.fromtimestamp(mtime).strftime("%Y-%m-%d %H:%M:%S")
-                    except Exception:
-                        source_updated_at = "-"
-
-                    # record successful scrape with source_updated_at
-                    try:
-                        self._write_scrape_log("success", len(scraped), "Scraping completed successfully", source_updated_at)
-                    except Exception:
-                        pass
-
-            except Exception:
-                pass
-
             return scraped
         except Exception as e:
             print(f"[WARN] Scraper gagal: {e}")
@@ -305,50 +268,25 @@ class IntegrationController:
 
     def scrape_for_ui(self):
         json_path = os.path.join("output_dataKos", "data_kos.json")
-        scrape_succeeded = False
-        scrape_message = ""
-        source_updated_at = "-"
 
         if KosScraper is not None:
             try:
                 scraper = KosScraper()
                 scraper.jalankan()
-                scrape_succeeded = True
-                scrape_message = "Scraping completed successfully"
             except Exception as e:
-                scrape_message = f"Scrape manual gagal: {e}"
-                print(f"[WARN] {scrape_message}")
-        else:
-            scrape_message = "Scraper tidak tersedia"
+                print(f"[WARN] Scrape manual gagal: {e}")
 
         fresh_scraped = self._normalize_list(self._load_json_if_exists(json_path))
         if fresh_scraped:
             self.scraped_data = fresh_scraped
             self.active_data = fresh_scraped
-
-            # Prefer the actual data file modification time as the source update time
-            try:
-                if os.path.exists(json_path):
-                    mtime = os.path.getmtime(json_path)
-                    source_updated_at = datetime.fromtimestamp(mtime).strftime("%Y-%m-%d %H:%M:%S")
-                else:
-                    source_updated_at = "-"
-            except Exception:
-                source_updated_at = "-"
-
-            if scrape_succeeded:
-                self._write_scrape_log("success", len(fresh_scraped), scrape_message, source_updated_at)
-            else:
-                self._write_scrape_log("failed", len(fresh_scraped), scrape_message or "Menggunakan data scraping yang sudah tersimpan", source_updated_at)
             return [self._to_ui_item(item) for item in fresh_scraped]
 
         if self.backend_data:
             self.active_data = self.backend_data
-            self._write_scrape_log("failed", len(self.backend_data), scrape_message or "Scrape gagal, menampilkan data backend", source_updated_at)
             return [self._to_ui_item(item) for item in self.backend_data]
 
         self.active_data = self.dummy_data
-        self._write_scrape_log("failed", len(self.dummy_data), scrape_message or "Scrape gagal, menampilkan data bawaan", source_updated_at)
         return [self._to_ui_item(item) for item in self.dummy_data]
 
 
@@ -359,6 +297,7 @@ class FavoritesPage(ctk.CTkFrame):
         toggle_favorite,
         add_to_compare,
         open_detail,
+        current_user=None,
         *args,
         **kwargs,
     ):
@@ -366,8 +305,9 @@ class FavoritesPage(ctk.CTkFrame):
         self.toggle_favorite = toggle_favorite
         self.add_to_compare = add_to_compare
         self.open_detail = open_detail
+        self.current_user = current_user
 
-        self.grid_rowconfigure(1, weight=1)
+        self.grid_rowconfigure(2, weight=1)
         self.grid_columnconfigure(0, weight=1)
 
         title = ctk.CTkLabel(
@@ -379,12 +319,21 @@ class FavoritesPage(ctk.CTkFrame):
         )
         title.grid(row=0, column=0, sticky="ew", pady=(0, 14))
 
+        self.user_label = ctk.CTkLabel(
+            self,
+            text=f"Session aktif: {_display_name(self.current_user)}",
+            font=("Arial", 12),
+            text_color=TEXT_SUBTLE,
+            anchor="w",
+        )
+        self.user_label.grid(row=1, column=0, sticky="ew", pady=(0, 10))
+
         self.scroll_frame = ctk.CTkScrollableFrame(
             self,
             fg_color="transparent",
             corner_radius=0,
         )
-        self.scroll_frame.grid(row=1, column=0, sticky="nsew")
+        self.scroll_frame.grid(row=2, column=0, sticky="nsew")
         self.scroll_frame.grid_columnconfigure(0, weight=1)
 
         self.list_container = ctk.CTkFrame(self.scroll_frame, fg_color="transparent")
@@ -398,7 +347,7 @@ class FavoritesPage(ctk.CTkFrame):
         if not favorites:
             empty = ctk.CTkLabel(
                 self.list_container,
-                text="Belum ada kos favorit.",
+                text=f"Belum ada kos favorit untuk {_display_name(self.current_user)}.",
                 font=("Arial", 15, "bold"),
                 text_color=TEXT_SUBTLE,
             )
@@ -434,12 +383,14 @@ class ComparePage(ctk.CTkFrame):
         parent,
         clear_compare,
         open_detail,
+        current_user=None,
         *args,
         **kwargs,
     ):
         super().__init__(parent, *args, **kwargs)
         self.clear_compare = clear_compare
         self.open_detail = open_detail
+        self.current_user = current_user
 
         self.grid_rowconfigure(2, weight=1)
         self.grid_columnconfigure(0, weight=1)
@@ -456,6 +407,15 @@ class ComparePage(ctk.CTkFrame):
             anchor="w",
         )
         title.grid(row=0, column=0, sticky="w")
+
+        self.user_label = ctk.CTkLabel(
+            self,
+            text=f"Akun aktif: {_display_name(self.current_user)}",
+            font=("Arial", 12),
+            text_color=TEXT_SUBTLE,
+            anchor="w",
+        )
+        self.user_label.grid(row=1, column=0, sticky="w", pady=(0, 10))
 
         btn_clear = ctk.CTkButton(
             header,
@@ -475,7 +435,7 @@ class ComparePage(ctk.CTkFrame):
             fg_color="transparent",
             corner_radius=0,
         )
-        self.body.grid(row=1, column=0, sticky="nsew")
+        self.body.grid(row=2, column=0, sticky="nsew")
         self.body.grid_columnconfigure(0, weight=1)
 
         self.table_frame = ctk.CTkFrame(self.body, fg_color=CARD_BG, corner_radius=18, border_width=1, border_color=BORDER_COLOR)
@@ -540,25 +500,6 @@ class ComparePage(ctk.CTkFrame):
                     anchor="w",
                 )
                 value_label.grid(row=row_index, column=col_index, sticky="nsew", padx=4, pady=4)
-
-    def _render_field(self, item, field_name):
-        if field_name == "nama":
-            return _safe_text(item.get("nama_kos") or item.get("nama"))
-        if field_name == "harga":
-            return _safe_text(item.get("harga")) if isinstance(item.get("harga"), str) else f"Rp {int(item.get('harga', 0)):,}".replace(",", ".")
-        if field_name == "alamat":
-            return _safe_text(item.get("alamat") or item.get("lokasi"))
-        if field_name == "wifi":
-            wifi = item.get("wifi")
-            if isinstance(wifi, bool):
-                return "Ya" if wifi else "Tidak"
-            return "Ya" if str(wifi).strip().lower() in ("ya", "yes", "true", "1") else "Tidak"
-        if field_name in ("fasilitas_kamar", "fasilitas_bersama"):
-            value = item.get(field_name)
-            if isinstance(value, list):
-                return ", ".join([str(x).strip() for x in value if str(x).strip()]) or "-"
-            return _safe_text(value)
-        return _safe_text(item.get(field_name))
 
     def _render_field(self, item, field_name):
         if field_name == "nama":
@@ -708,10 +649,11 @@ class DetailPage(ctk.CTkFrame):
 class PlaceholderPage(ctk.CTkFrame):
     """Generic placeholder page untuk fitur yang belum diimplementasikan."""
 
-    def __init__(self, parent, title, message, *args, **kwargs):
+    def __init__(self, parent, title, message, current_user=None, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
         self.title_text = title
         self.message_text = message
+        self.current_user = current_user
 
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
@@ -729,13 +671,21 @@ class PlaceholderPage(ctk.CTkFrame):
         )
         title_label.grid(row=0, column=0, pady=(0, 16))
 
+        user_label = ctk.CTkLabel(
+            container,
+            text=f"Akun aktif: {_display_name(self.current_user)}",
+            font=("Arial", 12),
+            text_color=TEXT_SUBTLE,
+        )
+        user_label.grid(row=1, column=0, pady=(0, 10))
+
         message_label = ctk.CTkLabel(
             container,
             text=message,
             font=("Arial", 16),
             text_color=TEXT_SUBTLE,
         )
-        message_label.grid(row=1, column=0)
+        message_label.grid(row=2, column=0)
 
     def refresh(self, *args, **kwargs):
         """Placeholder refresh method."""
@@ -743,138 +693,67 @@ class PlaceholderPage(ctk.CTkFrame):
 
 
 class AnalyticsPage(PlaceholderPage):
-    def __init__(self, parent, get_data_callback=None, get_log_callback=None, *args, **kwargs):
-        ctk.CTkFrame.__init__(self, parent, *args, **kwargs)
-        self.get_data_callback = get_data_callback
-        self.get_log_callback = get_log_callback
-        self.chart_image = None
-
-        self.grid_rowconfigure(1, weight=1)
-        self.grid_columnconfigure(0, weight=1)
-
-        title = ctk.CTkLabel(
-            self,
-            text="📊 Analytics",
-            font=("Arial", 28, "bold"),
-            text_color=PRIMARY_COLOR,
-            anchor="w",
-        )
-        title.grid(row=0, column=0, sticky="ew", pady=(0, 14))
-
-        self.body = ctk.CTkScrollableFrame(self, fg_color="transparent", corner_radius=0)
-        self.body.grid(row=1, column=0, sticky="nsew")
-        self.body.grid_columnconfigure(0, weight=1)
-
-        self.summary_frame = ctk.CTkFrame(
-            self.body,
-            fg_color=CARD_BG,
-            corner_radius=16,
-            border_width=1,
-            border_color=BORDER_COLOR,
-        )
-        self.summary_frame.grid(row=0, column=0, sticky="ew", padx=8, pady=(8, 12))
-        self.summary_frame.grid_columnconfigure((0, 1), weight=1)
-
-        self.total_label = ctk.CTkLabel(self.summary_frame, text="Total Kos: -", font=("Arial", 14, "bold"), text_color=PRIMARY_COLOR, anchor="w")
-        self.total_label.grid(row=0, column=0, sticky="w", padx=14, pady=(12, 6))
-
-        self.avg_price_label = ctk.CTkLabel(self.summary_frame, text="Rata-rata Harga: -", font=("Arial", 13), text_color=TITLE_COLOR, anchor="w")
-        self.avg_price_label.grid(row=1, column=0, sticky="w", padx=14, pady=(0, 12))
-
-        self.top_area_label = ctk.CTkLabel(self.summary_frame, text="Area Teratas: -", font=("Arial", 13), text_color=TITLE_COLOR, anchor="w")
-        self.top_area_label.grid(row=0, column=1, sticky="w", padx=14, pady=(12, 6))
-
-        self.top_facility_label = ctk.CTkLabel(self.summary_frame, text="Fasilitas Teratas: -", font=("Arial", 13), text_color=TITLE_COLOR, anchor="w")
-        self.top_facility_label.grid(row=1, column=1, sticky="w", padx=14, pady=(0, 12))
-
-        self.log_label = ctk.CTkLabel(
-            self.body,
-            text="Status Scrape: -",
-            font=("Arial", 12),
-            text_color=TEXT_SUBTLE,
-            justify="left",
-            anchor="w",
-        )
-        self.log_label.grid(row=1, column=0, sticky="ew", padx=12, pady=(0, 10))
-
-        self.chart_holder = ctk.CTkLabel(
-            self.body,
-            text="Grafik analytics belum tersedia.",
-            font=("Arial", 13),
-            text_color=TEXT_SUBTLE,
-            fg_color=CARD_BG,
-            corner_radius=16,
-            anchor="center",
-            justify="center",
-            height=380,
-        )
-        self.chart_holder.grid(row=2, column=0, sticky="ew", padx=8, pady=(0, 10))
-
-    def _format_price(self, value):
-        if not value:
-            return "-"
-        return f"Rp {int(value):,}".replace(",", ".")
-
-    def _build_chart(self):
-        if KosAnalytics is None:
-            return None, None
-        try:
-            analytics = KosAnalytics()
-            summary = analytics.get_summary_data()
-            chart_path = analytics.generate_chart(show=False)
-            return summary, chart_path
-        except Exception as exc:
-            return None, str(exc)
-
-    def refresh(self, *_args, **_kwargs):
-        log_data = self.get_log_callback() if callable(self.get_log_callback) else get_scrape_status_text()
-        if not isinstance(log_data, dict):
-            log_data = get_scrape_status_text()
-
-        self.log_label.configure(
-            text=f"Status Scrape: {log_data.get('summary', '-') }\nTerakhir: {log_data.get('timestamp', '-')}",
-        )
-
-        summary, chart_result = self._build_chart()
-        if summary is None:
-            live_data = self.get_data_callback() if callable(self.get_data_callback) else []
-            total_live = len(live_data) if isinstance(live_data, list) else 0
-            self.total_label.configure(text=f"Total Kos: {total_live}")
-            self.avg_price_label.configure(text="Rata-rata Harga: -")
-            self.top_area_label.configure(text="Area Teratas: -")
-            self.top_facility_label.configure(text="Fasilitas Teratas: -")
-            self.chart_holder.configure(text=f"Grafik analytics belum tersedia.\n{chart_result}", image=None)
-            return
-
-        self.total_label.configure(text=f"Total Kos: {summary.get('total', 0)}")
-        self.avg_price_label.configure(text=f"Rata-rata Harga: {self._format_price(summary.get('avg_price', 0))}")
-        self.top_area_label.configure(text=f"Area Teratas: {summary.get('top_area', '-')}")
-        self.top_facility_label.configure(text=f"Fasilitas Teratas: {summary.get('top_facility', '-')}")
-
-        if not chart_result or not os.path.exists(chart_result) or Image is None:
-            self.chart_holder.configure(text="Grafik analytics belum tersedia.", image=None)
-            return
-
-        try:
-            chart_pil = Image.open(chart_result).convert("RGB")
-            self.chart_image = ctk.CTkImage(light_image=chart_pil, dark_image=chart_pil, size=(980, 360))
-            self.chart_holder.configure(text="", image=self.chart_image)
-        except Exception:
-            self.chart_holder.configure(text="Grafik analytics belum tersedia.", image=None)
+    def __init__(self, parent, *args, **kwargs):
+        super().__init__(parent, "📊 Analytics", "Fitur Analytics belum tersedia\n\nComing soon...", *args, **kwargs)
 
 
 class HistoryPage(PlaceholderPage):
     def __init__(self, parent, *args, **kwargs):
-        super().__init__(parent, "🕘 History", "Fitur History belum tersedia\n\nComing soon...", *args, **kwargs)
+        current_user = kwargs.pop("current_user", None)
+        super().__init__(parent, "🕘 History", "Fitur History belum tersedia\n\nComing soon...", current_user=current_user, *args, **kwargs)
 
 
 class SettingsPage(PlaceholderPage):
-    def __init__(self, parent, *args, **kwargs):
-        super().__init__(parent, "⚙️ Settings", "Fitur Settings belum tersedia\n\nComing soon...", *args, **kwargs)
+    def __init__(self, parent, logout_callback=None, *args, **kwargs):
+        current_user = kwargs.pop("current_user", None)
+        super().__init__(parent, "⚙️ Settings", "Fitur Settings belum tersedia\n\nComing soon...", current_user=current_user, *args, **kwargs)
+        self.logout_callback = logout_callback
+
+        logout_card = ctk.CTkFrame(self, fg_color=CARD_BG, corner_radius=18, border_width=1, border_color=BORDER_COLOR)
+        logout_card.grid(row=1, column=0, sticky="ew", padx=24, pady=(18, 0))
+        logout_card.grid_columnconfigure(0, weight=1)
+
+        logout_title = ctk.CTkLabel(
+            logout_card,
+            text="Session",
+            font=("Arial", 15, "bold"),
+            text_color=PRIMARY_COLOR,
+            anchor="w",
+        )
+        logout_title.grid(row=0, column=0, sticky="w", padx=18, pady=(16, 4))
+
+        logout_info = ctk.CTkLabel(
+            logout_card,
+            text=f"Login sebagai {_display_name(self.current_user)}",
+            font=("Arial", 12),
+            text_color=TEXT_SUBTLE,
+            anchor="w",
+        )
+        logout_info.grid(row=1, column=0, sticky="w", padx=18)
+
+        logout_button = ctk.CTkButton(
+            logout_card,
+            text="Logout",
+            fg_color=ACCENT_COLOR,
+            hover_color="#B45E24",
+            text_color="white",
+            corner_radius=12,
+            height=40,
+            font=("Arial", 13, "bold"),
+            command=self._on_logout,
+        )
+        logout_button.grid(row=2, column=0, sticky="w", padx=18, pady=(14, 18))
+
+    def _on_logout(self):
+        if callable(self.logout_callback):
+            self.logout_callback()
+
+    def refresh(self, *args, **kwargs):
+        self.message_text = "Fitur Settings belum tersedia\n\nComing soon..."
 
 
 class App(ctk.CTk):
-    def __init__(self, get_scrape_log_callback=None):
+    def __init__(self, current_user=None):
         super().__init__()
 
         self.title("SiPencos - Sistem Pencari Kos")
@@ -882,12 +761,12 @@ class App(ctk.CTk):
         self.minsize(1200, 760)
         self.configure(fg_color=APP_BG)
 
+        self.current_user = current_user
+        self.logout_requested = False
+
         self.controller = IntegrationController()
-        self.get_scrape_log_callback = get_scrape_log_callback or self.controller.get_scrape_log_for_ui
-        self.thread_handler = ThreadingHandler(self)
         self.kos_data = self.controller.get_all_for_ui()
-        self.favorites_manager = FavoritesManager()
-        self.favorites = [self._normalize_ui_item(item) for item in self.favorites_manager.get_all_favorites()]
+        self.favorites = []
         self.compare_list = []
         self.detail_item = None
         self.active_menu = "search"
@@ -938,6 +817,15 @@ class App(ctk.CTk):
         )
         subtitle.pack(fill="x", pady=(0, 22))
 
+        user_badge = ctk.CTkLabel(
+            shell,
+            text=f"Welcome, {_display_name(self.current_user)}",
+            font=("Arial", 12, "bold"),
+            text_color=ACCENT_COLOR,
+            anchor="w",
+        )
+        user_badge.pack(fill="x", pady=(0, 18))
+
         # Menu buttons container
         self.menu_buttons = {}
 
@@ -968,120 +856,15 @@ class App(ctk.CTk):
             button.pack(fill="x", pady=4)
             self.menu_buttons[page_name] = button
 
-        footer = ctk.CTkFrame(shell, fg_color="transparent")
-        footer.pack(side="bottom", fill="x")
-        footer.grid_columnconfigure(0, weight=1)
-
-        self.btn_scrape = ctk.CTkButton(
-            footer,
-            text="Scrape Data",
-            fg_color=ACCENT_COLOR,
-            hover_color="#B45E24",
-            text_color="white",
-            corner_radius=12,
-            height=42,
-            font=("Arial", 13, "bold"),
-            command=self.on_scrape_clicked,
-        )
-        self.btn_scrape.grid(row=0, column=0, sticky="ew", pady=(0, 10))
-
-        # Scrape status card (polished styling)
-        self.scrape_log_card = ctk.CTkFrame(
-            footer,
-            fg_color="#F7FAFC",
-            corner_radius=12,
-            border_width=1,
-            border_color="#E2E8F0",
-        )
-        self.scrape_log_card.grid(row=1, column=0, sticky="ew", pady=(2, 12))
-
-        # Stronger section label
-        self.scrape_log_title = ctk.CTkLabel(
-            self.scrape_log_card,
-            text="Last Scraped",
-            font=("Arial", 13, "bold"),
-            text_color=PRIMARY_COLOR,
-            anchor="w",
-        )
-        self.scrape_log_title.pack(fill="x", padx=14, pady=(12, 6))
-
-        # Emphasized timestamp (primary value)
-        self.scrape_log_timestamp = ctk.CTkLabel(
-            self.scrape_log_card,
-            text="-",
-            font=("Arial", 13, "bold"),
-            text_color=PRIMARY_COLOR,
-            anchor="w",
-            justify="left",
-        )
-        self.scrape_log_timestamp.pack(fill="x", padx=14, pady=(0, 6))
-
-        # Secondary summary (lighter than timestamp)
-        self.scrape_log_summary = ctk.CTkLabel(
-            self.scrape_log_card,
-            text="No scraping activity yet",
-            font=("Arial", 11),
-            text_color="#4B5563",
-            anchor="w",
-            justify="left",
-        )
-        self.scrape_log_summary.pack(fill="x", padx=14, pady=(0, 12))
-
         helper = ctk.CTkLabel(
-            footer,
+            shell,
             text="Pilih kos terbaik dan bandingkan dengan mudah.",
             font=("Arial", 11),
             text_color=TEXT_SUBTLE,
             anchor="w",
             justify="left",
         )
-        helper.grid(row=2, column=0, sticky="ew")
-
-        self.refresh_scrape_log()
-
-    def _get_scrape_log_data(self):
-        try:
-            data = self.get_scrape_log_callback()
-        except Exception:
-            data = None
-
-        if not isinstance(data, dict):
-            return get_scrape_status_text()
-
-        return data
-
-    def refresh_scrape_log(self):
-        try:
-            log_data = self.get_scrape_log_callback()
-        except Exception:
-            log_data = get_scrape_status_text()
-
-        self.scrape_log_title.configure(text=log_data.get("title", "Last Scraped"))
-        self.scrape_log_timestamp.configure(text=log_data.get("timestamp", "-"))
-        self.scrape_log_summary.configure(text=log_data.get("summary", "No scraping activity yet"))
-
-    def on_scrape_clicked(self):
-        if str(self.btn_scrape.cget("state")) == "disabled":
-            return
-
-        self.btn_scrape.configure(text="Scraping...", state="disabled")
-        self.thread_handler.run_task(
-            task_func=self.controller.scrape_for_ui,
-            on_success=self._handle_scrape_success,
-            on_error=self._handle_scrape_error,
-        )
-
-    def _handle_scrape_success(self, scraped_data):
-        self.kos_data = scraped_data or []
-        self.refresh_scrape_log()
-        self.btn_scrape.configure(text="Scrape Data", state="normal")
-        self.show_frame("search")
-
-    def _handle_scrape_error(self, exception):
-        log_scrape("failed", len(self.kos_data), str(exception) or "Scrape gagal")
-        self.refresh_scrape_log()
-        self.btn_scrape.configure(text="Scrape Data", state="normal")
-        self.show_frame("search")
+        helper.pack(side="bottom", fill="x", pady=(0, 10))
 
     def _show_menu(self, menu_name):
         """Handle menu button clicks with highlight update."""
@@ -1107,8 +890,6 @@ class App(ctk.CTk):
         )
         self.frames["analytics"] = AnalyticsPage(
             self.content_frame,
-            get_data_callback=lambda: self.kos_data,
-            get_log_callback=self.get_scrape_log_for_ui,
             fg_color="transparent",
         )
         self.frames["favorites"] = FavoritesPage(
@@ -1116,20 +897,25 @@ class App(ctk.CTk):
             toggle_favorite=self.toggle_favorite,
             add_to_compare=self.toggle_compare,
             open_detail=self.open_detail,
+            current_user=self.current_user,
             fg_color="transparent",
         )
         self.frames["compare"] = ComparePage(
             self.content_frame,
             clear_compare=self.clear_compare,
             open_detail=self.open_detail,
+            current_user=self.current_user,
             fg_color="transparent",
         )
         self.frames["history"] = HistoryPage(
             self.content_frame,
+            current_user=self.current_user,
             fg_color="transparent",
         )
         self.frames["settings"] = SettingsPage(
             self.content_frame,
+            logout_callback=self.logout_and_close,
+            current_user=self.current_user,
             fg_color="transparent",
         )
         self.frames["detail"] = DetailPage(
@@ -1176,19 +962,10 @@ class App(ctk.CTk):
 
         frame.tkraise()
 
-    def get_scrape_log_for_ui(self):
-        return self.controller.get_scrape_log_for_ui()
-
     def search_items(self, keyword):
         if not keyword:
             return self.kos_data
         return self.controller.search_for_ui(keyword)
-
-    def _normalize_ui_item(self, item):
-        if not isinstance(item, dict):
-            return self.controller._to_ui_item(self.controller._normalize_item({}, 0))
-        normalized = self.controller._normalize_item(item, item.get("id", 0) or 0)
-        return self.controller._to_ui_item(normalized)
 
     def _contains(self, collection, item):
         if not item or not isinstance(collection, list):
@@ -1200,13 +977,10 @@ class App(ctk.CTk):
         if not isinstance(kos_item, dict):
             return
 
-        normalized_item = self._normalize_ui_item(kos_item)
         if self._contains(self.favorites, kos_item):
-            self.favorites = [item for item in self.favorites if _item_key(item) != _item_key(normalized_item)]
-            self.favorites_manager.remove_favorite(normalized_item)
+            self.favorites = [item for item in self.favorites if _item_key(item) != _item_key(kos_item)]
         else:
-            self.favorites.insert(0, normalized_item)
-            self.favorites_manager.add_favorite(normalized_item)
+            self.favorites.insert(0, kos_item)
 
         self.show_frame(self.active_frame)
 
@@ -1234,9 +1008,17 @@ class App(ctk.CTk):
         self.detail_item = kos_item
         self.show_frame("detail")
 
+    def logout_and_close(self):
+        self.logout_requested = True
+        self.destroy()
+
+    def _on_close(self):
+        self.destroy()
+
 
 def main():
     app = App()
+    app.protocol("WM_DELETE_WINDOW", app._on_close)
     app.mainloop()
 
 
