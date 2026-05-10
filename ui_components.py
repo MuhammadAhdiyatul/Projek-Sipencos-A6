@@ -1,6 +1,6 @@
 ﻿import customtkinter as ctk
+import requests
 from io import BytesIO
-from urllib.request import urlopen
 
 try:
     from PIL import Image
@@ -73,13 +73,18 @@ def _load_remote_image(url, size):
         return _IMAGE_CACHE[cache_key]
 
     try:
-        with urlopen(url, timeout=8) as response:
-            raw = response.read()
-        pil_image = Image.open(BytesIO(raw)).convert("RGB")
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+        }
+        response = requests.get(url, headers=headers, timeout=10)
+        response.raise_for_status()
+
+        pil_image = Image.open(BytesIO(response.content)).convert("RGB")
         image = ctk.CTkImage(light_image=pil_image, dark_image=pil_image, size=size)
         _IMAGE_CACHE[cache_key] = image
         return image
-    except Exception:
+    except Exception as e:
+        print(f"[ERROR GAMBAR] Gagal memuat {url}: {e}")
         return None
 
 ctk.set_appearance_mode("Light")
