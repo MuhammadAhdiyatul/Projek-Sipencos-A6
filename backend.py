@@ -15,13 +15,13 @@ class BackendManager:
         try:
             with open(filepath, "r", encoding="utf-8") as f:
                 self.data_kos = json.load(f)
-            print(f"[Backend Inffo] Beerhasil memuuat {len(self.data_kos)} data kos dari json.")
+            print(f"[Backend Info] Berhasil memuat {len(self.data_kos)} data kos dari json.")
         except FileNotFoundError:
-            print("[Backend eror] File data_kos.json tidak ditemukan!")
-            print("Pastikan Scraper.py sudah dijalankan dan foldearnya beanr.")
+            print("[Backend Error] File data_kos.json tidak ditemukan!")
+            print("Pastikan Scraper.py sudah dijalankan dan foldernya benar.")
     
     def bersihkan_harga(self, harga_str):
-        """Untuk mengubah teks harga menjadi angka agar bisa di filter, contoh: "Rp 1.500.000/bulan" menjadi 1500000"""
+        """Untuk mengubah teks harga menjadi angka agar bisa di filter, contoh: 'Rp 1.500.000/bulan' menjadi 1500000"""
         if not harga_str or harga_str == "-":
             return 0
         
@@ -31,7 +31,7 @@ class BackendManager:
             
         hasil_angka = int(angka_saja)
         
-        
+        # Handling error untuk harga yang disingkat (contoh: 600rb terbaca 600)
         if 0 < hasil_angka < 10000:
             hasil_angka *= 1000
             
@@ -86,7 +86,9 @@ class BackendManager:
                     continue
 
             # 4. FILTER FASILITAS
-            fasilitas_kos = str(kos.get('fasilitas', '')).lower() 
+            # Menggabungkan array fasilitas_kamar dan fasilitas_bersama
+            kumpulan_fasilitas = kos.get('fasilitas_kamar', []) + kos.get('fasilitas_bersama', [])
+            fasilitas_kos = str(kumpulan_fasilitas).lower()
             
             if wifi and 'wifi' not in fasilitas_kos:
                 continue
@@ -109,39 +111,35 @@ class BackendManager:
             # Jika sedang mencari keyword (dan tidak pilih urut harga), urutkan dari Skor Tertinggi
             hasil_pencarian.sort(key=lambda k: k.get('skor_relevansi', 0), reverse=True)
 
+        # 6. EMPTY STATE LOGGER
+        # (Sangat membantu proses Integrasi UI & Logger)
+        if not hasil_pencarian:
+            print("[Backend Info] Filter aktif, tapi tidak ada data kos yang cocok (Empty State).")
+
         return hasil_pencarian
 
-
-#blok testing
-#blok testing
+# blok testing
 if __name__ == "__main__":
-    print("Menguji Backend")
+    print("=== Menguji Backend SiPencos ===")
     backend = BackendManager()
 
     # Tes Sorting Termurah
     kos_termurah = backend.cari_kos(urutan="termurah")
-    print("\nTes Pengurutan Termurah:")
+    print("\n[TEST] Urutan Termurah:")
     if kos_termurah:
-        for i in range(min(3, len(kos_termurah))): # Tampilkan 3 saja
+        for i in range(min(3, len(kos_termurah))): 
             print(f"- {kos_termurah[i]['nama_kos']} : {kos_termurah[i]['harga']}")
             
-    # Tes Range Harga (Misal: 500rb sampai 1.5jt)
+    # Tes Range Harga
     kos_range = backend.cari_kos(harga_min=500000, harga_maks=1500000)
-    print(f"\nJumlah kos harga 500rb - 1.5jt: {len(kos_range)}")
+    print(f"\n[TEST] Kos harga 500rb - 1.5jt: {len(kos_range)} data ditemukan.")
 
-  # Tes Filter Fasilitas (WiFi Saja)
-    kos_wifi = backend.cari_kos(wifi=True)
-    print(f"\nJumlah kos yang ada WiFi saja: {len(kos_wifi)}")
+    # Tes Filter Fasilitas (Membuktikan perbaikan bug merge fasilitas berhasil)
+    kos_wifi_ac = backend.cari_kos(wifi=True, ac=True)
+    print(f"\n[TEST] Kos dengan fasilitas WiFi & AC: {len(kos_wifi_ac)} data ditemukan.")
+    if kos_wifi_ac:
+        print(f"       Contoh: {kos_wifi_ac[0]['nama_kos']}")
     
-    # Mari kita intip data fasilitas dari kos urutan pertama untuk memastikan bentuk datanya
-    if backend.data_kos:
-        print(f"Data fasilitas mentah kos pertama: {backend.data_kos[0].get('fasilitas', 'Data tidak ada')}")
-
-        # Tes Fitur Scoring / Ranking
-    kos_dago_ranking = backend.cari_kos(keyword="Dago")
-    print("\nTes Ranking Pencarian 'Dago':")
-    if kos_dago_ranking:
-        for i in range(min(4, len(kos_dago_ranking))): # Tampilkan maksimal 4
-            nama = kos_dago_ranking[i].get('nama_kos', '')
-            skor = kos_dago_ranking[i].get('skor_relevansi', 0)
-            print(f"- {nama} (Skor: {skor})")
+    # Tes Empty State
+    print("\n[TEST] Empty State (Mencari kos tidak masuk akal):")
+    kos_kosong = backend.cari_kos(harga_maks=1000)
