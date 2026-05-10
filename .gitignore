@@ -1,0 +1,13 @@
+# Python temporary files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Code Runner temp files
+tempCodeRunnerFile.py
+
+# Local environment
+.env
+venv/
+.venv/
