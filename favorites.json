@@ -1,0 +1,100 @@
+[
+  {
+    "id": 5,
+    "nama": "Kost putri aman, tenang dan strategis Duren Tiga",
+    "harga": 1900000,
+    "lokasi": "Jl. Duren Tiga Buntu nomor 38 Jakarta Selatan 12760",
+    "wifi": true,
+    "deskripsi": "Jl. Duren Tiga Buntu nomor 38 Jakarta Selatan 12760",
+    "tipe": "Putri",
+    "nama_kos": "Kost putri aman, tenang dan strategis Duren Tiga",
+    "alamat": "Jl. Duren Tiga Buntu nomor 38 Jakarta Selatan 12760",
+    "telepon": "081111812138",
+    "fasilitas_kamar": [
+      "Spring Bed",
+      "Perabot",
+      "Free WiFi",
+      "AC",
+      "TV",
+      "Kulkas",
+      "Kamar Mandi Dalam"
+    ],
+    "fasilitas_bersama": [
+      "Ruang Tamu",
+      "Televisi",
+      "Dapur",
+      "Air Minum",
+      "Cuci Setrika",
+      "Mesin Cuci (Cuci Sendiri)",
+      "Parkir Motor"
+    ],
+    "foto": [
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/05-2026/ad10018062167/listing-1884521427_large.webp",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/05-2026/ad10018062167/listing-1884521427.webp",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/05-2026/ad10018062167/listing-2029387671.webp",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/05-2026/ad10018062167/listing-1713232290.webp",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/05-2026/ad10018062167/listing-310617520.webp",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/05-2026/ad10018062167/listing-1409672677.webp",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/05-2026/ad10018062167/listing-1683546222.webp",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/05-2026/ad10018062167/listing-1974439014.webp",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/05-2026/ad10018062167/listing-2131132084.webp",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/05-2026/ad10018062167/listing-736834117.webp"
+    ],
+    "harga_display": "Rp 1.900.000",
+    "added_at": "2026-05-10T22:16:15.300845Z"
+  },
+  {
+    "id": 1,
+    "nama": "Urbanest Inn House Slipi",
+    "harga": 4000000,
+    "lokasi": "Jl.haji saili no 39-40 Rt.5/Rw.5, Kemanggisan jakarta barat",
+    "wifi": true,
+    "deskripsi": "Jl.haji saili no 39-40 Rt.5/Rw.5, Kemanggisan jakarta barat",
+    "tipe": "Putra",
+    "nama_kos": "Urbanest Inn House Slipi",
+    "alamat": "Jl.haji saili no 39-40 Rt.5/Rw.5, Kemanggisan jakarta barat",
+    "telepon": "021-2212-8646",
+    "fasilitas_kamar": [
+      "Spring Bed",
+      "Perabot",
+      "Free WiFi",
+      "AC",
+      "TV",
+      "Kulkas",
+      "Kamar Mandi Dalam",
+      "Pemanas Air (Water Heater)"
+    ],
+    "fasilitas_bersama": [
+      "Televisi",
+      "Ruang Makan",
+      "Dapur",
+      "Air Minum",
+      "Pembantu",
+      "Keamanan",
+      "Parkir Motor",
+      "Parkir Mobil"
+    ],
+    "foto": [
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/03-2026/ad178243/urbanest-inn-house-slipi-1925562540_large.webp",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/03-2026/ad178243/urbanest-inn-house-slipi-1925562540.webp",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/03-2026/ad178243/urbanest-inn-house-slipi-641908829.webp",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/03-2026/ad178243/urbanest-inn-house-slipi-447458322.webp",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/03-2026/ad178243/urbanest-inn-house-slipi-246893103.webp",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/03-2026/ad178243/urbanest-inn-house-slipi-739348919.webp",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/03-2026/ad178243/urbanest-inn-house-slipi-713008482.webp",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/03-2026/ad178243/urbanest-inn-house-slipi-1292103581.webp",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/03-2026/ad178243/urbanest-inn-house-slipi-604505088.webp",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/03-2026/ad178243/urbanest-inn-house-slipi-516537921.webp",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/03-2026/ad178243/urbanest-inn-house-slipi-1688260976.webp",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/03-2026/ad178243/urbanest-inn-house-slipi-1097831121.webp",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/03-2026/ad178243/urbanest-inn-house-slipi-1856004428.webp",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/03-2026/ad178243/urbanest-inn-house-slipi-312039340.webp",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/03-2026/ad178243/urbanest-inn-house-slipi-1377526751.webp",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/03-2026/ad178243/urbanest-inn-house-slipi-1336434128.webp",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/03-2026/ad178243/urbanest-inn-house-slipi-624541112.webp",
+      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/03-2026/ad178243/urbanest-inn-house-slipi-1780672631.webp"
+    ],
+    "harga_display": "Rp 4.000.000",
+    "added_at": "2026-05-10T22:11:53.812737Z"
+  }
+]

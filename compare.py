@@ -1,3 +1,5 @@
+import re
+
 import customtkinter as ctk
 
 
@@ -251,13 +253,8 @@ class CompareWindow(ctk.CTkToplevel):
         return self._safe_text(item.get(field_name))
 
     def _format_price(self, value):
-        if isinstance(value, (int, float)):
-            return f"Rp {int(value):,}".replace(",", ".")
-
-        if isinstance(value, str) and value.strip():
-            return value.strip()
-
-        return "-"
+        nominal = self._to_int_price(value)
+        return f"Rp {nominal:,}".replace(",", ".") if nominal > 0 else "-"
 
     def _list_to_text(self, value):
         if isinstance(value, list):
@@ -279,11 +276,98 @@ class CompareWindow(ctk.CTkToplevel):
 
     def _to_int_price(self, value):
         if isinstance(value, (int, float)):
-            return int(value)
-        if isinstance(value, str):
-            digits = "".join(ch for ch in value if ch.isdigit())
-            return int(digits) if digits else 0
-        return 0
+            v = int(value)
+            if v <= 0:
+                return 0
+            if v < 1000:
+                if v <= 9:
+                    return v * 1_000_000
+                else:
+                    return v * 1_000
+            return v
+
+        if not isinstance(value, str):
+            return 0
+
+        text = value.strip().lower()
+        if not text or text == "-":
+            return 0
+
+        text = text.replace("rupiah", "rp").replace("/bulan", " ").replace("bln", " ")
+        text = text.replace("/tahun", " ").replace("/thn", " ")
+
+        k_match = re.search(r"(\d[\d.,]*)\s*k\b", text)
+        if k_match:
+            frag = k_match.group(1).replace(".", "").replace(",", ".")
+            try:
+                return int(float(frag) * 1_000)
+            except ValueError:
+                pass
+
+        juta_match = re.search(r"(\d[\d.,]*)\s*(?:juta|jt)", text)
+        if juta_match:
+            frag = juta_match.group(1).replace(".", "").replace(",", ".")
+            try:
+                return int(float(frag) * 1_000_000)
+            except ValueError:
+                return 0
+
+        ribu_match = re.search(r"(\d[\d.,]*)\s*(?:ribu|rb)", text)
+        if ribu_match:
+            frag = ribu_match.group(1).replace(".", "").replace(",", ".")
+            try:
+                return int(float(frag) * 1_000)
+            except ValueError:
+                return 0
+
+        number_match = re.search(r"\d[\d.,]*", text)
+        if not number_match:
+            return 0
+
+        fragment = number_match.group(0)
+
+        if "," in fragment or "." in fragment:
+            separators = [c for c in fragment if c in ".,"]
+            if len(separators) >= 2:
+                cleaned = fragment.replace(",", "").replace(".", "")
+                return int(cleaned) if cleaned else 0
+            whole, frac = fragment.replace(",", ".").split(".")
+            if len(frac) == 3:
+                if len(whole) >= 2 or frac == "000":
+                    cleaned = whole + frac
+                    return int(cleaned)
+                try:
+                    return int(whole) * 1_000_000 + int(frac) * 1_000
+                except ValueError:
+                    return 0
+            if len(frac) <= 2:
+                try:
+                    return int(float(f"{whole}.{frac}") * 1_000_000)
+                except ValueError:
+                    return 0
+            cleaned = fragment.replace(",", "").replace(".", "")
+            v = int(cleaned) if cleaned else 0
+            if v <= 0:
+                return 0
+            if v < 1000:
+                if v <= 9:
+                    return v * 1_000_000
+                else:
+                    return v * 1_000
+            return v
+
+        digits_only = re.sub(r"\D", "", fragment)
+        if not digits_only:
+            return 0
+        v = int(digits_only)
+        if v <= 0:
+            return 0
+        if v < 1000:
+            if v <= 9:
+                return v * 1_000_000
+            else:
+                return v * 1_000
+        return v
 
     def _count_facilities(self, item):
         count = 0

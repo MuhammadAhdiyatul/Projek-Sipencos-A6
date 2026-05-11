@@ -15,8 +15,9 @@ TEXT_SUBTLE = "#6F7C85"
 
 
 class FavoritesManager:
-    def __init__(self, filepath=None):
+    def __init__(self, filepath=None, owner_username=None):
         self.filepath = filepath or os.path.join(os.path.dirname(__file__), "favorites.json")
+        self.owner_username = owner_username or ""
         self.favorites = self.load_favorites()
 
     def _normalize_item_id(self, kos_item):
