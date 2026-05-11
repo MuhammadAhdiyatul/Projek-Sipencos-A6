@@ -42,6 +42,14 @@ def _safe_text(value, default="-"):
     return str(value)
 
 
+def _display_name(user):
+    if not isinstance(user, dict):
+        return "Guest"
+
+    username = str(user.get("display_name") or user.get("username") or "Guest").strip()
+    return username.title() if username else "Guest"
+
+
 class IntegrationController:
     """Lapisan integrasi sederhana antara UI, backend, dan scraper."""
 
@@ -289,6 +297,7 @@ class FavoritesPage(ctk.CTkFrame):
         toggle_favorite,
         add_to_compare,
         open_detail,
+        current_user=None,
         *args,
         **kwargs,
     ):
@@ -296,8 +305,9 @@ class FavoritesPage(ctk.CTkFrame):
         self.toggle_favorite = toggle_favorite
         self.add_to_compare = add_to_compare
         self.open_detail = open_detail
+        self.current_user = current_user
 
-        self.grid_rowconfigure(1, weight=1)
+        self.grid_rowconfigure(2, weight=1)
         self.grid_columnconfigure(0, weight=1)
 
         title = ctk.CTkLabel(
@@ -309,12 +319,21 @@ class FavoritesPage(ctk.CTkFrame):
         )
         title.grid(row=0, column=0, sticky="ew", pady=(0, 14))
 
+        self.user_label = ctk.CTkLabel(
+            self,
+            text=f"Session aktif: {_display_name(self.current_user)}",
+            font=("Arial", 12),
+            text_color=TEXT_SUBTLE,
+            anchor="w",
+        )
+        self.user_label.grid(row=1, column=0, sticky="ew", pady=(0, 10))
+
         self.scroll_frame = ctk.CTkScrollableFrame(
             self,
             fg_color="transparent",
             corner_radius=0,
         )
-        self.scroll_frame.grid(row=1, column=0, sticky="nsew")
+        self.scroll_frame.grid(row=2, column=0, sticky="nsew")
         self.scroll_frame.grid_columnconfigure(0, weight=1)
 
         self.list_container = ctk.CTkFrame(self.scroll_frame, fg_color="transparent")
@@ -328,7 +347,7 @@ class FavoritesPage(ctk.CTkFrame):
         if not favorites:
             empty = ctk.CTkLabel(
                 self.list_container,
-                text="Belum ada kos favorit.",
+                text=f"Belum ada kos favorit untuk {_display_name(self.current_user)}.",
                 font=("Arial", 15, "bold"),
                 text_color=TEXT_SUBTLE,
             )
@@ -364,12 +383,14 @@ class ComparePage(ctk.CTkFrame):
         parent,
         clear_compare,
         open_detail,
+        current_user=None,
         *args,
         **kwargs,
     ):
         super().__init__(parent, *args, **kwargs)
         self.clear_compare = clear_compare
         self.open_detail = open_detail
+        self.current_user = current_user
 
         self.grid_rowconfigure(2, weight=1)
         self.grid_columnconfigure(0, weight=1)
@@ -386,6 +407,15 @@ class ComparePage(ctk.CTkFrame):
             anchor="w",
         )
         title.grid(row=0, column=0, sticky="w")
+
+        self.user_label = ctk.CTkLabel(
+            self,
+            text=f"Akun aktif: {_display_name(self.current_user)}",
+            font=("Arial", 12),
+            text_color=TEXT_SUBTLE,
+            anchor="w",
+        )
+        self.user_label.grid(row=1, column=0, sticky="w", pady=(0, 10))
 
         btn_clear = ctk.CTkButton(
             header,
@@ -405,7 +435,7 @@ class ComparePage(ctk.CTkFrame):
             fg_color="transparent",
             corner_radius=0,
         )
-        self.body.grid(row=1, column=0, sticky="nsew")
+        self.body.grid(row=2, column=0, sticky="nsew")
         self.body.grid_columnconfigure(0, weight=1)
 
         self.table_frame = ctk.CTkFrame(self.body, fg_color=CARD_BG, corner_radius=18, border_width=1, border_color=BORDER_COLOR)
@@ -619,10 +649,11 @@ class DetailPage(ctk.CTkFrame):
 class PlaceholderPage(ctk.CTkFrame):
     """Generic placeholder page untuk fitur yang belum diimplementasikan."""
 
-    def __init__(self, parent, title, message, *args, **kwargs):
+    def __init__(self, parent, title, message, current_user=None, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
         self.title_text = title
         self.message_text = message
+        self.current_user = current_user
 
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
@@ -640,13 +671,21 @@ class PlaceholderPage(ctk.CTkFrame):
         )
         title_label.grid(row=0, column=0, pady=(0, 16))
 
+        user_label = ctk.CTkLabel(
+            container,
+            text=f"Akun aktif: {_display_name(self.current_user)}",
+            font=("Arial", 12),
+            text_color=TEXT_SUBTLE,
+        )
+        user_label.grid(row=1, column=0, pady=(0, 10))
+
         message_label = ctk.CTkLabel(
             container,
             text=message,
             font=("Arial", 16),
             text_color=TEXT_SUBTLE,
         )
-        message_label.grid(row=1, column=0)
+        message_label.grid(row=2, column=0)
 
     def refresh(self, *args, **kwargs):
         """Placeholder refresh method."""
@@ -660,22 +699,70 @@ class AnalyticsPage(PlaceholderPage):
 
 class HistoryPage(PlaceholderPage):
     def __init__(self, parent, *args, **kwargs):
-        super().__init__(parent, "🕘 History", "Fitur History belum tersedia\n\nComing soon...", *args, **kwargs)
+        current_user = kwargs.pop("current_user", None)
+        super().__init__(parent, "🕘 History", "Fitur History belum tersedia\n\nComing soon...", current_user=current_user, *args, **kwargs)
 
 
 class SettingsPage(PlaceholderPage):
-    def __init__(self, parent, *args, **kwargs):
-        super().__init__(parent, "⚙️ Settings", "Fitur Settings belum tersedia\n\nComing soon...", *args, **kwargs)
+    def __init__(self, parent, logout_callback=None, *args, **kwargs):
+        current_user = kwargs.pop("current_user", None)
+        super().__init__(parent, "⚙️ Settings", "Fitur Settings belum tersedia\n\nComing soon...", current_user=current_user, *args, **kwargs)
+        self.logout_callback = logout_callback
+
+        logout_card = ctk.CTkFrame(self, fg_color=CARD_BG, corner_radius=18, border_width=1, border_color=BORDER_COLOR)
+        logout_card.grid(row=1, column=0, sticky="ew", padx=24, pady=(18, 0))
+        logout_card.grid_columnconfigure(0, weight=1)
+
+        logout_title = ctk.CTkLabel(
+            logout_card,
+            text="Session",
+            font=("Arial", 15, "bold"),
+            text_color=PRIMARY_COLOR,
+            anchor="w",
+        )
+        logout_title.grid(row=0, column=0, sticky="w", padx=18, pady=(16, 4))
+
+        logout_info = ctk.CTkLabel(
+            logout_card,
+            text=f"Login sebagai {_display_name(self.current_user)}",
+            font=("Arial", 12),
+            text_color=TEXT_SUBTLE,
+            anchor="w",
+        )
+        logout_info.grid(row=1, column=0, sticky="w", padx=18)
+
+        logout_button = ctk.CTkButton(
+            logout_card,
+            text="Logout",
+            fg_color=ACCENT_COLOR,
+            hover_color="#B45E24",
+            text_color="white",
+            corner_radius=12,
+            height=40,
+            font=("Arial", 13, "bold"),
+            command=self._on_logout,
+        )
+        logout_button.grid(row=2, column=0, sticky="w", padx=18, pady=(14, 18))
+
+    def _on_logout(self):
+        if callable(self.logout_callback):
+            self.logout_callback()
+
+    def refresh(self, *args, **kwargs):
+        self.message_text = "Fitur Settings belum tersedia\n\nComing soon..."
 
 
 class App(ctk.CTk):
-    def __init__(self):
+    def __init__(self, current_user=None):
         super().__init__()
 
         self.title("SiPencos - Sistem Pencari Kos")
         self.geometry("1400x860")
         self.minsize(1200, 760)
         self.configure(fg_color=APP_BG)
+
+        self.current_user = current_user
+        self.logout_requested = False
 
         self.controller = IntegrationController()
         self.kos_data = self.controller.get_all_for_ui()
@@ -729,6 +816,15 @@ class App(ctk.CTk):
             anchor="w",
         )
         subtitle.pack(fill="x", pady=(0, 22))
+
+        user_badge = ctk.CTkLabel(
+            shell,
+            text=f"Welcome, {_display_name(self.current_user)}",
+            font=("Arial", 12, "bold"),
+            text_color=ACCENT_COLOR,
+            anchor="w",
+        )
+        user_badge.pack(fill="x", pady=(0, 18))
 
         # Menu buttons container
         self.menu_buttons = {}
@@ -801,20 +897,25 @@ class App(ctk.CTk):
             toggle_favorite=self.toggle_favorite,
             add_to_compare=self.toggle_compare,
             open_detail=self.open_detail,
+            current_user=self.current_user,
             fg_color="transparent",
         )
         self.frames["compare"] = ComparePage(
             self.content_frame,
             clear_compare=self.clear_compare,
             open_detail=self.open_detail,
+            current_user=self.current_user,
             fg_color="transparent",
         )
         self.frames["history"] = HistoryPage(
             self.content_frame,
+            current_user=self.current_user,
             fg_color="transparent",
         )
         self.frames["settings"] = SettingsPage(
             self.content_frame,
+            logout_callback=self.logout_and_close,
+            current_user=self.current_user,
             fg_color="transparent",
         )
         self.frames["detail"] = DetailPage(
@@ -907,9 +1008,17 @@ class App(ctk.CTk):
         self.detail_item = kos_item
         self.show_frame("detail")
 
+    def logout_and_close(self):
+        self.logout_requested = True
+        self.destroy()
+
+    def _on_close(self):
+        self.destroy()
+
 
 def main():
     app = App()
+    app.protocol("WM_DELETE_WINDOW", app._on_close)
     app.mainloop()
 
 
