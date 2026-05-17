@@ -64,13 +64,17 @@ def bersihkan_data(data):
 
         if isinstance(foto, list):
             foto_valid = [f for f in foto if f != "-" and f.startswith("http")]
-            item["foto"] = foto_valid if foto_valid else ["-"]
             if not foto_valid:
                 anomali["fotoKosong"] += 1
+                continue
+            item["foto"] = foto_valid
+        else:
+            anomali["fotoKosong"] += 1
+            continue
 
         if not alamat or alamat == "-" or len(alamat) < 5:
             anomali["alamatKosong"] += 1
-            item["alamat"] = "-"
+            continue
 
         hasil_bersih.append(item)
 

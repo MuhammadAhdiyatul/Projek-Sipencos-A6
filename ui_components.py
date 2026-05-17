@@ -1,6 +1,9 @@
 import customtkinter as ctk
 import requests
 import threading
+import concurrent.futures
+import hashlib
+from pathlib import Path
 from io import BytesIO
 
 try:
@@ -25,6 +28,13 @@ TITLE_COLOR = "#1B2630"
 SUCCESS_SURFACE = "#F6F9FC"
 
 _IMAGE_CACHE = {}
+_SESSION = requests.Session()
+_EXECUTOR = concurrent.futures.ThreadPoolExecutor(max_workers=6)
+_CACHE_DIR = Path(__file__).parent.joinpath(".image_cache")
+try:
+    _CACHE_DIR.mkdir(parents=True, exist_ok=True)
+except Exception:
+    _CACHE_DIR = None
 
 
 def _format_price(value):
@@ -70,6 +80,13 @@ def _safe_text(value, fallback="-"):
     return text if text else fallback
 
 
+def _truncate_text(value, limit, fallback="-"):
+    text = _safe_text(value, fallback)
+    if len(text) <= limit:
+        return text
+    return text[: max(0, limit - 1)].rstrip() + "…"
+
+
 def _normalize_foto(value):
     if isinstance(value, list):
         return [str(url).strip() for url in value if str(url).strip()]
@@ -91,39 +108,83 @@ def _load_remote_image(url, size):
     if cache_key in _IMAGE_CACHE:
         return _IMAGE_CACHE[cache_key]
 
+    # Try disk cache
+    cache_filename = None
+    if _CACHE_DIR is not None:
+        try:
+            h = hashlib.sha256(f"{url}|{size[0]}x{size[1]}".encode("utf-8")).hexdigest()
+            cache_filename = _CACHE_DIR.joinpath(f"{h}.jpg")
+            if cache_filename.exists():
+                pil_image = Image.open(str(cache_filename)).convert("RGB")
+                image = ctk.CTkImage(light_image=pil_image, dark_image=pil_image, size=size)
+                _IMAGE_CACHE[cache_key] = image
+                return image
+        except Exception:
+            cache_filename = None
+
     try:
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
         }
-        response = requests.get(url, headers=headers, timeout=10)
+        response = _SESSION.get(url, headers=headers, timeout=10)
         response.raise_for_status()
 
         pil_image = Image.open(BytesIO(response.content)).convert("RGB")
+        # create thumbnail preserving aspect ratio
+        try:
+            pil_copy = pil_image.copy()
+            pil_copy.thumbnail(size, Image.LANCZOS)
+            pil_image = pil_copy
+        except Exception:
+            pass
+
+        # save to disk cache
+        if cache_filename is not None:
+            try:
+                pil_image.save(str(cache_filename), format="JPEG", quality=75)
+            except Exception:
+                pass
+
         image = ctk.CTkImage(light_image=pil_image, dark_image=pil_image, size=size)
         _IMAGE_CACHE[cache_key] = image
         return image
-    except Exception as e:
-        # print(f"[ERROR GAMBAR] Gagal memuat {url}: {e}")
+    except Exception:
         return None
 
 def _load_remote_image_async(url, size, widget, callback):
     if not url or Image is None:
-        callback(None)
+        try:
+            callback(None)
+        except Exception:
+            pass
         return
 
     cache_key = (url, size)
     if cache_key in _IMAGE_CACHE:
-        callback(_IMAGE_CACHE[cache_key])
-        return
-
-    def fetch():
-        image = _load_remote_image(url, size)
         try:
-            widget.after(0, lambda: callback(image))
+            callback(_IMAGE_CACHE[cache_key])
         except Exception:
             pass
+        return
 
-    threading.Thread(target=fetch, daemon=True).start()
+    def fetch_and_callback():
+        try:
+            image = _load_remote_image(url, size)
+            try:
+                widget.after(0, lambda: callback(image))
+            except Exception:
+                pass
+        except Exception:
+            try:
+                widget.after(0, lambda: callback(None))
+            except Exception:
+                pass
+
+    try:
+        _EXECUTOR.submit(fetch_and_callback)
+    except Exception:
+        # fallback to thread if executor unavailable
+        threading.Thread(target=fetch_and_callback, daemon=True).start()
 
 
 class DetailWindow(ctk.CTkToplevel):
@@ -258,12 +319,43 @@ class DetailWindow(ctk.CTkToplevel):
 
         ctk.CTkFrame(info_panel, fg_color="transparent", height=20).pack(fill="x")
         
-        self.btn_contact = ctk.CTkButton(
-            info_panel, text=f"📞 Hubungi: {telepon}", 
-            fg_color="#D35400", hover_color="#A04000",
-            height=48, corner_radius=12, font=("Arial", 14, "bold")
+        ctk.CTkLabel(
+            info_panel,
+            text="NOMOR TELEPON",
+            font=("Arial", 10, "bold"),
+            text_color=TEXT_SUBTLE,
+            anchor="w",
+        ).pack(anchor="w", pady=(0, 4))
+
+        contact_box = ctk.CTkFrame(
+            info_panel,
+            fg_color=SUCCESS_SURFACE,
+            corner_radius=8,
+            border_width=1,
+            border_color=BORDER_COLOR,
         )
-        self.btn_contact.pack(fill="x", pady=(0, 12))
+        contact_box.pack(fill="x", pady=(0, 12))
+
+        contact_row = ctk.CTkFrame(contact_box, fg_color="transparent")
+        contact_row.pack(fill="x", padx=10, pady=10)
+        contact_row.grid_columnconfigure(1, weight=1)
+
+        ctk.CTkLabel(
+            contact_row,
+            text="☎",
+            font=("Arial", 18),
+            text_color=ACCENT_COLOR,
+            width=24,
+        ).grid(row=0, column=0, sticky="w", padx=(0, 8))
+
+        ctk.CTkLabel(
+            contact_row,
+            text=telepon,
+            font=("Arial", 14, "bold"),
+            text_color=TITLE_COLOR,
+            anchor="w",
+            justify="left",
+        ).grid(row=0, column=1, sticky="w")
 
         self.btn_fav = ctk.CTkButton(
             info_panel, text="♥ Simpan ke Favorit", 
@@ -324,14 +416,15 @@ class KosCard(ctk.CTkFrame):
             border_width=1,
             border_color=BORDER_COLOR,
             width=320,
+            height=420,
             **kwargs,
         )
         self.data_kos = data_kos
-        
+        self.grid_propagate(False)
         self.grid_columnconfigure(0, weight=1)
 
-        nama_kos = _safe_text(data_kos.get("nama_kos"), "Nama kos tidak tersedia")
-        alamat = _safe_text(data_kos.get("alamat"), "Lokasi belum tersedia")
+        nama_kos = _truncate_text(data_kos.get("nama_kos"), 48, "Nama kos tidak tersedia")
+        alamat = _truncate_text(data_kos.get("alamat"), 72, "Lokasi belum tersedia")
         harga = _format_price(data_kos.get("harga"))
         tipe = _safe_text(data_kos.get("tipe"), "PUTRA").upper()
         if "CAMPUR" in tipe:
@@ -412,6 +505,7 @@ class KosCard(ctk.CTkFrame):
         content = ctk.CTkFrame(self, fg_color="transparent")
         content.grid(row=1, column=0, sticky="ew", padx=14, pady=(0, 12))
         content.grid_columnconfigure(0, weight=1)
+        content.grid_rowconfigure(4, weight=0)
 
         title = ctk.CTkLabel(
             content,
@@ -421,6 +515,7 @@ class KosCard(ctk.CTkFrame):
             justify="left",
             anchor="w",
             wraplength=272,
+            height=40,
         )
         title.grid(row=0, column=0, sticky="ew")
 
@@ -432,17 +527,19 @@ class KosCard(ctk.CTkFrame):
             justify="left",
             anchor="w",
             wraplength=272,
+            height=30,
         )
         location.grid(row=1, column=0, sticky="ew", pady=(3, 8))
 
         facilities = ctk.CTkLabel(
             content,
-            text=fasilitas_ringkas,
+            text=_truncate_text(fasilitas_ringkas, 68),
             font=("Arial", 11),
             text_color="#4B5563",
             anchor="w",
             justify="left",
             wraplength=272,
+            height=26,
         )
         facilities.grid(row=2, column=0, sticky="ew", pady=(0, 10))
 
@@ -479,4 +576,4 @@ class KosCard(ctk.CTkFrame):
             font=("Arial", 12, "bold"),
             command=lambda: open_detail_callback(self.data_kos) if open_detail_callback else (DetailWindow(self, self.data_kos) if DetailWindow else print("[DEBUG] DetailWindow class not imported")),
         )
-        btn_detail.grid(row=4, column=0, sticky="ew")
+        btn_detail.grid(row=4, column=0, sticky="ew", pady=(4, 0))

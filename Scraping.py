@@ -376,14 +376,16 @@ class KosScraper:
                 ]
                 if not foto_valid:
                     anomali["foto_kosong"] += 1
-                    item["foto"] = ["-"]
-                else:
-                    item["foto"] = foto_valid
+                    continue
+                item["foto"] = foto_valid
+            else:
+                anomali["foto_kosong"] += 1
+                continue
 
             # ── 8. Validasi alamat ───────────────────────
             if not alamat or alamat == "-" or len(alamat) < 5:
                 anomali["alamat_kosong"] += 1
-                item["alamat"] = "-"
+                continue
 
             hasil_bersih.append(item)
 

@@ -91,6 +91,8 @@ class AnimatedFilterDropdown(ctk.CTkFrame):
             self.command(value)
 
 class SearchPage(ctk.CTkFrame):
+    PAGE_SIZE = 27
+
     def __init__(
         self,
         parent,
@@ -107,6 +109,7 @@ class SearchPage(ctk.CTkFrame):
         self.add_to_compare = add_to_compare
         self.open_detail = open_detail
         self._current_results = []
+        self._current_page = 1
         self.favorites = []
         self.compare_list = []
 
@@ -143,6 +146,9 @@ class SearchPage(ctk.CTkFrame):
 
         # Row 5: Results Grid (Scrollable)
         self._build_results_grid()
+
+        # Row 6: Pagination Controls
+        self._build_pagination_bar()
 
     def _build_top_nav(self):
         top_nav = ctk.CTkFrame(self, fg_color=BG_COLOR)
@@ -292,6 +298,49 @@ class SearchPage(ctk.CTkFrame):
         for col in range(3):
             self.results_grid.grid_columnconfigure(col, weight=1, uniform="cards")
 
+    def _build_pagination_bar(self):
+        pagination_bar = ctk.CTkFrame(self, fg_color=BG_COLOR)
+        pagination_bar.grid(row=6, column=0, sticky="ew", pady=(10, 0))
+        pagination_bar.grid_columnconfigure(0, weight=1)
+        pagination_bar.grid_columnconfigure(1, weight=1)
+        pagination_bar.grid_columnconfigure(2, weight=1)
+
+        self.prev_button = ctk.CTkButton(
+            pagination_bar,
+            text="← Sebelumnya",
+            height=40,
+            width=150,
+            corner_radius=14,
+            fg_color=PRIMARY_COLOR,
+            hover_color="#013A62",
+            text_color="white",
+            font=("Arial", 12, "bold"),
+            command=self._go_previous_page,
+        )
+        self.prev_button.grid(row=0, column=0, sticky="w", padx=(0, 8))
+
+        self.page_label = ctk.CTkLabel(
+            pagination_bar,
+            text="Halaman 1/1",
+            font=("Arial", 12, "bold"),
+            text_color=TEXT_SUBTLE,
+        )
+        self.page_label.grid(row=0, column=1)
+
+        self.next_button = ctk.CTkButton(
+            pagination_bar,
+            text="Selanjutnya →",
+            height=40,
+            width=150,
+            corner_radius=14,
+            fg_color=ACCENT_COLOR,
+            hover_color="#D96A1F",
+            text_color="white",
+            font=("Arial", 12, "bold"),
+            command=self._go_next_page,
+        )
+        self.next_button.grid(row=0, column=2, sticky="e", padx=(8, 0))
+
     def toggle_filter(self, filter_name):
         self.active_filters[filter_name] = not self.active_filters[filter_name]
         btn = getattr(self, f"btn_{filter_name.lower().replace(' ', '_')}")
@@ -359,25 +408,33 @@ class SearchPage(ctk.CTkFrame):
 
         self.refresh(filtered_results, self.favorites, self.compare_list)
 
-    def refresh(self, data_list, favorites, compare_list):
+    def refresh(self, data_list, favorites, compare_list, page=1):
         self._current_results = data_list or []
         self.favorites = favorites or []
         self.compare_list = compare_list or []
+        self._current_page = max(1, int(page or 1))
 
         # Update summary
         count = len(self._current_results)
-        limit_text = " (menampilkan 30 teratas)" if count > 30 else ""
-        self.label_summary.configure(text=f"Menampilkan {count} kos{limit_text}")
+        favorites_keys = {_item_key(item) for item in self.favorites}
+        compare_keys = {_item_key(item) for item in self.compare_list}
+        self._render_page(favorites_keys, compare_keys)
 
-        # Clear old widgets
+        total_pages = max(1, (count + self.PAGE_SIZE - 1) // self.PAGE_SIZE)
+        self._current_page = min(self._current_page, total_pages)
+        self.label_summary.configure(text=f"Menampilkan {count} kos")
+        self.page_label.configure(text=f"Halaman {self._current_page}/{total_pages}")
+
+        self.prev_button.configure(state="normal" if self._current_page > 1 else "disabled")
+        self.next_button.configure(state="normal" if self._current_page < total_pages else "disabled")
+
+    def _render_page(self, favorites_keys, compare_keys):
         for widget in self.results_grid.winfo_children():
             widget.destroy()
 
-        # Render new cards (Limit to 30 items)
-        favorites_keys = {_item_key(item) for item in self.favorites}
-        compare_keys = {_item_key(item) for item in self.compare_list}
-
-        display_results = self._current_results[:30]
+        start = (self._current_page - 1) * self.PAGE_SIZE
+        end = start + self.PAGE_SIZE
+        display_results = self._current_results[start:end]
 
         for index, item in enumerate(display_results):
             row = index // 3
@@ -392,6 +449,33 @@ class SearchPage(ctk.CTkFrame):
                 open_detail=self.open_detail,
             )
             card.grid(row=row, column=col, padx=12, pady=12, sticky="n")
+
+    def _go_previous_page(self):
+        if self._current_page <= 1:
+            return
+        self._current_page -= 1
+        self._refresh_current_view()
+
+    def _go_next_page(self):
+        total_pages = max(1, (len(self._current_results) + self.PAGE_SIZE - 1) // self.PAGE_SIZE)
+        if self._current_page >= total_pages:
+            return
+        self._current_page += 1
+        self._refresh_current_view()
+
+    def _refresh_current_view(self):
+        count = len(self._current_results)
+        total_pages = max(1, (count + self.PAGE_SIZE - 1) // self.PAGE_SIZE)
+        self._current_page = min(max(1, self._current_page), total_pages)
+
+        favorites_keys = {_item_key(item) for item in self.favorites}
+        compare_keys = {_item_key(item) for item in self.compare_list}
+
+        self._render_page(favorites_keys, compare_keys)
+        self.label_summary.configure(text=f"Menampilkan {count} kos")
+        self.page_label.configure(text=f"Halaman {self._current_page}/{total_pages}")
+        self.prev_button.configure(state="normal" if self._current_page > 1 else "disabled")
+        self.next_button.configure(state="normal" if self._current_page < total_pages else "disabled")
 
 def _item_key(kos_item):
     if not isinstance(kos_item, dict):

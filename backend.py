@@ -9,15 +9,15 @@ class BackendManager:
         self.load_data()
 
     def load_data(self):
-        """membaca file data_kos.json hasil dari scraping"""
-        filepath = os.path.join("output_datakos", "data_kos.json")
+        """membaca file data_kos_bersih.json hasil dari pembersihan"""
+        filepath = os.path.join("output_datakos", "data_kos_bersih.json")
 
         try:
             with open(filepath, "r", encoding="utf-8") as f:
                 self.data_kos = json.load(f)
             print(f"[Backend Info] Berhasil memuat {len(self.data_kos)} data kos dari json.")
         except FileNotFoundError:
-            print("[Backend Error] File data_kos.json tidak ditemukan!")
+            print("[Backend Error] File data_kos_bersih.json tidak ditemukan!")
             print("Pastikan Scraper.py sudah dijalankan dan foldernya benar.")
     
     def bersihkan_harga(self, harga_str):
