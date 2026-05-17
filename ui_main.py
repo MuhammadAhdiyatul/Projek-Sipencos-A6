@@ -1,8 +1,14 @@
 import customtkinter as ctk
+import threading
+import requests
+from io import BytesIO
+from PIL import Image
+
 from compare import CompareManager
 from favorites import FavoritesWindow
-from ui_components import KosCard
+from ui_components import KosCard, _load_remote_image, _normalize_foto
 from threading_handler import ThreadingHandler
+from ui_components import _load_remote_image, _normalize_foto
 
 
 # Force light mode for consistent dashboard look
@@ -17,6 +23,14 @@ APP_BG = "#F0F2F5"
 CARD_BG = "#FFFFFF"
 BORDER_COLOR = "#E7EAF0"
 TEXT_SUBTLE = "#6F7C85"
+
+# Modern comparison theme
+NAVY = "#0B2240"
+ORANGE = "#F47B20"
+LIGHT_BG = "#F5F7FA"
+GREEN_BADGE = "#DFF5E3"
+BLUE_BADGE = "#DDE7FF"
+ORANGE_BADGE = "#FFE4CC"
 
 
 class App(ctk.CTk):
@@ -374,142 +388,707 @@ class App(ctk.CTk):
             self.display_data(self.get_all_callback())
 
     def render_compare_page(self):
-        """Render the compare page in the main content area."""
-        # Title
-        title_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
-        title_frame.grid(row=0, column=0, sticky="ew", pady=(0, 20))
-
-        title = ctk.CTkLabel(
-            title_frame,
-            text="Perbandingan Kos",
-            font=("Arial", 36, "bold"),
-            text_color=PRIMARY_COLOR,
-            anchor="w",
+        """Render modern comparison dashboard."""
+        from compare import (
+            get_kos_name,
+            get_cheapest_indexes,
+            get_largest_room_indexes,
+            get_most_facility_indexes,
+            get_highest_rating_indexes,
+            get_best_kos_recommendation,
         )
-        title.pack(fill="x")
 
-        # Get compare items
         compare_items = self.get_compare_callback() or [] if self.get_compare_callback else []
 
+        self.main_frame.grid_rowconfigure(1, weight=1)
+        self.main_frame.grid_columnconfigure(0, weight=1)
+
+        scroll_frame = ctk.CTkScrollableFrame(
+            self.main_frame, fg_color="#F5F7FA", corner_radius=0
+        )
+        scroll_frame.grid(row=1, column=0, sticky="nsew")
+
         if not compare_items:
-            # Empty state
-            empty_container = ctk.CTkFrame(self.main_frame, fg_color="transparent")
-            empty_container.grid(row=1, column=0, sticky="nsew", pady=100)
-
-            empty_label = ctk.CTkLabel(
-                empty_container,
-                text="Belum ada kos yang dibandingkan",
-                font=("Arial", 18, "bold"),
-                text_color=TEXT_SUBTLE,
-                anchor="center",
-            )
-            empty_label.pack()
-
-            back_button = ctk.CTkButton(
-                empty_container,
-                text="← Kembali ke Search",
-                width=200,
-                height=40,
-                fg_color=ACCENT_COLOR,
-                hover_color="#B45E24",
-                text_color="white",
-                corner_radius=10,
-                font=("Arial", 12, "bold"),
-                command=lambda: self.switch_page("search"),
-            )
-            back_button.pack(pady=20)
-        else:
-            # Show comparison table
-            content_frame = ctk.CTkFrame(
-                self.main_frame,
-                fg_color=CARD_BG,
-                corner_radius=16,
-                border_width=1,
-                border_color=BORDER_COLOR,
-            )
-            content_frame.grid(row=1, column=0, sticky="nsew", pady=(0, 20))
-
-            # Build comparison table
-            scroll_frame = ctk.CTkScrollableFrame(
-                content_frame,
-                fg_color="transparent",
-                corner_radius=0,
-            )
-            scroll_frame.pack(fill="both", expand=True, padx=10, pady=10)
-
-            # Header row with kos names
-            header_frame = ctk.CTkFrame(scroll_frame, fg_color=CARD_BG)
-            header_frame.pack(fill="x", padx=8, pady=8)
+            empty_frame = ctk.CTkFrame(scroll_frame, fg_color="transparent")
+            empty_frame.pack(fill="both", expand=True, padx=20, pady=100)
 
             ctk.CTkLabel(
-                header_frame,
-                text="Fitur",
-                font=("Arial", 12, "bold"),
-                text_color=PRIMARY_COLOR,
+                empty_frame,
+                text="📊",
+                font=("Arial", 64),
+            ).pack()
+
+            ctk.CTkLabel(
+                empty_frame,
+                text="Belum ada kos untuk dibandingkan",
+                font=("Arial", 18, "bold"),
+                text_color=NAVY,
+            ).pack(pady=(20, 0))
+
+            ctk.CTkLabel(
+                empty_frame,
+                text="Pilih kos dari halaman search untuk membandingkan.",
+                font=("Arial", 13),
+                text_color=TEXT_SUBTLE,
+            ).pack(pady=(5, 20))
+
+            ctk.CTkButton(
+                empty_frame,
+                text="Cari Kos",
+                fg_color=ORANGE,
+                hover_color="#E06B10",
+                text_color="white",
+                corner_radius=10,
+                height=40,
                 width=150,
+                font=("Arial", 12, "bold"),
+                command=lambda: self.switch_page("search"),
+            ).pack()
+            return
+
+        header_frame = ctk.CTkFrame(scroll_frame, fg_color="transparent")
+        header_frame.pack(fill="x", padx=20, pady=(20, 10))
+
+        ctk.CTkLabel(
+            header_frame,
+            text="Fitur",
+            font=("Arial", 11, "bold"),
+            text_color=PRIMARY_COLOR,
+            width=150,
+            anchor="w",
+        ).pack(side="left", padx=5)
+
+        for kos in compare_items:
+            kos_name = get_kos_name(kos)
+            ctk.CTkLabel(
+                header_frame,
+                text=kos_name,
+                font=("Arial", 11, "bold"),
+                text_color=NAVY,
+                width=150,
+                anchor="w",
+                wraplength=140,
+            ).pack(side="left", padx=5)
+
+        photo_row = ctk.CTkFrame(scroll_frame, fg_color="transparent")
+        photo_row.pack(fill="x", padx=20, pady=(0, 10))
+
+        ctk.CTkLabel(
+            photo_row,
+            text="Foto",
+            font=("Arial", 11, "bold"),
+            text_color=PRIMARY_COLOR,
+            width=150,
+            anchor="w",
+        ).pack(side="left", padx=5)
+
+        for kos in compare_items:
+            foto_value = kos.get("foto")
+            if isinstance(foto_value, list):
+                url = foto_value[0] if foto_value else ""
+            elif isinstance(foto_value, str):
+                url = foto_value.strip()
+            else:
+                url = ""
+
+            thumbnail = _load_remote_image(url, size=(120, 80))
+
+            if thumbnail:
+                img_label = ctk.CTkLabel(photo_row, text="", image=thumbnail, width=120, height=80)
+                img_label.image = thumbnail  # WAJIB ADA untuk cegah garbage collection
+            else:
+                img_label = ctk.CTkLabel(
+                    photo_row,
+                    text="No Image",
+                    fg_color="#E9EDF3",
+                    text_color=TEXT_SUBTLE,
+                    width=120,
+                    height=80,
+                    corner_radius=8,
+                )
+
+            img_label.pack(side="left", padx=5)
+
+        fields = [
+            ("Harga", "harga_display"),
+            ("Alamat", "alamat"),
+            ("Tipe", "tipe"),
+            ("WiFi", "wifi"),
+            ("Fasilitas Kamar", "fasilitas_kamar"),
+            ("Fasilitas Bersama", "fasilitas_bersama"),
+        ]
+
+        for label_text, field_key in fields:
+            row_frame = ctk.CTkFrame(scroll_frame, fg_color="transparent")
+            row_frame.pack(fill="x", padx=20, pady=8)
+
+            ctk.CTkLabel(
+                row_frame,
+                text=label_text,
+                font=("Arial", 11, "bold"),
+                text_color=NAVY,
+                width=150,
+                anchor="w",
             ).pack(side="left", padx=5)
 
             for kos in compare_items:
-                kos_name = kos.get("nama_kos") or kos.get("nama") or "Kos"
-                ctk.CTkLabel(
-                    header_frame,
-                    text=kos_name[:15],
-                    font=("Arial", 11, "bold"),
-                    text_color=PRIMARY_COLOR,
-                    width=120,
-                ).pack(side="left", padx=5)
-
-            # Comparison fields
-            fields = [
-                ("Harga", "harga"),
-                ("Alamat", "alamat"),
-                ("Tipe", "tipe"),
-                ("WiFi", "wifi"),
-                ("AC", "ac"),
-                ("Fasilitas Kamar", "fasilitas_kamar"),
-            ]
-
-            for field_label, field_key in fields:
-                row_frame = ctk.CTkFrame(scroll_frame, fg_color="transparent")
-                row_frame.pack(fill="x", padx=8, pady=4)
+                value = kos.get(field_key, "-")
+                if isinstance(value, list):
+                    value = ", ".join(str(v) for v in value if v)
+                elif value is None:
+                    value = "-"
 
                 ctk.CTkLabel(
                     row_frame,
-                    text=field_label,
+                    text=value,
                     font=("Arial", 11),
-                    text_color="#2F3B45",
+                    text_color=NAVY,
                     width=150,
+                    anchor="w",
+                    wraplength=140,
                 ).pack(side="left", padx=5)
 
-                for kos in compare_items:
-                    value = kos.get(field_key) or "-"
-                    if isinstance(value, list):
-                        value = ", ".join(str(v) for v in value)
-                    ctk.CTkLabel(
-                        row_frame,
-                        text=str(value)[:20],
-                        font=("Arial", 10),
-                        text_color=TEXT_SUBTLE,
-                        width=120,
-                    ).pack(side="left", padx=5)
+        action_frame = ctk.CTkFrame(scroll_frame, fg_color="transparent")
+        action_frame.pack(fill="x", padx=20, pady=(10, 20))
 
-            # Back button
-            button_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
-            button_frame.grid(row=2, column=0, sticky="ew")
+        ctk.CTkButton(
+            action_frame,
+            text="Kembali ke Search",
+            fg_color=ORANGE,
+            hover_color="#E06B10",
+            text_color="white",
+            corner_radius=10,
+            height=40,
+            width=180,
+            font=("Arial", 12, "bold"),
+            command=lambda: self.switch_page("search"),
+        ).pack(side="left")
 
-            back_button = ctk.CTkButton(
-                button_frame,
-                text="← Kembali ke Search",
-                width=200,
+        best_kos = get_best_kos_recommendation(compare_items)
+        if best_kos:
+            self._build_recommendation_section(scroll_frame, best_kos)
+
+    def _load_and_set_image(self, url, label, size=(280, 140)):
+        def fetch_image():
+            try:
+                response = requests.get(url, timeout=5)
+                response.raise_for_status()
+                image_data = BytesIO(response.content)
+                pil_image = Image.open(image_data)
+                pil_image = pil_image.convert("RGBA")
+                pil_image = pil_image.resize(size, Image.LANCZOS)
+                ctk_img = ctk.CTkImage(light_image=pil_image, dark_image=pil_image, size=size)
+
+                def apply_image():
+                    label.configure(image=ctk_img, text="")
+                    label.image = ctk_img
+
+                self.after(0, apply_image)
+            except Exception:
+                pass
+
+        threading.Thread(target=fetch_image, daemon=True).start()
+
+    def _build_compare_property_cards(
+        self, parent, items, cheapest_idx, most_facilities_idx, largest_rooms_idx
+    ):
+        """Build property cards for each kos."""
+        from compare import format_price, get_kos_name, get_kos_address
+
+        cards_frame = ctk.CTkFrame(parent, fg_color="transparent")
+        cards_frame.pack(fill="x", padx=20, pady=(20, 0))
+
+        for col_idx, kos in enumerate(items):
+            # Card frame
+            card = ctk.CTkFrame(cards_frame, fg_color="#F8F9FA", corner_radius=15)
+            card.pack(side="left", fill="both", expand=True, padx=(0 if col_idx == 0 else 10, 0))
+
+            # Remove button
+            remove_frame = ctk.CTkFrame(card, fg_color="transparent")
+            remove_frame.pack(fill="x", padx=12, pady=12)
+
+            remove_btn = ctk.CTkButton(
+                remove_frame,
+                text="✕",
+                fg_color="#FFE4E4",
+                hover_color="#FFD0D0",
+                text_color="#FF6B6B",
+                width=28,
+                height=28,
+                corner_radius=8,
+                font=("Arial", 12, "bold"),
+                command=lambda k=kos: self._remove_from_compare(k),
+            )
+            remove_btn.pack(side="right")
+
+            # Image placeholder
+            image_frame = ctk.CTkFrame(card, fg_color="#DCDCDC", corner_radius=12, height=120)
+            image_frame.pack(fill="x", padx=12, pady=12)
+            image_frame.pack_propagate(False)
+
+            image_label = ctk.CTkLabel(
+                image_frame, text="🏠", font=("Arial", 36), text_color="white"
+            )
+            image_label.pack(expand=True)
+
+            foto_list = kos.get("foto", []) or []
+            if isinstance(foto_list, list) and foto_list:
+                url_foto = str(foto_list[0]).strip()
+                if url_foto and url_foto != "-":
+                    self._load_and_set_image(url_foto, image_label)
+
+            # Kos name
+            name = get_kos_name(kos)
+            name_label = ctk.CTkLabel(
+                card,
+                text=name,
+                font=("Arial", 12, "bold"),
+                text_color=NAVY,
+                anchor="w",
+                wraplength=120,
+            )
+            name_label.pack(fill="x", padx=12, pady=(0, 4))
+
+            # Address
+            address = get_kos_address(kos)
+            addr_label = ctk.CTkLabel(
+                card,
+                text=address,
+                font=("Arial", 10),
+                text_color="#999",
+                anchor="w",
+                wraplength=120,
+            )
+            addr_label.pack(fill="x", padx=12, pady=(0, 8))
+
+            # Price
+            price = format_price(kos.get("harga"))
+            price_label = ctk.CTkLabel(
+                card,
+                text=price,
+                font=("Arial", 13, "bold"),
+                text_color=ORANGE,
+            )
+            price_label.pack(fill="x", padx=12, pady=(0, 12))
+
+            # Best price badge
+            if col_idx in cheapest_idx:
+                badge_frame = ctk.CTkFrame(card, fg_color=GREEN_BADGE, corner_radius=6)
+                badge_frame.pack(fill="x", padx=12, pady=(0, 12))
+                badge_label = ctk.CTkLabel(
+                    badge_frame,
+                    text="✓ Paling Hemat",
+                    font=("Arial", 9, "bold"),
+                    text_color="#22C55E",
+                )
+                badge_label.pack(padx=8, pady=4)
+
+    def _build_compare_rows(
+        self,
+        parent,
+        items,
+        cheapest_idx,
+        most_facilities_idx,
+        largest_rooms_idx,
+        highest_ratings_idx,
+    ):
+        """Build comparison rows with data."""
+        from compare import (
+            format_price, count_facilities, get_kos_address
+        )
+
+        rows_frame = ctk.CTkFrame(parent, fg_color="transparent")
+        rows_frame.pack(fill="x", padx=20, pady=20)
+
+        # ===== ROW: HARGA =====
+        self._build_compare_row(
+            rows_frame,
+            "Harga / Bulan",
+            items,
+            lambda k: format_price(k.get("harga")),
+            cheapest_idx,
+            "Orange",
+        )
+
+        # ===== ROW: TIPE PENGHUNI =====
+        self._build_compare_row_with_badges(
+            rows_frame,
+            "Tipe Penghuni",
+            items,
+            lambda k: [k.get("tipe") or "-"],
+        )
+
+        # ===== ROW: UKURAN KAMAR =====
+        self._build_compare_row(
+            rows_frame,
+            "Ukuran Kamar",
+            items,
+            lambda k: k.get("ukuran_kamar") or "-",
+            largest_rooms_idx,
+            None,
+            "Terluas",
+        )
+
+        # ===== ROW: RATING =====
+        self._build_compare_rating_row(rows_frame, items, highest_ratings_idx)
+
+        # ===== ROW: FASILITAS UTAMA =====
+        self._build_facilities_row(rows_frame, items, most_facilities_idx)
+
+        # ===== ROW: JUMLAH FASILITAS =====
+        self._build_total_facilities_row(rows_frame, items, most_facilities_idx)
+
+        # ===== ACTION BUTTONS =====
+        self._build_action_buttons_row(rows_frame, items)
+
+    def _build_compare_row(
+        self,
+        parent,
+        label,
+        items,
+        get_value,
+        best_idx=None,
+        color_for_best=None,
+        badge_text=None,
+    ):
+        """Build a comparison row."""
+        row_frame = ctk.CTkFrame(parent, fg_color="transparent")
+        row_frame.pack(fill="x", pady=12)
+
+        # Row label
+        label_widget = ctk.CTkLabel(
+            row_frame,
+            text=label,
+            font=("Arial", 11, "bold"),
+            text_color=NAVY,
+            anchor="w",
+            width=140,
+        )
+        label_widget.pack(side="left", fill="y")
+
+        # Values for each kos
+        for idx, item in enumerate(items):
+            col_frame = ctk.CTkFrame(row_frame, fg_color="transparent")
+            col_frame.pack(side="left", fill="both", expand=True, padx=(10, 0))
+
+            value = get_value(item)
+            is_best = best_idx and idx in best_idx
+
+            text_color = ORANGE if is_best and color_for_best == "Orange" else NAVY
+            font_style = ("Arial", 11, "bold") if is_best else ("Arial", 11)
+
+            value_label = ctk.CTkLabel(
+                col_frame,
+                text=value,
+                font=font_style,
+                text_color=text_color,
+                anchor="w",
+                wraplength=150,
+            )
+            value_label.pack(side="left", fill="x")
+
+            if is_best and badge_text:
+                badge = ctk.CTkLabel(
+                    col_frame,
+                    text=f"  {badge_text}",
+                    font=("Arial", 9, "bold"),
+                    text_color="#2563EB",
+                    anchor="w",
+                )
+                badge.pack(side="left", padx=(5, 0))
+
+    def _build_compare_row_with_badges(
+        self, parent, label, items, get_values
+    ):
+        """Build a row with badge values."""
+        row_frame = ctk.CTkFrame(parent, fg_color="transparent")
+        row_frame.pack(fill="x", pady=12)
+
+        # Row label
+        label_widget = ctk.CTkLabel(
+            row_frame,
+            text=label,
+            font=("Arial", 11, "bold"),
+            text_color=NAVY,
+            anchor="w",
+            width=140,
+        )
+        label_widget.pack(side="left", fill="y")
+
+        # Values for each kos
+        for item in items:
+            col_frame = ctk.CTkFrame(row_frame, fg_color="transparent")
+            col_frame.pack(side="left", fill="both", expand=True, padx=(10, 0))
+
+            values = get_values(item)
+            for val in values:
+                if val and val != "-":
+                    badge = ctk.CTkFrame(
+                        col_frame, fg_color=ORANGE_BADGE, corner_radius=6
+                    )
+                    badge.pack(side="left", pady=2, padx=(0, 5))
+                    badge_label = ctk.CTkLabel(
+                        badge,
+                        text=val,
+                        font=("Arial", 9),
+                        text_color=ORANGE,
+                    )
+                    badge_label.pack(padx=6, pady=3)
+
+    def _build_compare_rating_row(self, parent, items, highest_ratings_idx):
+        """Build rating row with star display."""
+        row_frame = ctk.CTkFrame(parent, fg_color="transparent")
+        row_frame.pack(fill="x", pady=12)
+
+        label_widget = ctk.CTkLabel(
+            row_frame,
+            text="Rating",
+            font=("Arial", 11, "bold"),
+            text_color=NAVY,
+            anchor="w",
+            width=140,
+        )
+        label_widget.pack(side="left", fill="y")
+
+        for idx, item in enumerate(items):
+            col_frame = ctk.CTkFrame(row_frame, fg_color="transparent")
+            col_frame.pack(side="left", fill="both", expand=True, padx=(10, 0))
+
+            rating_str = item.get("rating") or "0"
+            try:
+                if isinstance(rating_str, (int, float)):
+                    rating = float(rating_str)
+                else:
+                    rating = float(str(rating_str).split()[0])
+            except:
+                rating = 0
+
+            stars = "⭐" * int(rating) + ("✨" if rating % 1 > 0.5 else "")
+            rating_text = f"{stars} {rating}"
+
+            rating_label = ctk.CTkLabel(
+                col_frame,
+                text=rating_text,
+                font=("Arial", 10, "bold"),
+                text_color=ORANGE if idx in highest_ratings_idx else NAVY,
+                anchor="w",
+            )
+            rating_label.pack(side="left")
+
+    def _build_facilities_row(self, parent, items, most_facilities_idx):
+        """Build facilities comparison row."""
+        row_frame = ctk.CTkFrame(parent, fg_color="transparent")
+        row_frame.pack(fill="x", pady=12)
+
+        label_widget = ctk.CTkLabel(
+            row_frame,
+            text="Fasilitas Utama",
+            font=("Arial", 11, "bold"),
+            text_color=NAVY,
+            anchor="w",
+            width=140,
+        )
+        label_widget.pack(side="left", fill="y", anchor="nw")
+
+        for idx, item in enumerate(items):
+            col_frame = ctk.CTkFrame(row_frame, fg_color="transparent")
+            col_frame.pack(side="left", fill="both", expand=True, padx=(10, 0), anchor="nw")
+
+            facilities = ["WiFi", "AC", "KM Dalam", "Parkir", "Air Panas"]
+            facilities_frame = ctk.CTkFrame(col_frame, fg_color="transparent")
+            facilities_frame.pack(fill="x")
+
+            for facility in facilities:
+                fac_row = ctk.CTkFrame(facilities_frame, fg_color="transparent")
+                fac_row.pack(fill="x", pady=2)
+
+                fac_name = ctk.CTkLabel(
+                    fac_row,
+                    text=facility,
+                    font=("Arial", 10),
+                    text_color="#555",
+                    anchor="w",
+                    width=80,
+                )
+                fac_name.pack(side="left")
+
+                # Check if facility exists (simplified - based on field)
+                has_facility = facility.lower() in str(item.get("fasilitas_kamar", "")).lower() or \
+                              facility.lower() in str(item.get("fasilitas_bersama", "")).lower()
+                
+                check = "✓" if has_facility else "✖"
+                check_color = "#22C55E" if has_facility else "#EF4444"
+                check_label = ctk.CTkLabel(
+                    fac_row,
+                    text=check,
+                    font=("Arial", 10, "bold"),
+                    text_color=check_color,
+                )
+                check_label.pack(side="right")
+
+    def _build_total_facilities_row(self, parent, items, most_facilities_idx):
+        """Build total facilities row."""
+        from compare import count_facilities
+
+        row_frame = ctk.CTkFrame(parent, fg_color="transparent")
+        row_frame.pack(fill="x", pady=12)
+
+        label_widget = ctk.CTkLabel(
+            row_frame,
+            text="Jumlah Fasilitas",
+            font=("Arial", 11, "bold"),
+            text_color=NAVY,
+            anchor="w",
+            width=140,
+        )
+        label_widget.pack(side="left", fill="y")
+
+        for idx, item in enumerate(items):
+            col_frame = ctk.CTkFrame(row_frame, fg_color="transparent")
+            col_frame.pack(side="left", fill="both", expand=True, padx=(10, 0))
+
+            count = count_facilities(item)
+            is_best = idx in most_facilities_idx
+
+            count_text = f"{count} Fasilitas"
+            text_color = NAVY
+
+            count_label = ctk.CTkLabel(
+                col_frame,
+                text=count_text,
+                font=("Arial", 11, "bold" if is_best else "normal"),
+                text_color=text_color,
+                anchor="w",
+            )
+            count_label.pack(side="left")
+
+            if is_best:
+                badge = ctk.CTkFrame(col_frame, fg_color=BLUE_BADGE, corner_radius=6)
+                badge.pack(side="left", padx=(8, 0))
+                badge_label = ctk.CTkLabel(
+                    badge,
+                    text="Terbanyak",
+                    font=("Arial", 9, "bold"),
+                    text_color="#2563EB",
+                )
+                badge_label.pack(padx=6, pady=2)
+
+    def _build_action_buttons_row(self, parent, items):
+        """Build action buttons for each kos."""
+        row_frame = ctk.CTkFrame(parent, fg_color="transparent")
+        row_frame.pack(fill="x", pady=(20, 0))
+
+        for item in items:
+            col_frame = ctk.CTkFrame(row_frame, fg_color="transparent")
+            col_frame.pack(side="left", fill="both", expand=True, padx=(10, 0))
+
+            # Lihat Detail button
+            detail_btn = ctk.CTkButton(
+                col_frame,
+                text="Lihat Detail",
+                fg_color="transparent",
+                text_color=NAVY,
+                border_color=NAVY,
+                border_width=2,
+                corner_radius=10,
                 height=40,
-                fg_color=ACCENT_COLOR,
-                hover_color="#B45E24",
+                font=("Arial", 11, "bold"),
+                command=lambda k=item: self.switch_page("search"),
+            )
+            detail_btn.pack(fill="x", pady=(0, 8))
+
+            # Simpan Favorit button
+            fav_btn = ctk.CTkButton(
+                col_frame,
+                text="♥ Simpan Favorit",
+                fg_color=ORANGE,
+                hover_color="#E06B10",
                 text_color="white",
                 corner_radius=10,
-                font=("Arial", 12, "bold"),
-                command=lambda: self.switch_page("search"),
+                height=40,
+                font=("Arial", 11, "bold"),
+                command=lambda k=item: self._add_to_favorites(k),
             )
-            back_button.pack(side="left", padx=0, pady=0)
+            fav_btn.pack(fill="x")
+
+    def _build_recommendation_section(self, parent, best_kos):
+        """Build recommendation card section."""
+        from compare import get_kos_name, format_price
+
+        rec_frame = ctk.CTkFrame(parent, fg_color="#DCE7FF", corner_radius=25)
+        rec_frame.pack(fill="x", padx=20, pady=(0, 20))
+
+        content_frame = ctk.CTkFrame(rec_frame, fg_color="transparent")
+        content_frame.pack(fill="x", padx=30, pady=30)
+
+        # Trophy icon and title
+        header = ctk.CTkFrame(content_frame, fg_color="transparent")
+        header.pack(fill="x", pady=(0, 10))
+
+        trophy = ctk.CTkLabel(
+            header, text="🏆", font=("Arial", 28)
+        )
+        trophy.pack(side="left", padx=(0, 12))
+
+        title_text = ctk.CTkLabel(
+            header,
+            text="REKOMENDASI TERBAIK",
+            font=("Arial", 12, "bold"),
+            text_color="#2563EB",
+        )
+        title_text.pack(side="left")
+
+        # Best kos name
+        best_name = get_kos_name(best_kos)
+        name_label = ctk.CTkLabel(
+            content_frame,
+            text=best_name,
+            font=("Arial", 18, "bold"),
+            text_color=NAVY,
+            anchor="w",
+            wraplength=300,
+        )
+        name_label.pack(fill="x", anchor="w", pady=(10, 5))
+
+        # Description
+        desc = "Berdasarkan fasilitas terlengkap, rating tertinggi, dan harga kompetitif."
+        desc_label = ctk.CTkLabel(
+            content_frame,
+            text=desc,
+            font=("Arial", 12),
+            text_color="#555",
+            anchor="w",
+            wraplength=400,
+            justify="left",
+        )
+        desc_label.pack(fill="x", anchor="w", pady=(0, 15))
+
+        # Button
+        rec_btn = ctk.CTkButton(
+            content_frame,
+            text="Lihat Kos Ini",
+            fg_color=ORANGE,
+            hover_color="#E06B10",
+            text_color="white",
+            corner_radius=10,
+            height=40,
+            font=("Arial", 11, "bold"),
+            width=150,
+            command=lambda: self.switch_page("search"),
+        )
+        rec_btn.pack(anchor="w")
+
+    def _remove_from_compare(self, kos_item):
+        """Remove item from comparison."""
+        self.compare_manager.remove_item(kos_item)
+        self.render_compare_page()
+
+    def _add_to_favorites(self, kos_item):
+        """Add item to favorites."""
+        if self.favorites_callback:
+            self.favorites_callback(kos_item)
+        # Show toast or notification
+        print(f"Added to favorites: {kos_item.get('nama_kos')}")
 
     def render_favorites_page(self):
         """Render the favorites page."""
