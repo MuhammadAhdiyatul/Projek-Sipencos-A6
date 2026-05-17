@@ -1,4 +1,16 @@
 import customtkinter as ctk
+from ui_components import _load_remote_image, _normalize_foto
+
+
+# Modern color palette
+NAVY = "#0B2240"
+ORANGE = "#F47B20"
+LIGHT_BG = "#F5F7FA"
+WHITE = "#FFFFFF"
+GRAY_TEXT = "#7A7A7A"
+GREEN_BADGE = "#DFF5E3"
+BLUE_BADGE = "#DDE7FF"
+ORANGE_BADGE = "#FFE4CC"
 
 
 class CompareManager:
@@ -71,250 +83,245 @@ class CompareManager:
         return any(self._item_key(item) == key for item in self._items)
 
 
-class CompareWindow(ctk.CTkToplevel):
-    """A window that displays selected kos items side-by-side."""
+# ========== HELPER FUNCTIONS FOR MODERN COMPARE UI ==========
 
-    FIELD_DEFINITIONS = [
-        ("Nama", "nama"),
-        ("Harga", "harga"),
-        ("Alamat", "alamat"),
-        ("WiFi", "wifi"),
-        ("Fasilitas Kamar", "fasilitas_kamar"),
-        ("Fasilitas Bersama", "fasilitas_bersama"),
-    ]
 
-    def __init__(self, parent, items=None, clear_callback=None, *args, **kwargs):
-        super().__init__(parent, *args, **kwargs)
+def format_price(value):
+    """Format price value to Rp format."""
+    if isinstance(value, (int, float)):
+        return f"Rp {int(value):,}".replace(",", ".")
+    if isinstance(value, str) and value.strip():
+        return value.strip()
+    return "-"
 
-        self.items = items or []
-        self.clear_callback = clear_callback
 
-        self.title("Perbandingan Kos")
-        self.geometry("820x600")
-        self.minsize(760, 520)
-        self.configure(fg_color="#F0F2F5")
+def get_price_value(value):
+    """Extract numeric price from various formats."""
+    if isinstance(value, (int, float)):
+        return int(value)
+    if isinstance(value, str):
+        digits = "".join(ch for ch in value if ch.isdigit())
+        return int(digits) if digits else 0
+    return 0
 
-        self.grid_rowconfigure(0, weight=1)
-        self.grid_columnconfigure(0, weight=1)
 
-        self._build_ui()
+def safe_text(value):
+    """Safely convert value to text."""
+    if value is None:
+        return "-"
+    text = str(value).strip()
+    return text if text else "-"
 
-    def _build_ui(self):
-        shell = ctk.CTkFrame(self, fg_color="transparent")
-        shell.grid(row=0, column=0, sticky="nsew", padx=18, pady=18)
-        shell.grid_rowconfigure(1, weight=1)
-        shell.grid_columnconfigure(0, weight=1)
 
-        title = ctk.CTkLabel(
-            shell,
-            text="Perbandingan Kos",
-            font=("Arial", 22, "bold"),
-            text_color="#002B49",
-            anchor="w",
-        )
-        title.grid(row=0, column=0, sticky="w", pady=(0, 14))
+def get_kos_name(kos_item):
+    """Get kos name from various field names."""
+    return safe_text(kos_item.get("nama_kos") or kos_item.get("nama"))
 
-        if not self.items:
-            self._build_empty_state(shell)
+
+def get_kos_address(kos_item):
+    """Get kos address from various field names."""
+    return safe_text(kos_item.get("alamat") or kos_item.get("lokasi") or kos_item.get("lokasi_kos"))
+
+
+def count_facilities(item):
+    """Count total facilities for a kos item."""
+    count = 0
+    for key in ("fasilitas_kamar", "fasilitas_bersama"):
+        value = item.get(key)
+        if isinstance(value, list):
+            count += len([x for x in value if str(x).strip()])
+        elif value is not None and str(value).strip():
+            count += 1
+    return count
+
+
+def get_cheapest_indexes(items):
+    """Get indexes of cheapest kos items."""
+    prices = [get_price_value(item.get("harga")) for item in items]
+    if not prices:
+        return []
+    min_price = min(price for price in prices if price > 0) if any(price > 0 for price in prices) else None
+    if min_price is None:
+        return []
+    return [index for index, price in enumerate(prices) if price == min_price]
+
+
+def get_largest_room_indexes(items):
+    """Get indexes of kos items with largest room size."""
+    sizes = []
+    for item in items:
+        size_str = item.get("ukuran_kamar") or ""
+        if isinstance(size_str, str):
+            digits = "".join(c for c in size_str if c.isdigit() or c == ".")
+            try:
+                size = float(digits) if digits else 0
+            except:
+                size = 0
         else:
-            self._build_table(shell)
+            size = 0
+        sizes.append(size)
+    
+    if not sizes or all(s == 0 for s in sizes):
+        return []
+    max_size = max(s for s in sizes if s > 0) if any(s > 0 for s in sizes) else 0
+    return [index for index, size in enumerate(sizes) if size == max_size and size > 0]
 
-        controls = ctk.CTkFrame(shell, fg_color="transparent")
-        controls.grid(row=2, column=0, sticky="ew", pady=(14, 0))
-        controls.grid_columnconfigure((0, 1), weight=1)
 
-        btn_clear = ctk.CTkButton(
-            controls,
-            text="Hapus Semua",
-            fg_color="#C96A28",
-            hover_color="#B45E24",
-            text_color="white",
-            corner_radius=10,
-            height=42,
-            font=("Arial", 13, "bold"),
-            command=self._on_clear_all,
-        )
-        btn_clear.grid(row=0, column=0, sticky="ew", padx=(0, 8))
+def get_most_facility_indexes(items):
+    """Get indexes of kos items with most facilities."""
+    counts = [count_facilities(item) for item in items]
+    if not counts:
+        return []
+    max_count = max(counts)
+    if max_count == 0:
+        return []
+    return [index for index, count in enumerate(counts) if count == max_count]
 
-        btn_close = ctk.CTkButton(
-            controls,
-            text="Tutup",
-            fg_color="#002B49",
-            hover_color="#013A62",
-            text_color="white",
-            corner_radius=10,
-            height=42,
-            font=("Arial", 13, "bold"),
-            command=self.destroy,
-        )
-        btn_close.grid(row=0, column=1, sticky="ew", padx=(8, 0))
 
-    def _build_empty_state(self, master):
-        message = ctk.CTkLabel(
-            master,
-            text="Belum ada kos untuk dibandingkan",
-            font=("Arial", 16),
-            text_color="#6F7C85",
-            anchor="center",
-        )
-        message.grid(row=1, column=0, sticky="nsew", pady=120)
+def get_highest_rating_indexes(items):
+    """Get indexes of kos items with highest rating."""
+    ratings = []
+    for item in items:
+        rating_str = item.get("rating") or "0"
+        if isinstance(rating_str, (int, float)):
+            rating = float(rating_str)
+        else:
+            try:
+                rating = float(str(rating_str).split()[0])
+            except:
+                rating = 0
+        ratings.append(rating)
+    
+    if not ratings or all(r == 0 for r in ratings):
+        return []
+    max_rating = max(r for r in ratings if r > 0) if any(r > 0 for r in ratings) else 0
+    return [index for index, rating in enumerate(ratings) if rating == max_rating and rating > 0]
 
-    def _build_table(self, master):
-        canvas_frame = ctk.CTkScrollableFrame(master, fg_color="#FFFFFF", corner_radius=18, border_width=1, border_color="#E7EAF0")
-        canvas_frame.grid(row=1, column=0, sticky="nsew")
-        canvas_frame.grid_columnconfigure(tuple(range(len(self.items) + 1)), weight=1)
 
-        header_style = {"font": ("Arial", 12, "bold"), "text_color": "#002B49"}
-        cell_style = {"font": ("Arial", 12), "text_color": "#1B2630", "anchor": "w", "justify": "left", "wraplength": 260}
+def get_best_kos_recommendation(items):
+    """Get best kos item based on multiple criteria."""
+    if not items:
+        return None
+    
+    scores = []
+    for item in items:
+        score = 0
+        # Add points for facilities
+        score += count_facilities(item) * 10
+        # Add points for rating
+        rating_str = item.get("rating") or "0"
+        try:
+            if isinstance(rating_str, (int, float)):
+                rating = float(rating_str)
+            else:
+                rating = float(str(rating_str).split()[0])
+            score += rating * 20
+        except:
+            pass
+        # Reduce score for expensive items
+        price = get_price_value(item.get("harga"))
+        if price > 0:
+            score -= (price / 1000000) * 5
+        
+        scores.append((score, item))
+    
+    if not scores:
+        return items[0]
+    
+    return max(scores, key=lambda x: x[0])[1]
 
-        for col, label_text in enumerate(["Field"] + [f"Kos {idx + 1}" for idx in range(len(self.items))]):
-            label = ctk.CTkLabel(
+
+def _build_table(canvas_frame, items, field_definitions):
+    """Build a comparison table with a photo row and field rows."""
+    # Header row for item titles or empty top-left cell
+    header_style = {
+        "fg_color": "#F0F2F5",
+        "corner_radius": 8,
+        "font": ("Arial", 12, "bold"),
+        "text_color": "#002B49",
+        "padx": 8,
+        "pady": 10,
+    }
+
+    ctk.CTkLabel(
+        canvas_frame,
+        text="",
+        **header_style,
+    ).grid(row=0, column=0, sticky="nsew", padx=4, pady=4)
+
+    for col, item in enumerate(items, start=1):
+        item_title = safe_text(item.get("nama_kos") or item.get("nama"))
+        ctk.CTkLabel(
+            canvas_frame,
+            text=item_title,
+            **header_style,
+            wraplength=180,
+            justify="center",
+        ).grid(row=0, column=col, sticky="nsew", padx=4, pady=4)
+
+    # Photo row inserted at row 1
+    ctk.CTkLabel(
+        canvas_frame,
+        text="Foto",
+        fg_color="#F0F2F5",
+        corner_radius=8,
+        font=("Arial", 12, "bold"),
+        text_color="#002B49",
+        padx=8,
+        pady=10,
+    ).grid(row=1, column=0, sticky="nsew", padx=4, pady=4)
+
+    for col, item in enumerate(items, start=1):
+        foto_list = _normalize_foto(item.get("foto"))
+        url = foto_list[0] if foto_list else ""
+        thumbnail = _load_remote_image(url, size=(180, 120))
+
+        if thumbnail:
+            img_label = ctk.CTkLabel(
                 canvas_frame,
-                text=label_text,
-                fg_color="#F6F9FC" if col > 0 else "#EAF1F7",
+                text="",
+                image=thumbnail,
                 corner_radius=8,
-                **header_style,
-                padx=8,
-                pady=8,
             )
-            label.grid(row=0, column=col, sticky="nsew", padx=4, pady=4)
-
-        cheapest_indexes = self._get_cheapest_indexes()
-        best_facility_indexes = self._get_best_facility_indexes()
-
-        for row_index, (label_text, field_name) in enumerate(self.FIELD_DEFINITIONS, start=1):
-            field_label = ctk.CTkLabel(
+            img_label.image = thumbnail
+        else:
+            img_label = ctk.CTkLabel(
                 canvas_frame,
-                text=label_text,
-                fg_color="#F0F2F5",
+                text="No Image",
+                fg_color="#E9EDF3",
+                text_color="#6F7C85",
                 corner_radius=8,
-                **header_style,
+                height=120,
+                font=("Arial", 11),
+            )
+
+        img_label.grid(row=1, column=col, sticky="nsew", padx=4, pady=4)
+
+    # Field rows start at row 2
+    for row_index, (label_text, field_name) in enumerate(field_definitions, start=2):
+        ctk.CTkLabel(
+            canvas_frame,
+            text=label_text,
+            fg_color="#F0F2F5",
+            corner_radius=8,
+            font=("Arial", 12, "bold"),
+            text_color="#002B49",
+            padx=8,
+            pady=10,
+        ).grid(row=row_index, column=0, sticky="nsew", padx=4, pady=4)
+
+        for col, item in enumerate(items, start=1):
+            value = item.get(field_name)
+            display_value = safe_text(value)
+            ctk.CTkLabel(
+                canvas_frame,
+                text=display_value,
+                fg_color=WHITE,
+                corner_radius=8,
+                font=("Arial", 11),
+                text_color="#334155",
                 padx=8,
                 pady=10,
-            )
-            field_label.grid(row=row_index, column=0, sticky="nsew", padx=4, pady=4)
-
-            for col, item in enumerate(self.items, start=1):
-                text = self._render_field(item, field_name)
-                bg = "#FFFFFF"
-
-                if field_name == "harga" and col - 1 in cheapest_indexes:
-                    bg = "#E6F7EA"
-                if field_name in ("fasilitas_kamar", "fasilitas_bersama") and col - 1 in best_facility_indexes:
-                    bg = "#FEF6E8"
-
-                value_label = ctk.CTkLabel(
-                    canvas_frame,
-                    text=text,
-                    fg_color=bg,
-                    corner_radius=8,
-                    **cell_style,
-                    padx=8,
-                    pady=10,
-                )
-                value_label.grid(row=row_index, column=col, sticky="nsew", padx=4, pady=4)
-
-        for col in range(len(self.items) + 1):
-            canvas_frame.grid_columnconfigure(col, weight=1)
-
-    def _on_clear_all(self):
-        if callable(self.clear_callback):
-            try:
-                self.clear_callback()
-            except Exception:
-                pass
-
-        self.items = []
-        for widget in self.winfo_children():
-            widget.destroy()
-        self._build_ui()
-
-    def _render_field(self, item, field_name):
-        if field_name == "nama":
-            return self._safe_text(item.get("nama_kos") or item.get("nama"))
-
-        if field_name == "harga":
-            return self._format_price(item.get("harga"))
-
-        if field_name == "alamat":
-            return self._safe_text(item.get("alamat") or item.get("lokasi"))
-
-        if field_name == "wifi":
-            wifi = item.get("wifi")
-            if isinstance(wifi, bool):
-                return "Ya" if wifi else "Tidak"
-            return "Ya" if str(wifi).strip().lower() in ("ya", "yes", "true", "1") else "Tidak"
-
-        if field_name in ("fasilitas_kamar", "fasilitas_bersama"):
-            return self._list_to_text(item.get(field_name))
-
-        return self._safe_text(item.get(field_name))
-
-    def _format_price(self, value):
-        if isinstance(value, (int, float)):
-            return f"Rp {int(value):,}".replace(",", ".")
-
-        if isinstance(value, str) and value.strip():
-            return value.strip()
-
-        return "-"
-
-    def _list_to_text(self, value):
-        if isinstance(value, list):
-            items = [str(x).strip() for x in value if str(x).strip()]
-            return ", ".join(items) if items else "-"
-
-        if value is None:
-            return "-"
-
-        text = str(value).strip()
-        return text if text else "-"
-
-    def _safe_text(self, value):
-        if value is None:
-            return "-"
-
-        text = str(value).strip()
-        return text if text else "-"
-
-    def _to_int_price(self, value):
-        if isinstance(value, (int, float)):
-            return int(value)
-        if isinstance(value, str):
-            digits = "".join(ch for ch in value if ch.isdigit())
-            return int(digits) if digits else 0
-        return 0
-
-    def _count_facilities(self, item):
-        count = 0
-        for key in ("fasilitas_kamar", "fasilitas_bersama"):
-            value = item.get(key)
-            if isinstance(value, list):
-                count += len([x for x in value if str(x).strip()])
-            elif value is not None:
-                text = str(value).strip()
-                if text:
-                    count += 1
-        return count
-
-    def _get_cheapest_indexes(self):
-        prices = [self._to_int_price(item.get("harga")) for item in self.items]
-        if not prices:
-            return []
-
-        min_price = min(price for price in prices if price > 0) if any(price > 0 for price in prices) else None
-        if min_price is None:
-            return []
-
-        return [index for index, price in enumerate(prices) if price == min_price]
-
-    def _get_best_facility_indexes(self):
-        counts = [self._count_facilities(item) for item in self.items]
-        if not counts:
-            return []
-
-        max_count = max(counts)
-        if max_count == 0:
-            return []
-
-        return [index for index, count in enumerate(counts) if count == max_count]
+                wraplength=180,
+                justify="left",
+            ).grid(row=row_index, column=col, sticky="nsew", padx=4, pady=4)

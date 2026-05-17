@@ -10,6 +10,86 @@ BORDER_COLOR = "#E7EAF0"
 TEXT_SUBTLE = "#6F7C85"
 
 
+class AnimatedFilterDropdown(ctk.CTkFrame):
+    def __init__(self, master, values, variable, command=None, width=150, height=36, corner_radius=18, **kwargs):
+        super().__init__(master, fg_color=CARD_BG, corner_radius=corner_radius, border_width=1, border_color=BORDER_COLOR, **kwargs)
+        self.values = values
+        self.variable = variable
+        self.command = command
+        self.base_height = height
+        self.corner_radius = corner_radius
+        
+        self.is_open = False
+        self.animating = False
+        self.target_height = height
+        self.current_height = height
+        
+        self.configure(width=width, height=height)
+        self.pack_propagate(False)
+        self.grid_propagate(False)
+        
+        self.main_btn = ctk.CTkButton(
+            self, text=self.variable.get() + " ⌄", height=height, width=width,
+            fg_color="transparent", text_color=TEXT_SUBTLE, hover_color=BORDER_COLOR,
+            corner_radius=corner_radius, command=self.toggle
+        )
+        self.main_btn.pack(side="top", fill="x")
+        
+        self.options_frame = ctk.CTkFrame(self, fg_color="transparent")
+        
+        self.option_buttons = []
+        for val in self.values:
+            btn = ctk.CTkButton(
+                self.options_frame, text=val, height=30, width=width,
+                fg_color="transparent", text_color=TEXT_SUBTLE, hover_color=BORDER_COLOR,
+                corner_radius=15, command=lambda v=val: self.select(v)
+            )
+            btn.pack(side="top", fill="x", pady=2, padx=4)
+            self.option_buttons.append(btn)
+            
+    def toggle(self):
+        if self.animating: return
+        self.animating = True
+        if self.is_open:
+            self.target_height = self.base_height
+            self.options_frame.pack_forget()
+            self.main_btn.configure(text=self.variable.get() + " ⌄")
+            self.animate_close()
+        else:
+            self.target_height = self.base_height + (len(self.values) * 34) + 10
+            self.options_frame.pack(side="top", fill="both", expand=True, pady=(0, 6))
+            self.main_btn.configure(text=self.variable.get() + " ⌃")
+            self.animate_open()
+            
+    def animate_open(self):
+        if self.current_height < self.target_height:
+            self.current_height += 20
+            if self.current_height > self.target_height:
+                self.current_height = self.target_height
+            self.configure(height=self.current_height)
+            self.after(16, self.animate_open)
+        else:
+            self.is_open = True
+            self.animating = False
+            
+    def animate_close(self):
+        if self.current_height > self.base_height:
+            self.current_height -= 20
+            if self.current_height < self.base_height:
+                self.current_height = self.base_height
+            self.configure(height=self.current_height)
+            self.after(16, self.animate_close)
+        else:
+            self.is_open = False
+            self.animating = False
+
+    def select(self, value):
+        self.variable.set(value)
+        self.main_btn.configure(text=value + " ⌄")
+        self.toggle()
+        if self.command:
+            self.command(value)
+
 class SearchPage(ctk.CTkFrame):
     def __init__(
         self,
@@ -37,6 +117,10 @@ class SearchPage(ctk.CTkFrame):
             "KM Dalam": False,
             "Parkir": False,
         }
+
+        self.filter_price_var = ctk.StringVar(value="Semua Harga")
+        self.filter_type_var = ctk.StringVar(value="Semua Tipe")
+        self.sort_price_var = ctk.StringVar(value="Urutkan (Default)")
 
         # Grid layout
         self.grid_rowconfigure(5, weight=1)
@@ -143,21 +227,33 @@ class SearchPage(ctk.CTkFrame):
         filters_frame = ctk.CTkFrame(self, fg_color=BG_COLOR)
         filters_frame.grid(row=3, column=0, sticky="ew", pady=(0, 14))
 
-        # Static dropdown dummies
-        static_filters = ["Price ⌄", "Type ⌄", "Sort by Lowest Price ⇅"]
-        for text in static_filters:
-            btn = ctk.CTkButton(
-                filters_frame,
-                text=text,
-                height=36,
-                corner_radius=18,
-                fg_color=CARD_BG,
-                text_color=TEXT_SUBTLE,
-                border_width=1,
-                border_color=BORDER_COLOR,
-                state="disabled",  # Dummy, non-functional
-            )
-            btn.pack(side="left", padx=(0, 8))
+        # Option menus
+        self.price_menu = AnimatedFilterDropdown(
+            filters_frame,
+            values=["Semua Harga", "< Rp 1.000.000", "Rp 1.000.000 - Rp 2.000.000", "> Rp 2.000.000"],
+            variable=self.filter_price_var,
+            command=lambda _: self._on_search(),
+            width=230,
+        )
+        self.price_menu.pack(side="left", padx=(0, 8), anchor="n")
+
+        self.type_menu = AnimatedFilterDropdown(
+            filters_frame,
+            values=["Semua Tipe", "Putra", "Putri", "Campur"],
+            variable=self.filter_type_var,
+            command=lambda _: self._on_search(),
+            width=130,
+        )
+        self.type_menu.pack(side="left", padx=(0, 8), anchor="n")
+
+        self.sort_menu = AnimatedFilterDropdown(
+            filters_frame,
+            values=["Urutkan (Default)", "Harga Terendah", "Harga Tertinggi"],
+            variable=self.sort_price_var,
+            command=lambda _: self._on_search(),
+            width=170,
+        )
+        self.sort_menu.pack(side="left", padx=(0, 8), anchor="n")
 
         # Dynamic toggle filters
         toggle_filters = ["WiFi", "AC", "KM Dalam", "Parkir"]
@@ -173,7 +269,7 @@ class SearchPage(ctk.CTkFrame):
                 border_color=BORDER_COLOR,
                 command=lambda f=filter_name: self.toggle_filter(f),
             )
-            btn.pack(side="left", padx=(0, 8))
+            btn.pack(side="left", padx=(0, 8), anchor="n")
             setattr(self, f"btn_{filter_name.lower().replace(' ', '_')}", btn)
 
     def _build_summary(self):
@@ -211,7 +307,38 @@ class SearchPage(ctk.CTkFrame):
 
         # Apply local filters
         filtered_results = []
+        
+        price_filter = self.filter_price_var.get()
+        type_filter = self.filter_type_var.get()
+        
         for item in raw_results:
+            # Type Filter
+            if type_filter != "Semua Tipe":
+                item_type = str(item.get("tipe", "")).lower()
+                if type_filter == "Putra":
+                    if "putri" in item_type or "putra" not in item_type:
+                        continue
+                elif type_filter == "Putri":
+                    if "putri" not in item_type:
+                        continue
+                elif type_filter == "Campur":
+                    if "campur" not in item_type:
+                        continue
+
+            # Price Filter
+            if price_filter != "Semua Harga":
+                try:
+                    harga = int(item.get("harga", 0))
+                except:
+                    harga = 0
+                
+                if price_filter == "< Rp 1.000.000" and harga >= 1000000:
+                    continue
+                elif price_filter == "Rp 1.000.000 - Rp 2.000.000" and (harga < 1000000 or harga > 2000000):
+                    continue
+                elif price_filter == "> Rp 2.000.000" and harga <= 2000000:
+                    continue
+
             fasilitas = " ".join(item.get("fasilitas_kamar", [])).lower()
             if self.active_filters["WiFi"] and "wifi" not in fasilitas:
                 continue
@@ -223,6 +350,13 @@ class SearchPage(ctk.CTkFrame):
                 continue
             filtered_results.append(item)
 
+        # Sort
+        sort_by = self.sort_price_var.get()
+        if sort_by == "Harga Terendah":
+            filtered_results.sort(key=lambda x: int(x.get("harga", 0) or 0))
+        elif sort_by == "Harga Tertinggi":
+            filtered_results.sort(key=lambda x: int(x.get("harga", 0) or 0), reverse=True)
+
         self.refresh(filtered_results, self.favorites, self.compare_list)
 
     def refresh(self, data_list, favorites, compare_list):
@@ -232,17 +366,20 @@ class SearchPage(ctk.CTkFrame):
 
         # Update summary
         count = len(self._current_results)
-        self.label_summary.configure(text=f"Menampilkan {count} kos")
+        limit_text = " (menampilkan 30 teratas)" if count > 30 else ""
+        self.label_summary.configure(text=f"Menampilkan {count} kos{limit_text}")
 
         # Clear old widgets
         for widget in self.results_grid.winfo_children():
             widget.destroy()
 
-        # Render new cards
+        # Render new cards (Limit to 30 items)
         favorites_keys = {_item_key(item) for item in self.favorites}
         compare_keys = {_item_key(item) for item in self.compare_list}
 
-        for index, item in enumerate(self._current_results):
+        display_results = self._current_results[:30]
+
+        for index, item in enumerate(display_results):
             row = index // 3
             col = index % 3
             card = KosCard(
@@ -255,7 +392,6 @@ class SearchPage(ctk.CTkFrame):
                 open_detail=self.open_detail,
             )
             card.grid(row=row, column=col, padx=12, pady=12, sticky="n")
-
 
 def _item_key(kos_item):
     if not isinstance(kos_item, dict):

@@ -1,4 +1,4 @@
-﻿import json
+import json
 import os
 import re
 import requests
@@ -10,6 +10,11 @@ from backend import BackendManager
 from search_page import SearchPage
 import session
 from login_ui import AuthWindow
+
+try:
+    from PIL import Image
+except Exception:
+    Image = None
 
 try:
     from PIL import Image
