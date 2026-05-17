@@ -1,7 +1,7 @@
 import customtkinter as ctk
-from io import BytesIO
-from urllib.request import urlopen
+import requests
 import threading
+from io import BytesIO
 
 try:
     from PIL import Image
@@ -27,112 +27,17 @@ SUCCESS_SURFACE = "#F6F9FC"
 _IMAGE_CACHE = {}
 
 
-def _parse_price_int(value):
-    """Parse a price value into a normalized integer (Rupiah).
-
-    Mirrors the logic from main._parse_price_value so the UI always displays
-    consistently formatted prices.
-    """
-    import re
-
-    if isinstance(value, (int, float)):
-        v = int(value)
-        if v <= 0:
-            return 0
-        if v < 1000:
-            if v <= 9:
-                return v * 1_000_000
-            else:
-                return v * 1_000
-        return v
-
-    if not isinstance(value, str):
-        return 0
-
-    text = value.strip().lower()
-    if not text or text == "-":
-        return 0
-
-    text = text.replace("rupiah", "rp").replace("/bulan", " ").replace("bln", " ")
-    text = text.replace("/tahun", " ").replace("/thn", " ")
-
-    k_match = re.search(r"(\d[\d.,]*)\s*k\b", text)
-    if k_match:
-        frag = k_match.group(1).replace(".", "").replace(",", ".")
-        try:
-            return int(float(frag) * 1_000)
-        except ValueError:
-            pass
-
-    juta_match = re.search(r"(\d[\d.,]*)\s*(?:juta|jt)", text)
-    if juta_match:
-        frag = juta_match.group(1).replace(".", "").replace(",", ".")
-        try:
-            return int(float(frag) * 1_000_000)
-        except ValueError:
-            return 0
-
-    ribu_match = re.search(r"(\d[\d.,]*)\s*(?:ribu|rb)", text)
-    if ribu_match:
-        frag = ribu_match.group(1).replace(".", "").replace(",", ".")
-        try:
-            return int(float(frag) * 1_000)
-        except ValueError:
-            return 0
-
-    number_match = re.search(r"\d[\d.,]*", text)
-    if not number_match:
-        return 0
-
-    fragment = number_match.group(0)
-
-    if "," in fragment or "." in fragment:
-        separators = [c for c in fragment if c in ".,"]
-        if len(separators) >= 2:
-            cleaned = fragment.replace(",", "").replace(".", "")
-            return int(cleaned) if cleaned else 0
-        whole, frac = fragment.replace(",", ".").split(".")
-        if len(frac) == 3:
-            if len(whole) >= 2 or frac == "000":
-                cleaned = whole + frac
-                return int(cleaned)
-            try:
-                return int(whole) * 1_000_000 + int(frac) * 1_000
-            except ValueError:
-                return 0
-        if len(frac) <= 2:
-            try:
-                return int(float(f"{whole}.{frac}") * 1_000_000)
-            except ValueError:
-                return 0
-        cleaned = fragment.replace(",", "").replace(".", "")
-        v = int(cleaned) if cleaned else 0
-        if v <= 0:
-            return 0
-        if v < 1000:
-            if v <= 9:
-                return v * 1_000_000
-            else:
-                return v * 1_000
-        return v
-
-    digits_only = re.sub(r"\D", "", fragment)
-    if not digits_only:
-        return 0
-    v = int(digits_only)
-    if v <= 0:
-        return 0
-    if v < 1000:
-        if v <= 9:
-            return v * 1_000_000
-        else:
-            return v * 1_000
-    return v
-
-
 def _format_price(value):
-    nominal = _parse_price_int(value)
-    return f"Rp {nominal:,}".replace(",", ".") if nominal > 0 else "-"
+    if isinstance(value, (int, float)):
+        nominal = int(value)
+        return f"Rp {nominal:,}".replace(",", ".")
+
+    if isinstance(value, str):
+        cleaned = value.strip()
+        if cleaned:
+            return cleaned
+
+    return "-"
 
 
 def _as_list(value, fallback="-"):
@@ -179,26 +84,29 @@ def _load_remote_image(url, size):
     if not url or Image is None:
         return None
 
+    if url.lower().endswith(".svg") or ".svg?" in url.lower():
+        return None
+
     cache_key = (url, size)
     if cache_key in _IMAGE_CACHE:
         return _IMAGE_CACHE[cache_key]
 
     try:
-        with urlopen(url, timeout=8) as response:
-            raw = response.read()
-        pil_image = Image.open(BytesIO(raw)).convert("RGB")
-        
-        # Use ImageOps.fit to maintain aspect ratio and crop to exactly the requested size
-        from PIL import ImageOps
-        pil_image = ImageOps.fit(pil_image, size, Image.Resampling.LANCZOS)
-        
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+        }
+        response = requests.get(url, headers=headers, timeout=10)
+        response.raise_for_status()
+
+        pil_image = Image.open(BytesIO(response.content)).convert("RGB")
         image = ctk.CTkImage(light_image=pil_image, dark_image=pil_image, size=size)
         _IMAGE_CACHE[cache_key] = image
         return image
-    except Exception:
+    except Exception as e:
+        # print(f"[ERROR GAMBAR] Gagal memuat {url}: {e}")
         return None
 
-def _load_remote_image_async(url, size, callback):
+def _load_remote_image_async(url, size, widget, callback):
     if not url or Image is None:
         callback(None)
         return
@@ -208,28 +116,19 @@ def _load_remote_image_async(url, size, callback):
         callback(_IMAGE_CACHE[cache_key])
         return
 
-    def _fetch():
+    def fetch():
+        image = _load_remote_image(url, size)
         try:
-            with urlopen(url, timeout=8) as response:
-                raw = response.read()
-            pil_image = Image.open(BytesIO(raw)).convert("RGB")
-            from PIL import ImageOps
-            pil_image = ImageOps.fit(pil_image, size, Image.Resampling.LANCZOS)
-            image = ctk.CTkImage(light_image=pil_image, dark_image=pil_image, size=size)
-            _IMAGE_CACHE[cache_key] = image
-            callback(image)
+            widget.after(0, lambda: callback(image))
         except Exception:
-            callback(None)
+            pass
 
-    threading.Thread(target=_fetch, daemon=True).start()
+    threading.Thread(target=fetch, daemon=True).start()
+
 
 class DetailWindow(ctk.CTkToplevel):
-    def __init__(self, parent, data_kos, is_favorite=False, add_to_favorite=None, *args, **kwargs):
+    def __init__(self, parent, data_kos, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
-        
-        self.is_favorite = is_favorite
-        self.add_to_favorite = add_to_favorite
-        self.data_kos = data_kos
 
         self.transient(parent)
         self.after(10, self.grab_set) 
@@ -276,13 +175,21 @@ class DetailWindow(ctk.CTkToplevel):
         image_box.pack(fill="x", pady=(0, 15))
         image_box.pack_propagate(False)
 
-        preview_image = _load_remote_image(foto_list[0] if foto_list else "", (580, 320))
-        if preview_image:
-            image_label = ctk.CTkLabel(image_box, text="", image=preview_image)
-            image_label.image = preview_image
-            image_label.pack(fill="both", expand=True)
-        else:
-            ctk.CTkLabel(image_box, text="Gambar tidak tersedia", font=("Arial", 14), text_color=TEXT_SUBTLE).pack(expand=True)
+        self.preview_label = ctk.CTkLabel(image_box, text="Memuat Gambar...", font=("Arial", 14), text_color=TEXT_SUBTLE)
+        self.preview_label.pack(expand=True)
+
+        def on_preview_loaded(preview_image):
+            try:
+                if preview_image:
+                    self.preview_label.configure(text="", image=preview_image)
+                    self.preview_label.image = preview_image
+                    self.preview_label.pack(fill="both", expand=True)
+                else:
+                    self.preview_label.configure(text="Gambar tidak tersedia")
+            except Exception:
+                pass
+
+        _load_remote_image_async(foto_list[0] if foto_list else "", (580, 320), self, on_preview_loaded)
 
         ctk.CTkLabel(left_col, text="Deskripsi Kos", font=("Arial", 18, "bold"), text_color=TITLE_COLOR).pack(anchor="w", pady=(5, 5))
         
@@ -311,7 +218,14 @@ class DetailWindow(ctk.CTkToplevel):
         status_row = ctk.CTkFrame(info_panel, fg_color="transparent")
         status_row.pack(fill="x", pady=(0, 10))
         
-        badge_text = "PUTRI" if "PUTRI" in tipe.upper() else "PUTRA"
+        tipe_upper = tipe.upper()
+        if "CAMPUR" in tipe_upper:
+            badge_text = "CAMPUR"
+        elif "PUTRI" in tipe_upper:
+            badge_text = "PUTRI"
+        else:
+            badge_text = "PUTRA"
+            
         ctk.CTkLabel(
             status_row, text=badge_text, font=("Arial", 10, "bold"), 
             text_color="white", fg_color=ACCENT_COLOR, corner_radius=6, 
@@ -351,15 +265,10 @@ class DetailWindow(ctk.CTkToplevel):
         )
         self.btn_contact.pack(fill="x", pady=(0, 12))
 
-        fav_text = "♥ Hapus dari Favorit" if self.is_favorite else "♡ Simpan ke Favorit"
-        fav_color = ACCENT_COLOR if self.is_favorite else "#1A3A5A"
-        fav_hover = "#B45E24" if self.is_favorite else "#12283E"
-
         self.btn_fav = ctk.CTkButton(
-            info_panel, text=fav_text, 
-            fg_color=fav_color, hover_color=fav_hover, 
-            height=48, corner_radius=12, font=("Arial", 14, "bold"),
-            command=self._on_toggle_favorite
+            info_panel, text="♥ Simpan ke Favorit", 
+            fg_color="#1A3A5A", hover_color="#12283E", 
+            height=48, corner_radius=12, font=("Arial", 14, "bold")
         )
         self.btn_fav.pack(fill="x", pady=(0, 10))
 
@@ -389,21 +298,6 @@ class DetailWindow(ctk.CTkToplevel):
         self.bind("<Prior>", lambda e: _force_scroll(direction=-1, unit="pages")) 
         self.bind("<Next>", lambda e: _force_scroll(direction=1, unit="pages"))
         self.focus_set()
-
-    def _on_toggle_favorite(self):
-        if callable(self.add_to_favorite):
-            self.add_to_favorite(self.data_kos)
-            # Toggle the local state
-            self.is_favorite = not self.is_favorite
-            fav_text = "♥ Hapus dari Favorit" if self.is_favorite else "♡ Simpan ke Favorit"
-            fav_color = ACCENT_COLOR if self.is_favorite else "#1A3A5A"
-            fav_hover = "#B45E24" if self.is_favorite else "#12283E"
-            
-            self.btn_fav.configure(
-                text=fav_text,
-                fg_color=fav_color,
-                hover_color=fav_hover
-            )
 
     def _build_facility_chips(self, master, title, items):
         ctk.CTkLabel(master, text=title.upper(), font=("Arial", 10, "bold"), text_color=TEXT_SUBTLE).pack(anchor="w", pady=(5, 2))
@@ -435,7 +329,12 @@ class KosCard(ctk.CTkFrame):
         alamat = _safe_text(data_kos.get("alamat"), "Lokasi belum tersedia")
         harga = _format_price(data_kos.get("harga"))
         tipe = _safe_text(data_kos.get("tipe"), "PUTRA").upper()
-        badge_text = "PUTRI" if "PUTRI" in tipe else "PUTRA"
+        if "CAMPUR" in tipe:
+            badge_text = "CAMPUR"
+        elif "PUTRI" in tipe:
+            badge_text = "PUTRI"
+        else:
+            badge_text = "PUTRA"
         fasilitas_ringkas = _to_facility_text(data_kos.get("fasilitas_kamar"))
         foto_list = _normalize_foto(data_kos.get("foto"))
 
@@ -451,35 +350,6 @@ class KosCard(ctk.CTkFrame):
         image_box.grid_propagate(False)
         image_box.grid_columnconfigure(0, weight=1)
 
-        # Create an image label with a placeholder text initially
-        self.image_label = ctk.CTkLabel(
-            image_box,
-            text="Loading Image...",
-            font=("Arial", 12),
-            text_color=TEXT_SUBTLE,
-        )
-        self.image_label.grid(row=0, column=0, rowspan=2, sticky="nsew")
-        
-        # Load image asynchronously
-        def _on_image_loaded(img):
-            def _update_ui():
-                if self.image_label.winfo_exists():
-                    if img:
-                        self.image_label.configure(text="", image=img)
-                        self.image_label.image = img
-                    else:
-                        self.image_label.configure(text="No Image")
-            
-            # Ensure UI update happens on the main thread
-            try:
-                self.after(0, _update_ui)
-            except Exception:
-                pass
-                    
-        img_url = foto_list[0] if foto_list else ""
-        _load_remote_image_async(img_url, (296, 150), _on_image_loaded)
-
-        # Now create overlay so it sits on top
         overlay = ctk.CTkFrame(image_box, fg_color="transparent")
         overlay.grid(row=0, column=0, sticky="ew", padx=10, pady=10)
         overlay.grid_columnconfigure(0, weight=1)
@@ -496,24 +366,42 @@ class KosCard(ctk.CTkFrame):
         )
         badge.grid(row=0, column=0, sticky="w")
 
-        fav_text = "♥" if is_favorite else "♡"
-        fav_color = ACCENT_COLOR if is_favorite else PRIMARY_COLOR
-        
         favorite_btn = ctk.CTkButton(
             overlay,
-            text=fav_text,
+            text="♡",
             width=30,
             height=30,
             corner_radius=999,
             fg_color=CARD_BG,
-            text_color=fav_color,
+            text_color=PRIMARY_COLOR,
             hover_color="#EEF2F7",
             border_width=1,
             border_color=BORDER_COLOR,
             font=("Arial", 14, "bold"),
-            command=lambda: add_to_favorite(self.data_kos) if callable(add_to_favorite) else None,
+            command=lambda: None,
         )
         favorite_btn.grid(row=0, column=1, sticky="e")
+
+        self.image_label = ctk.CTkLabel(
+            image_box,
+            text="Memuat...",
+            font=("Arial", 12),
+            text_color=TEXT_SUBTLE,
+        )
+        self.image_label.grid(row=1, column=0, pady=(24, 0))
+
+        def on_image_loaded(thumbnail):
+            try:
+                if thumbnail:
+                    self.image_label.configure(text="", image=thumbnail)
+                    self.image_label.image = thumbnail
+                    self.image_label.grid(row=0, column=0, rowspan=2, sticky="nsew", pady=0)
+                else:
+                    self.image_label.configure(text="No Image")
+            except Exception:
+                pass
+
+        _load_remote_image_async(foto_list[0] if foto_list else "", (296, 150), self, on_image_loaded)
 
         content = ctk.CTkFrame(self, fg_color="transparent")
         content.grid(row=1, column=0, sticky="ew", padx=14, pady=(0, 12))
@@ -574,14 +462,8 @@ class KosCard(ctk.CTkFrame):
         )
         per_month.grid(row=1, column=0, sticky="w")
 
-        # Button row for Detail and Bandingkan
-        btn_row = ctk.CTkFrame(content, fg_color="transparent")
-        btn_row.grid(row=4, column=0, sticky="ew")
-        btn_row.grid_columnconfigure(0, weight=1)
-        btn_row.grid_columnconfigure(1, weight=1)
-
         btn_detail = ctk.CTkButton(
-            btn_row,
+            content,
             text="Lihat Detail",
             fg_color=PRIMARY_COLOR,
             hover_color="#013A62",
@@ -589,24 +471,6 @@ class KosCard(ctk.CTkFrame):
             corner_radius=10,
             height=38,
             font=("Arial", 12, "bold"),
-            command=lambda: (open_detail(self.data_kos) if callable(open_detail) else DetailWindow(self, self.data_kos)),
+            command=lambda: open_detail(self.data_kos) if open_detail else DetailWindow(self, self.data_kos),
         )
-        btn_detail.grid(row=0, column=0, sticky="ew", padx=(0, 4))
-
-        compare_text = "Bandingkan ✓" if is_compared else "Bandingkan"
-        compare_fg = ACCENT_COLOR if is_compared else "#EAF1F7"
-        compare_text_color = "white" if is_compared else PRIMARY_COLOR
-        compare_hover = "#B45E24" if is_compared else "#DDE6F2"
-
-        btn_compare = ctk.CTkButton(
-            btn_row,
-            text=compare_text,
-            fg_color=compare_fg,
-            hover_color=compare_hover,
-            text_color=compare_text_color,
-            corner_radius=10,
-            height=38,
-            font=("Arial", 12, "bold"),
-            command=lambda: add_to_compare(self.data_kos) if callable(add_to_compare) else None,
-        )
-        btn_compare.grid(row=0, column=1, sticky="ew", padx=(4, 0))
+        btn_detail.grid(row=4, column=0, sticky="ew")
