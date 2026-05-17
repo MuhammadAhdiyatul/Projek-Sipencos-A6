@@ -267,7 +267,12 @@ class DetailWindow(ctk.CTkToplevel):
         chip_row.pack(padx=10, pady=8)
 
 class KosCard(ctk.CTkFrame):
-    def __init__(self, master, data_kos, is_favorite=False, is_compared=False, add_to_favorite=None, add_to_compare=None, open_detail=None, **kwargs):
+    def __init__(self, master, data_kos, is_favorite=False, is_compared=False, **kwargs):
+        
+        self.favorites_callback = kwargs.pop('favorites_callback', None) or kwargs.pop('add_to_favorite', None)
+        self.compare_callback = kwargs.pop('compare_callback', None) or kwargs.pop('add_to_compare', None)
+        open_detail_callback = kwargs.pop('open_detail', None)
+
         super().__init__(
             master,
             fg_color=CARD_BG,
@@ -278,18 +283,25 @@ class KosCard(ctk.CTkFrame):
             **kwargs,
         )
         self.data_kos = data_kos
-
+        
         self.grid_columnconfigure(0, weight=1)
 
         nama_kos = _safe_text(data_kos.get("nama_kos"), "Nama kos tidak tersedia")
         alamat = _safe_text(data_kos.get("alamat"), "Lokasi belum tersedia")
         harga = _format_price(data_kos.get("harga"))
         tipe = _safe_text(data_kos.get("tipe"), "PUTRA").upper()
-        badge_text = "PUTRI" if "PUTRI" in tipe else "PUTRA"
+        
+        if "CAMPUR" in tipe:
+            badge_text = "CAMPUR"
+        elif "PUTRI" in tipe:
+            badge_text = "PUTRI"
+        else:
+            badge_text = "PUTRA"
+            
         fasilitas_ringkas = _to_facility_text(data_kos.get("fasilitas_kamar"))
         foto_list = _normalize_foto(data_kos.get("foto"))
 
-        # Top image area placeholder for future thumbnail support.
+        # Top image area placeholder
         image_box = ctk.CTkFrame(
             self,
             fg_color=IMAGE_BG,
@@ -317,9 +329,10 @@ class KosCard(ctk.CTkFrame):
         )
         badge.grid(row=0, column=0, sticky="w")
 
+        # Tombol Favorit (Aman & Terkoneksi)
         favorite_btn = ctk.CTkButton(
             overlay,
-            text="♡",
+            text="❤️" if is_favorite else "♡",
             width=30,
             height=30,
             corner_radius=999,
@@ -329,7 +342,7 @@ class KosCard(ctk.CTkFrame):
             border_width=1,
             border_color=BORDER_COLOR,
             font=("Arial", 14, "bold"),
-            command=lambda: None,
+            command=lambda: self.favorites_callback(self.data_kos) if self.favorites_callback else print("[DEBUG] No favorites callback"),
         )
         favorite_btn.grid(row=0, column=1, sticky="e")
 
@@ -392,7 +405,7 @@ class KosCard(ctk.CTkFrame):
             price_row,
             text=harga,
             font=("Arial", 20, "bold"),
-            text_color=TITLE_COLOR,
+            text_color=PRIMARY_COLOR,
             anchor="w",
         )
         price.grid(row=0, column=0, sticky="w")
@@ -415,6 +428,6 @@ class KosCard(ctk.CTkFrame):
             corner_radius=10,
             height=38,
             font=("Arial", 12, "bold"),
-            command=lambda: DetailWindow(self, self.data_kos),
+            command=lambda: open_detail_callback(self.data_kos) if open_detail_callback else (DetailWindow(self, self.data_kos) if DetailWindow else print("[DEBUG] DetailWindow class not imported")),
         )
         btn_detail.grid(row=4, column=0, sticky="ew")
