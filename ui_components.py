@@ -218,7 +218,14 @@ class DetailWindow(ctk.CTkToplevel):
         status_row = ctk.CTkFrame(info_panel, fg_color="transparent")
         status_row.pack(fill="x", pady=(0, 10))
         
-        badge_text = "PUTRI" if "PUTRI" in tipe.upper() else "PUTRA"
+        tipe_upper = tipe.upper()
+        if "CAMPUR" in tipe_upper:
+            badge_text = "CAMPUR"
+        elif "PUTRI" in tipe_upper:
+            badge_text = "PUTRI"
+        else:
+            badge_text = "PUTRA"
+            
         ctk.CTkLabel(
             status_row, text=badge_text, font=("Arial", 10, "bold"), 
             text_color="white", fg_color=ACCENT_COLOR, corner_radius=6, 
@@ -322,7 +329,12 @@ class KosCard(ctk.CTkFrame):
         alamat = _safe_text(data_kos.get("alamat"), "Lokasi belum tersedia")
         harga = _format_price(data_kos.get("harga"))
         tipe = _safe_text(data_kos.get("tipe"), "PUTRA").upper()
-        badge_text = "PUTRI" if "PUTRI" in tipe else "PUTRA"
+        if "CAMPUR" in tipe:
+            badge_text = "CAMPUR"
+        elif "PUTRI" in tipe:
+            badge_text = "PUTRI"
+        else:
+            badge_text = "PUTRA"
         fasilitas_ringkas = _to_facility_text(data_kos.get("fasilitas_kamar"))
         foto_list = _normalize_foto(data_kos.get("foto"))
 
