@@ -1,5 +1,6 @@
-﻿import customtkinter as ctk
+import customtkinter as ctk
 import requests
+import threading
 from io import BytesIO
 
 try:
@@ -83,6 +84,9 @@ def _load_remote_image(url, size):
     if not url or Image is None:
         return None
 
+    if url.lower().endswith(".svg") or ".svg?" in url.lower():
+        return None
+
     cache_key = (url, size)
     if cache_key in _IMAGE_CACHE:
         return _IMAGE_CACHE[cache_key]
@@ -99,8 +103,28 @@ def _load_remote_image(url, size):
         _IMAGE_CACHE[cache_key] = image
         return image
     except Exception as e:
-        print(f"[ERROR GAMBAR] Gagal memuat {url}: {e}")
+        # print(f"[ERROR GAMBAR] Gagal memuat {url}: {e}")
         return None
+
+def _load_remote_image_async(url, size, widget, callback):
+    if not url or Image is None:
+        callback(None)
+        return
+
+    cache_key = (url, size)
+    if cache_key in _IMAGE_CACHE:
+        callback(_IMAGE_CACHE[cache_key])
+        return
+
+    def fetch():
+        image = _load_remote_image(url, size)
+        try:
+            widget.after(0, lambda: callback(image))
+        except Exception:
+            pass
+
+    threading.Thread(target=fetch, daemon=True).start()
+
 
 class DetailWindow(ctk.CTkToplevel):
     def __init__(self, parent, data_kos, *args, **kwargs):
@@ -151,13 +175,21 @@ class DetailWindow(ctk.CTkToplevel):
         image_box.pack(fill="x", pady=(0, 15))
         image_box.pack_propagate(False)
 
-        preview_image = _load_remote_image(foto_list[0] if foto_list else "", (580, 320))
-        if preview_image:
-            image_label = ctk.CTkLabel(image_box, text="", image=preview_image)
-            image_label.image = preview_image
-            image_label.pack(fill="both", expand=True)
-        else:
-            ctk.CTkLabel(image_box, text="Gambar tidak tersedia", font=("Arial", 14), text_color=TEXT_SUBTLE).pack(expand=True)
+        self.preview_label = ctk.CTkLabel(image_box, text="Memuat Gambar...", font=("Arial", 14), text_color=TEXT_SUBTLE)
+        self.preview_label.pack(expand=True)
+
+        def on_preview_loaded(preview_image):
+            try:
+                if preview_image:
+                    self.preview_label.configure(text="", image=preview_image)
+                    self.preview_label.image = preview_image
+                    self.preview_label.pack(fill="both", expand=True)
+                else:
+                    self.preview_label.configure(text="Gambar tidak tersedia")
+            except Exception:
+                pass
+
+        _load_remote_image_async(foto_list[0] if foto_list else "", (580, 320), self, on_preview_loaded)
 
         ctk.CTkLabel(left_col, text="Deskripsi Kos", font=("Arial", 18, "bold"), text_color=TITLE_COLOR).pack(anchor="w", pady=(5, 5))
         
@@ -338,19 +370,26 @@ class KosCard(ctk.CTkFrame):
         )
         favorite_btn.grid(row=0, column=1, sticky="e")
 
-        thumbnail = _load_remote_image(foto_list[0] if foto_list else "", (296, 150))
-        if thumbnail:
-            image_label = ctk.CTkLabel(image_box, text="", image=thumbnail)
-            image_label.image = thumbnail
-            image_label.grid(row=0, column=0, rowspan=2, sticky="nsew")
-        else:
-            no_image = ctk.CTkLabel(
-                image_box,
-                text="No Image",
-                font=("Arial", 12),
-                text_color=TEXT_SUBTLE,
-            )
-            no_image.grid(row=1, column=0, pady=(24, 0))
+        self.image_label = ctk.CTkLabel(
+            image_box,
+            text="Memuat...",
+            font=("Arial", 12),
+            text_color=TEXT_SUBTLE,
+        )
+        self.image_label.grid(row=1, column=0, pady=(24, 0))
+
+        def on_image_loaded(thumbnail):
+            try:
+                if thumbnail:
+                    self.image_label.configure(text="", image=thumbnail)
+                    self.image_label.image = thumbnail
+                    self.image_label.grid(row=0, column=0, rowspan=2, sticky="nsew", pady=0)
+                else:
+                    self.image_label.configure(text="No Image")
+            except Exception:
+                pass
+
+        _load_remote_image_async(foto_list[0] if foto_list else "", (296, 150), self, on_image_loaded)
 
         content = ctk.CTkFrame(self, fg_color="transparent")
         content.grid(row=1, column=0, sticky="ew", padx=14, pady=(0, 12))
@@ -420,6 +459,6 @@ class KosCard(ctk.CTkFrame):
             corner_radius=10,
             height=38,
             font=("Arial", 12, "bold"),
-            command=lambda: DetailWindow(self, self.data_kos),
+            command=lambda: open_detail(self.data_kos) if open_detail else DetailWindow(self, self.data_kos),
         )
         btn_detail.grid(row=4, column=0, sticky="ew")

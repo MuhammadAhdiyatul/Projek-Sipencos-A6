@@ -5,7 +5,7 @@ import requests
 from io import BytesIO
 
 import customtkinter as ctk
-from ui_components import KosCard
+from ui_components import KosCard, _load_remote_image_async, _normalize_foto
 from backend import BackendManager
 from search_page import SearchPage
 
@@ -871,17 +871,32 @@ class ComparePage(ctk.CTkFrame):
         )
         remove_btn.pack(side="right")
 
-        image_frame = ctk.CTkFrame(card, fg_color="#E5E7EB", corner_radius=18, height=140)
+        image_frame = ctk.CTkFrame(card, fg_color="#E5E7EB", corner_radius=18, height=160)
         image_frame.pack(fill="x", padx=16, pady=(14, 12))
         image_frame.pack_propagate(False)
 
         img_label = ctk.CTkLabel(
             image_frame,
-            text="🏠",
-            font=("Arial", 36),
+            text="Memuat...",
+            font=("Arial", 12),
             text_color="#64748B",
         )
-        img_label.pack(expand=True)
+        img_label.pack(expand=True, fill="both")
+
+        foto_list = _normalize_foto(kos.get("foto") or [])
+        url = foto_list[0] if foto_list else ""
+
+        def on_compare_image_loaded(img):
+            try:
+                if img:
+                    img_label.configure(text="", image=img)
+                    img_label.image = img
+                else:
+                    img_label.configure(text="🏠\nNo Image", font=("Arial", 14))
+            except Exception:
+                pass
+
+        _load_remote_image_async(url, (330, 160), self, on_compare_image_loaded)
 
         title = ctk.CTkLabel(
             card,

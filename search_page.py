@@ -232,17 +232,20 @@ class SearchPage(ctk.CTkFrame):
 
         # Update summary
         count = len(self._current_results)
-        self.label_summary.configure(text=f"Menampilkan {count} kos")
+        limit_text = " (menampilkan 30 teratas)" if count > 30 else ""
+        self.label_summary.configure(text=f"Menampilkan {count} kos{limit_text}")
 
         # Clear old widgets
         for widget in self.results_grid.winfo_children():
             widget.destroy()
 
-        # Render new cards
+        # Render new cards (Limit to 30 items)
         favorites_keys = {_item_key(item) for item in self.favorites}
         compare_keys = {_item_key(item) for item in self.compare_list}
 
-        for index, item in enumerate(self._current_results):
+        display_results = self._current_results[:30]
+
+        for index, item in enumerate(display_results):
             row = index // 3
             col = index % 3
             card = KosCard(
@@ -255,7 +258,6 @@ class SearchPage(ctk.CTkFrame):
                 open_detail=self.open_detail,
             )
             card.grid(row=row, column=col, padx=12, pady=12, sticky="n")
-
 
 def _item_key(kos_item):
     if not isinstance(kos_item, dict):
