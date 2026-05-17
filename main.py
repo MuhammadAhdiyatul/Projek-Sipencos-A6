@@ -5,9 +5,16 @@ import requests
 from io import BytesIO
 
 import customtkinter as ctk
-from ui_components import KosCard, _load_remote_image_async, _normalize_foto
+from ui_components import KosCard, _load_remote_image, _normalize_foto
 from backend import BackendManager
 from search_page import SearchPage
+import session
+from login_ui import AuthWindow
+
+try:
+    from PIL import Image
+except Exception:
+    Image = None
 
 try:
     from PIL import Image
@@ -900,7 +907,7 @@ class ComparePage(ctk.CTkFrame):
             except Exception:
                 pass
 
-        _load_remote_image_async(url, (330, 160), self, on_compare_image_loaded)
+        _load_remote_image(url, (330, 160), self, on_compare_image_loaded)
 
         title = ctk.CTkLabel(
             card,
@@ -1693,6 +1700,16 @@ class App(ctk.CTk):
             frame.grid(row=0, column=0, sticky="nsew")
 
     def show_frame(self, frame_name):
+        # ─── GERBANG TOL LOGIN SI PENCOS ───
+        if frame_name == "favorites":
+            if not getattr(session, 'is_logged_in', False):
+                # Panggil window login
+                login_win = AuthWindow()
+                login_win.mainloop()
+                # Stop eksekusi di sini agar tidak pindah halaman!
+                return 
+        # ───────────────────────────────────
+
         frame = self.frames.get(frame_name)
         if not frame:
             return

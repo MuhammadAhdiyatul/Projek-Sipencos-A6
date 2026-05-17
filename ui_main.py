@@ -8,6 +8,8 @@ from compare import CompareManager
 from favorites import FavoritesWindow
 from ui_components import KosCard, _load_remote_image, _normalize_foto
 from threading_handler import ThreadingHandler
+from login_ui import AuthWindow
+import session
 from ui_components import _load_remote_image, _normalize_foto
 
 
@@ -138,7 +140,6 @@ class App(ctk.CTk):
                 text_color=PRIMARY_COLOR if is_active else "#2F3B45",
                 fg_color="#EAF1F7" if is_active else "transparent",
                 hover_color="#E5E7EB",
-                active_color="#DDE6F2",
                 border_width=1 if is_active else 0,
                 border_color=BORDER_COLOR,
                 command=lambda p=page_name: self.switch_page(p),
@@ -172,6 +173,18 @@ class App(ctk.CTk):
 
     def switch_page(self, page_name):
         """Route to different pages based on page_name."""
+        
+        # --- LOGIKA GERBANG TOL (INTERSEPTOR) ---
+        # Hanya menu 'favorites' yang dicegat untuk login
+        if page_name == "favorites":
+            # getattr dipakai agar tidak error jika session belum punya atribut is_logged_in
+            if not getattr(session, 'is_logged_in', False):
+                # Jika belum login, buka window baru dan batalkan proses pindah halaman
+                login_win = AuthWindow()
+                login_win.mainloop()
+                return 
+        # -----------------------------------------
+
         self.active_menu = page_name
         
         # Update button states
