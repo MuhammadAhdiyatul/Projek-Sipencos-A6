@@ -1,67 +1,147 @@
 import customtkinter as ctk
-from auth import verify_login
-from session import current_session
+from auth import verify_login, register_user
+import session
 
-PRIMARY_COLOR = "#002B49"
-ACCENT_COLOR = "#C96A28"
-APP_BG = "#F0F2F5"
-CARD_BG = "#FFFFFF"
-BORDER_COLOR = "#E7EAF0"
-TEXT_SUBTLE = "#6F7C85"
-
-class LoginPopup(ctk.CTkToplevel):
-    def __init__(self, master=None, on_success_callback=None):
-        super().__init__(master)
+class AuthWindow(ctk.CTk): 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         
-        self.title("SiPencos - Autentikasi")
-        self.geometry("380x320")
+        self.title("Autentikasi SiPencos")
+        self.geometry("400x500")
         self.resizable(False, False)
-        self.configure(fg_color=APP_BG)
         
-        self.attributes("-topmost", True)
-        self.grab_set() 
-        self.focus_force()
-
-        self.on_success_callback = on_success_callback
-        self.protocol("WM_DELETE_WINDOW", self.destroy)
-
-        container = ctk.CTkFrame(self, fg_color=CARD_BG, corner_radius=18, border_width=1, border_color=BORDER_COLOR)
-        container.pack(fill="both", expand=True, padx=18, pady=18)
+        # Inisialisasi Frame (keduanya diletakkan di dalam popup ini)
+        self.login_frame = ctk.CTkFrame(self, fg_color="transparent")
+        self.register_frame = ctk.CTkFrame(self, fg_color="transparent")
         
-        self.label_judul = ctk.CTkLabel(container, text="Admin Login", font=("Arial", 22, "bold"), text_color=PRIMARY_COLOR)
-        self.label_judul.pack(pady=(24, 6))
-
-        self.label_subtitle = ctk.CTkLabel(container, text="Masuk dengan akun demo admin.", font=("Arial", 12), text_color=TEXT_SUBTLE)
-        self.label_subtitle.pack(pady=(0, 18))
+        # Setup isi masing-masing frame
+        self._setup_login_frame()
+        self._setup_register_frame()
         
-        self.entry_username = ctk.CTkEntry(container, placeholder_text="Username", width=260, height=38, border_color=BORDER_COLOR)
-        self.entry_username.pack(pady=(0, 12))
-        
-        self.entry_password = ctk.CTkEntry(container, placeholder_text="Password", width=260, height=38, show="*", border_color=BORDER_COLOR)
-        self.entry_password.pack(pady=(0, 8))
-        
-        self.label_notif = ctk.CTkLabel(container, text="", text_color=ACCENT_COLOR, font=("Arial", 11))
-        self.label_notif.pack(pady=(4, 8))
+        # Tampilkan frame login saat popup pertama kali dibuka
+        self.show_login_frame()
 
-        self.btn_login = ctk.CTkButton(container, text="Login", width=260, height=40, fg_color=ACCENT_COLOR, hover_color="#B45E24", command=self.proses_login)
-        self.btn_login.pack(pady=(8, 0))
+    def show_login_frame(self, event=None):
+        """Menyembunyikan frame register dan menampilkan frame login"""
+        self.register_frame.pack_forget()
+        self.login_frame.pack(fill="both", expand=True, padx=20, pady=20)
 
-        self.entry_username.insert(0, "admin")
-        self.entry_password.insert(0, "admin123")
+    def show_register_frame(self, event=None):
+        """Menyembunyikan frame login dan menampilkan frame register"""
+        self.login_frame.pack_forget()
+        self.register_frame.pack(fill="both", expand=True, padx=20, pady=20)
 
+    def _setup_login_frame(self):
+        """Desain UI untuk Halaman Login"""
+        # Judul
+        label_title = ctk.CTkLabel(self.login_frame, text="Login", font=ctk.CTkFont(size=24, weight="bold"))
+        label_title.pack(pady=(30, 40))
+
+        # Input Email
+        self.entry_login_email = ctk.CTkEntry(self.login_frame, placeholder_text="Email", width=300, height=40)
+        self.entry_login_email.pack(pady=(0, 15))
+
+        # Input Password
+        self.entry_login_password = ctk.CTkEntry(self.login_frame, placeholder_text="Password", show="*", width=300, height=40)
+        self.entry_login_password.pack(pady=(0, 25))
+
+        # Ubah bagian tombol login jadi seperti ini:
+        btn_login = ctk.CTkButton(self.login_frame, text="Login", width=300, height=40, command=self.proses_login)
+        btn_login.pack(pady=(0, 25))
+
+        # Bagian Bawah: Belum punya akun? Daftar sekarang
+        switch_frame = ctk.CTkFrame(self.login_frame, fg_color="transparent")
+        switch_frame.pack(pady=(10, 0))
+
+        label_info = ctk.CTkLabel(switch_frame, text="Belum punya akun? ")
+        label_info.pack(side="left")
+
+        # Teks "Daftar sekarang" yang bisa diklik
+        label_switch = ctk.CTkLabel(switch_frame, text="Daftar sekarang", text_color="#1f6aa5", cursor="hand2", font=ctk.CTkFont(weight="bold"))
+        label_switch.pack(side="left")
+        label_switch.bind("<Button-1>", self.show_register_frame)
+
+    def _setup_register_frame(self):
+        """Desain UI untuk Halaman Register"""
+        # Judul
+        label_title = ctk.CTkLabel(self.register_frame, text="Daftar Akun", font=ctk.CTkFont(size=24, weight="bold"))
+        label_title.pack(pady=(20, 30))
+
+        # Input Nama Lengkap
+        self.entry_reg_name = ctk.CTkEntry(self.register_frame, placeholder_text="Nama Lengkap", width=300, height=40)
+        self.entry_reg_name.pack(pady=(0, 15))
+
+        # Input Email
+        self.entry_reg_email = ctk.CTkEntry(self.register_frame, placeholder_text="Email", width=300, height=40)
+        self.entry_reg_email.pack(pady=(0, 15))
+
+        # Input Password
+        self.entry_reg_password = ctk.CTkEntry(self.register_frame, placeholder_text="Password", show="*", width=300, height=40)
+        self.entry_reg_password.pack(pady=(0, 15))
+
+        # Input Confirm Password
+        self.entry_reg_confirm_password = ctk.CTkEntry(self.register_frame, placeholder_text="Konfirmasi Password", show="*", width=300, height=40)
+        self.entry_reg_confirm_password.pack(pady=(0, 25))
+
+        # Tombol Daftar (SUDAH DITAMBAH COMMAND)
+        btn_register = ctk.CTkButton(self.register_frame, text="Daftar", width=300, height=40, command=self.proses_register)
+        btn_register.pack(pady=(0, 25))
+
+        # Bagian Bawah: Sudah punya akun? Login
+        switch_frame = ctk.CTkFrame(self.register_frame, fg_color="transparent")
+        switch_frame.pack(pady=(10, 0))
+
+        label_info = ctk.CTkLabel(switch_frame, text="Sudah punya akun? ")
+        label_info.pack(side="left")
+
+        # Teks "Login" yang bisa diklik
+        label_switch = ctk.CTkLabel(switch_frame, text="Login", text_color="#1f6aa5", cursor="hand2", font=ctk.CTkFont(weight="bold"))
+        label_switch.pack(side="left")
+        label_switch.bind("<Button-1>", self.show_login_frame)
+
+    # POSISI DEF INI SUDAH SEJAJAR DENGAN DEF LAINNYA
     def proses_login(self):
-        username = self.entry_username.get()
-        password = self.entry_password.get()
+        email = self.entry_login_email.get().strip()
+        password = self.entry_login_password.get().strip()
         
-        sukses, data_atau_pesan = verify_login(username, password)
+        # Validasi input kosong
+        if not email or not password:
+            print("Email dan Password tidak boleh kosong!")
+            return
         
-        if sukses:
-            self.label_notif.configure(text="Login Berhasil!", text_color="green")
-            current_session.login(data_atau_pesan)
+        # Panggil fungsi verify_login bawaan auth.py kelompok kalian
+        if verify_login(email, password):  
+            session.is_logged_in = True    # Set status global jadi sudah login
+            session.current_user = email   # Catat email yang sedang aktif
+            print(f"[Auth] Login berhasil untuk: {email}")
             
-            if self.on_success_callback:
-                self.on_success_callback()
-                
-            self.after(1000, self.destroy)
+            self.destroy()                 
         else:
-            self.label_notif.configure(text=data_atau_pesan, text_color="red")
+            print("Login Gagal: Email atau Password salah!")
+
+    def proses_register(self):
+        name = self.entry_reg_name.get().strip()
+        email = self.entry_reg_email.get().strip()
+        password = self.entry_reg_password.get().strip()
+        confirm_pass = self.entry_reg_confirm_password.get().strip()
+
+        if not name or not email or not password:
+            print("Semua kolom wajib diisi!")
+            return
+
+        if password != confirm_pass:
+            print("Registrasi Gagal: Konfirmasi password tidak cocok!")
+            return
+
+        if len(password) < 8:
+            print("Registrasi Gagal: Password minimal harus 8 karakter!")
+            return
+
+        if register_user(name, email, password):
+            print(f"[Auth] Akun baru berhasil dibuat untuk: {email}")
+            
+            session.is_logged_in = True
+            session.current_user = email
+            self.destroy() 
+        else:
+            print("Registrasi Gagal: Email mungkin sudah digunakan!")
