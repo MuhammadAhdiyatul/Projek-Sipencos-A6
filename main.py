@@ -1759,21 +1759,24 @@ class AnalyticsPage(ctk.CTkFrame):
         )
         subtitle_label.grid(row=1, column=0, sticky="w", pady=(4, 0))
 
-        # ── Scrollable content area ─────────────────────────
-        self.scroll_frame = ctk.CTkScrollableFrame(
-            self, fg_color=BG, corner_radius=0, border_width=0
-        )
-        self.scroll_frame.grid(row=1, column=0, sticky="nsew")
-        self.scroll_frame.grid_columnconfigure(0, weight=1)
+        # ── Content area (non-scrollable) ───────────────────
+        self.content_frame = ctk.CTkFrame(self, fg_color=BG, corner_radius=0, border_width=0)
+        self.content_frame.grid(row=1, column=0, sticky="nsew")
+        self.content_frame.grid_rowconfigure(0, weight=1)
+        self.content_frame.grid_columnconfigure(0, weight=1)
 
         self._canvas_widget = None
         self._built = False
+        self._render_job = None
 
     def refresh(self, *args, **kwargs):
         """Build or rebuild the analytics charts."""
-        if self._built:
-            return
-        self._render_charts()
+        if self._render_job is not None:
+            try:
+                self.after_cancel(self._render_job)
+            except Exception:
+                pass
+        self._render_job = self.after(25, self._render_charts)
 
     def _render_charts(self):
         """Generate analytics PNG and embed it as a scaled image."""
@@ -1781,7 +1784,7 @@ class AnalyticsPage(ctk.CTkFrame):
             import matplotlib.pyplot as plt
         except ImportError as e:
             err = ctk.CTkLabel(
-                self.scroll_frame,
+                self.content_frame,
                 text=f"Modul matplotlib tidak ditemukan:\n{e}",
                 font=("Arial", 14),
                 text_color="#EF4444",
@@ -1793,7 +1796,7 @@ class AnalyticsPage(ctk.CTkFrame):
             from analytics import KosAnalytics
         except ImportError as e:
             err = ctk.CTkLabel(
-                self.scroll_frame,
+                self.content_frame,
                 text=f"Gagal memuat modul analytics:\n{e}",
                 font=("Arial", 14),
                 text_color="#EF4444",
@@ -1805,7 +1808,7 @@ class AnalyticsPage(ctk.CTkFrame):
             analytics = KosAnalytics()
         except Exception as e:
             err = ctk.CTkLabel(
-                self.scroll_frame,
+                self.content_frame,
                 text=f"Gagal memuat data analytics:\n{e}",
                 font=("Arial", 14),
                 text_color="#EF4444",
@@ -1823,7 +1826,7 @@ class AnalyticsPage(ctk.CTkFrame):
 
         if Image is None:
             err = ctk.CTkLabel(
-                self.scroll_frame,
+                self.content_frame,
                 text="PIL/Pillow tidak tersedia untuk menampilkan gambar analytics.",
                 font=("Arial", 14),
                 text_color="#EF4444",
@@ -1835,7 +1838,7 @@ class AnalyticsPage(ctk.CTkFrame):
             pil_image = Image.open(analytics.OUTPUT_PATH).convert("RGB")
         except Exception as e:
             err = ctk.CTkLabel(
-                self.scroll_frame,
+                self.content_frame,
                 text=f"Gagal membuka gambar analytics:\n{e}",
                 font=("Arial", 14),
                 text_color="#EF4444",
@@ -1843,50 +1846,80 @@ class AnalyticsPage(ctk.CTkFrame):
             err.pack(pady=40)
             return
 
-        # Fit image to available width so the layout doesn't get clipped.
-        max_width = 1320
+        # Fit image to the actual content area available in the page.
         try:
-            max_width = max(960, min(1440, self.winfo_toplevel().winfo_width() - 80))
+            self.update_idletasks()
+            view_w = max(960, self.content_frame.winfo_width())
+            view_h = max(680, self.content_frame.winfo_height())
+            if view_w <= 1 or view_h <= 1:
+                view_w = max(960, self.winfo_toplevel().winfo_width())
+                view_h = max(680, self.winfo_toplevel().winfo_height() - 120)
         except Exception:
-            pass
+            view_w, view_h = 1400, 860
 
-        if pil_image.width > max_width:
-            ratio = max_width / float(pil_image.width)
-            new_size = (int(pil_image.width * ratio), int(pil_image.height * ratio))
+        max_width = max(720, min(int(view_w * 0.82), 1100))
+        max_height = max(460, min(int(view_h * 0.58), 620))
+
+        ratio = min(max_width / float(pil_image.width), max_height / float(pil_image.height), 1.0)
+        new_size = (int(pil_image.width * ratio), int(pil_image.height * ratio))
+        if new_size != pil_image.size:
             pil_image = pil_image.resize(new_size, Image.LANCZOS)
 
         display_image = ctk.CTkImage(light_image=pil_image, dark_image=pil_image, size=pil_image.size)
 
-        shell = ctk.CTkFrame(self.scroll_frame, fg_color=CARD_BG, corner_radius=18, border_width=1, border_color=BORDER)
-        shell.pack(fill="x", padx=10, pady=(10, 20))
+        try:
+            import tkinter as tk
+        except Exception:
+            tk = None
+
+        try:
+            from PIL import ImageTk
+        except Exception:
+            ImageTk = None
+
+        shell_w = pil_image.width + 20
+        shell_h = pil_image.height + 20
+        shell = ctk.CTkFrame(
+            self.content_frame,
+            fg_color=CARD_BG,
+            corner_radius=18,
+            border_width=1,
+            border_color=BORDER,
+            width=shell_w,
+            height=shell_h,
+        )
+        shell.place(relx=0.5, rely=0.5, anchor="center")
         shell.grid_columnconfigure(0, weight=1)
+        shell.grid_propagate(False)
 
-        title = ctk.CTkLabel(
-            shell,
-            text="Dashboard Analytics",
-            font=("Arial", 18, "bold"),
-            text_color=NAVY,
-            anchor="w",
-        )
-        title.grid(row=0, column=0, sticky="w", padx=18, pady=(16, 2))
+        if tk is not None:
+            image_box = tk.Canvas(shell, width=pil_image.width, height=pil_image.height, highlightthickness=0, bd=0)
+            image_box.configure(bg=CARD_BG)
+            image_box.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
+            if ImageTk is not None:
+                tk_image = ImageTk.PhotoImage(pil_image)
+                image_box.create_image(0, 0, anchor="nw", image=tk_image)
+                image_box.image = tk_image
+            else:
+                image_box.create_text(pil_image.width // 2, pil_image.height // 2, text="PIL ImageTk tidak tersedia", fill="#EF4444")
+            image_widget = image_box
+        else:
+            image_label = ctk.CTkLabel(shell, text="", image=display_image)
+            image_label.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
+            image_label.image = display_image
+            image_widget = image_label
 
-        subtitle = ctk.CTkLabel(
-            shell,
-            text="Tampilan data dirapikan dan diskalakan agar tidak terpotong.",
-            font=("Arial", 12),
-            text_color=GRAY_TEXT,
-            anchor="w",
-        )
-        subtitle.grid(row=1, column=0, sticky="w", padx=18, pady=(0, 12))
-
-        image_label = ctk.CTkLabel(shell, text="", image=display_image)
-        image_label.grid(row=2, column=0, sticky="nsew", padx=18, pady=(0, 18))
-        image_label.image = display_image
-
-        self._canvas_widget = image_label
+        self._canvas_widget = image_widget
         self._image_shell = shell
-        self._analytics_image = display_image
+        self._analytics_image = pil_image
         self._built = True
+
+        # Keep the page centered and sized to the rendered chart.
+        try:
+            shell.update_idletasks()
+            shell.pack_propagate(False)
+        except Exception:
+            pass
 
 
 class HistoryPage(PlaceholderPage):
