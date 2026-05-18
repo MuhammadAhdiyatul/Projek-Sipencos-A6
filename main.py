@@ -1,11 +1,11 @@
-import json
+﻿import json
 import os
 import re
 import requests
 from io import BytesIO
 
 import customtkinter as ctk
-from ui_components import KosCard, _load_remote_image, _normalize_foto
+from ui_components import KosCard, _load_remote_image_async, _normalize_foto
 from backend import BackendManager
 from search_page import SearchPage
 import session
@@ -48,6 +48,8 @@ GREEN = "#22C55E"
 RED = "#EF4444"
 GREEN_BADGE = "#DCFCE7"
 BLUE_BADGE = "#DBEAFE"
+IMAGE_BG = "#E9EDF3"
+SUCCESS_SURFACE = "#F6F9FC"
 
 def _item_key(kos_item):
     if not isinstance(kos_item, dict):
@@ -220,7 +222,7 @@ class IntegrationController:
             return []
 
     def _load_scraped_data(self):
-        json_path = os.path.join("output_dataKos", "data_kos.json")
+        json_path = os.path.join("output_dataKos", "data_kos_bersih.json")
 
         scraped = self._normalize_list(self._load_json_if_exists(json_path))
         if scraped:
@@ -296,7 +298,7 @@ class IntegrationController:
         return [self._to_ui_item(item) for item in hasil_dummy]
 
     def scrape_for_ui(self):
-        json_path = os.path.join("output_dataKos", "data_kos.json")
+        json_path = os.path.join("output_dataKos", "data_kos_bersih.json")
 
         if KosScraper is not None:
             try:
@@ -723,13 +725,24 @@ class ComparePage(ctk.CTkFrame):
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
 
+        self.section_style = {
+            "card_bg": CARD_BG,
+            "surface_bg": "#FFFFFF",
+            "border": BORDER,
+            "muted": GRAY_TEXT,
+            "title": NAVY,
+            "accent": ORANGE,
+            "accent_soft": BLUE_BADGE,
+            "success_soft": GREEN_BADGE,
+        }
+
 
     def refresh(self, compare_list):
-        self.compare_list = compare_list or []
+        self.compare_list = (compare_list or [])[:3]
         for widget in self.winfo_children():
             widget.destroy()
 
-        scroll = ctk.CTkScrollableFrame(self, fg_color=BG, corner_radius=0)
+        scroll = ctk.CTkScrollableFrame(self, fg_color=BG, corner_radius=0, border_width=0)
         scroll.grid(row=0, column=0, sticky="nsew")
         scroll.grid_columnconfigure(0, weight=1)
 
@@ -785,12 +798,12 @@ class ComparePage(ctk.CTkFrame):
         add_btn = ctk.CTkButton(
             right,
             text="+ Tambah Kos",
-            fg_color=ORANGE,
-            hover_color="#E06B10",
+            fg_color=self.section_style["accent"],
+            hover_color="#B45E24",
             text_color="white",
             corner_radius=10,
             height=40,
-            width=150,
+            width=138,
             font=("Arial", 12, "bold"),
             command=self.go_to_search,
         )
@@ -799,12 +812,12 @@ class ComparePage(ctk.CTkFrame):
         btn_clear = ctk.CTkButton(
             right,
             text="Hapus Semua",
-            fg_color=RED,
+            fg_color="#1E3A5F",
             hover_color="#DC2626",
             text_color="white",
             corner_radius=10,
             height=40,
-            width=150,
+            width=138,
             font=("Arial", 12, "bold"),
             command=self.clear_compare,
         )
@@ -850,20 +863,23 @@ class ComparePage(ctk.CTkFrame):
         btn.pack()
 
     def _create_property_section(self, master):
-        compare_frame = ctk.CTkFrame(master, fg_color="white", corner_radius=25)
+        compare_frame = ctk.CTkFrame(master, fg_color=self.section_style["surface_bg"], corner_radius=25, border_width=1, border_color=self.section_style["border"])
         compare_frame.pack(fill="x", padx=20, pady=(0, 24))
 
         cheapest = self._get_cheapest_indexes()
 
         card_container = ctk.CTkFrame(compare_frame, fg_color="transparent")
         card_container.pack(fill="x", padx=20, pady=20)
+        for col in range(max(1, len(self.compare_list))):
+            card_container.grid_columnconfigure(col, weight=1, uniform="compare_cards")
 
         for idx, kos in enumerate(self.compare_list):
-            self.create_property_card(card_container, kos, idx in cheapest)
+            self.create_property_card(card_container, kos, idx, idx in cheapest)
 
-    def create_property_card(self, master, kos, is_cheapest):
-        card = ctk.CTkFrame(master, fg_color=CARD_BG, corner_radius=20)
-        card.pack(side="left", fill="both", expand=True, padx=10, pady=0)
+    def create_property_card(self, master, kos, column_index, is_cheapest):
+        card = ctk.CTkFrame(master, fg_color=CARD_BG, corner_radius=20, border_width=1, border_color=BORDER, width=300)
+        card.grid(row=0, column=column_index, sticky="n", padx=10, pady=0)
+        card.pack_propagate(True)
 
         top = ctk.CTkFrame(card, fg_color="transparent")
         top.pack(fill="x", padx=16, pady=(16, 0))
@@ -882,7 +898,7 @@ class ComparePage(ctk.CTkFrame):
         )
         remove_btn.pack(side="right")
 
-        image_frame = ctk.CTkFrame(card, fg_color="#E5E7EB", corner_radius=18, height=160)
+        image_frame = ctk.CTkFrame(card, fg_color="#E5E7EB", corner_radius=18, height=154)
         image_frame.pack(fill="x", padx=16, pady=(14, 12))
         image_frame.pack_propagate(False)
 
@@ -907,15 +923,16 @@ class ComparePage(ctk.CTkFrame):
             except Exception:
                 pass
 
-        _load_remote_image(url, (330, 160), self, on_compare_image_loaded)
+        _load_remote_image_async(url, (330, 160), self, on_compare_image_loaded)
 
         title = ctk.CTkLabel(
             card,
             text=_safe_text(kos.get("nama_kos") or kos.get("nama")),
             font=("Arial", 14, "bold"),
-            text_color=NAVY,
+            text_color=self.section_style["title"],
             anchor="w",
-            wraplength=240,
+            wraplength=236,
+            height=34,
         )
         title.pack(fill="x", padx=16, pady=(0, 6))
 
@@ -923,9 +940,10 @@ class ComparePage(ctk.CTkFrame):
             card,
             text=_safe_text(kos.get("lokasi") or kos.get("alamat")),
             font=("Arial", 11),
-            text_color=GRAY_TEXT,
+            text_color=self.section_style["muted"],
             anchor="w",
-            wraplength=240,
+            wraplength=236,
+            height=30,
         )
         subtitle.pack(fill="x", padx=16, pady=(0, 14))
 
@@ -933,13 +951,13 @@ class ComparePage(ctk.CTkFrame):
             card,
             text=self._format_price(kos.get("harga")),
             font=("Arial", 16, "bold"),
-            text_color=ORANGE,
+            text_color=self.section_style["accent"],
             anchor="w",
         )
         price.pack(fill="x", padx=16, pady=(0, 14))
 
         if is_cheapest:
-            badge = ctk.CTkFrame(card, fg_color=GREEN_BADGE, corner_radius=10)
+            badge = ctk.CTkFrame(card, fg_color=self.section_style["success_soft"], corner_radius=10)
             badge.pack(fill="x", padx=16, pady=(0, 16))
             badge_label = ctk.CTkLabel(
                 badge,
@@ -958,6 +976,7 @@ class ComparePage(ctk.CTkFrame):
         best_count = self._get_most_facility_indexes()
         highest_rating = self._get_highest_rating_indexes()
 
+        self._section_divider(section)
         self.create_comparison_row(
             section,
             "Harga / Bulan",
@@ -998,7 +1017,12 @@ class ComparePage(ctk.CTkFrame):
             highlight_color=BLUE_BADGE,
             highlight_text="Terbanyak",
         )
+        self._section_divider(section)
         self._create_action_button_section(section)
+
+    def _section_divider(self, master):
+        divider = ctk.CTkFrame(master, fg_color="#DCE3EC", height=1)
+        divider.pack(fill="x", pady=(4, 8))
 
     def create_comparison_row(
         self,
@@ -1010,8 +1034,10 @@ class ComparePage(ctk.CTkFrame):
         highlight_text=None,
         badge_color=None,
     ):
-        row = ctk.CTkFrame(master, fg_color=CARD_BG, corner_radius=20)
+        row = ctk.CTkFrame(master, fg_color=CARD_BG, corner_radius=20, border_width=1, border_color=BORDER)
         row.pack(fill="x", pady=10, padx=0)
+
+        row.grid_columnconfigure(0, minsize=190)
 
         row_heading = ctk.CTkLabel(
             row,
@@ -1019,7 +1045,7 @@ class ComparePage(ctk.CTkFrame):
             font=("Arial", 12, "bold"),
             text_color=NAVY,
             anchor="w",
-            width=180,
+            width=190,
         )
         row_heading.pack(side="left", padx=16, pady=16)
 
@@ -1033,7 +1059,7 @@ class ComparePage(ctk.CTkFrame):
                 font=("Arial", 12, "bold") if highlight_indices and idx in highlight_indices else ("Arial", 12),
                 text_color=ORANGE if highlight_indices and idx in highlight_indices and highlight_color == ORANGE else NAVY,
                 anchor="w",
-                wraplength=220,
+                wraplength=208,
                 justify="left",
             )
             value_label.pack(anchor="w")
@@ -1050,7 +1076,7 @@ class ComparePage(ctk.CTkFrame):
                 badge_label.pack(padx=10, pady=6)
 
     def _create_facilities_row(self, master):
-        row = ctk.CTkFrame(master, fg_color=CARD_BG, corner_radius=20)
+        row = ctk.CTkFrame(master, fg_color=CARD_BG, corner_radius=20, border_width=1, border_color=BORDER)
         row.pack(fill="x", pady=10, padx=0)
 
         label = ctk.CTkLabel(
@@ -1059,7 +1085,7 @@ class ComparePage(ctk.CTkFrame):
             font=("Arial", 12, "bold"),
             text_color=NAVY,
             anchor="w",
-            width=180,
+            width=190,
         )
         label.pack(side="left", padx=16, pady=16)
 
@@ -1076,7 +1102,7 @@ class ComparePage(ctk.CTkFrame):
                     facility_row,
                     text=facility,
                     font=("Arial", 10),
-                    text_color=GRAY_TEXT,
+                    text_color=self.section_style["muted"],
                     anchor="w",
                     width=120,
                 )
@@ -1086,7 +1112,7 @@ class ComparePage(ctk.CTkFrame):
                     facility_row,
                     text="✓" if available else "✕",
                     font=("Arial", 10, "bold"),
-                    text_color="#22C55E" if available else "#DC2626",
+                    text_color="#16A34A" if available else "#DC2626",
                 )
                 status.pack(side="right")
 
@@ -1101,10 +1127,11 @@ class ComparePage(ctk.CTkFrame):
             detail_btn = ctk.CTkButton(
                 cell,
                 text="Lihat Detail",
-                fg_color="transparent",
-                text_color=NAVY,
-                border_color=NAVY,
-                border_width=2,
+                fg_color=PRIMARY_COLOR,
+                hover_color="#013A62",
+                text_color="white",
+                border_color=PRIMARY_COLOR,
+                border_width=0,
                 corner_radius=10,
                 height=42,
                 font=("Arial", 11, "bold"),
@@ -1116,7 +1143,7 @@ class ComparePage(ctk.CTkFrame):
                 cell,
                 text="♥ Simpan Favorit",
                 fg_color=ORANGE,
-                hover_color="#E06B10",
+                hover_color="#B45E24",
                 text_color="white",
                 corner_radius=10,
                 height=42,
@@ -1302,12 +1329,13 @@ class DetailPage(ctk.CTkFrame):
         self.toggle_favorite = toggle_favorite
         self.toggle_compare = toggle_compare
         self.current_item = None
+        self._current_photo = None
 
-        self.grid_rowconfigure(2, weight=1)
+        self.grid_rowconfigure(1, weight=1)
         self.grid_columnconfigure(0, weight=1)
 
         header = ctk.CTkFrame(self, fg_color="transparent")
-        header.grid(row=0, column=0, sticky="ew", pady=(0, 14))
+        header.grid(row=0, column=0, sticky="ew", padx=20, pady=(18, 10))
         header.grid_columnconfigure(0, weight=1)
 
         self.title_label = ctk.CTkLabel(
@@ -1332,72 +1360,313 @@ class DetailPage(ctk.CTkFrame):
         )
         btn_back.grid(row=0, column=1, sticky="e")
 
-        self.body = ctk.CTkFrame(self, fg_color=CARD_BG, corner_radius=18, border_width=1, border_color=BORDER_COLOR)
-        self.body.grid(row=1, column=0, sticky="nsew")
+        self.body = ctk.CTkFrame(self, fg_color="transparent")
+        self.body.grid(row=1, column=0, sticky="nsew", padx=20, pady=(0, 18))
         self.body.grid_columnconfigure(0, weight=1)
+        self.body.grid_columnconfigure(1, weight=0)
+        self.body.grid_rowconfigure(0, weight=1)
 
-        self.detail_label = ctk.CTkLabel(
-            self.body,
-            text="Pilih kos untuk melihat detail.",
+        # Left panel
+        self.left_panel = ctk.CTkFrame(self.body, fg_color="transparent")
+        self.left_panel.grid(row=0, column=0, sticky="nsew", padx=(0, 14))
+        self.left_panel.grid_columnconfigure(0, weight=1)
+        self.left_panel.grid_rowconfigure(1, weight=1)
+
+        self.image_box = ctk.CTkFrame(
+            self.left_panel,
+            fg_color=IMAGE_BG,
+            corner_radius=16,
+            height=360,
+            border_width=1,
+            border_color=BORDER_COLOR,
+        )
+        self.image_box.grid(row=0, column=0, sticky="ew", pady=(0, 14))
+        self.image_box.grid_propagate(False)
+        self.image_box.grid_columnconfigure(0, weight=1)
+
+        self.photo_label = ctk.CTkLabel(
+            self.image_box,
+            text="Memuat gambar...",
             font=("Arial", 14),
             text_color=TEXT_SUBTLE,
+        )
+        self.photo_label.pack(expand=True)
+
+        desc_header = ctk.CTkLabel(
+            self.left_panel,
+            text="Deskripsi Kos",
+            font=("Arial", 18, "bold"),
+            text_color=TITLE_COLOR,
+            anchor="w",
+        )
+        desc_header.grid(row=1, column=0, sticky="w", pady=(0, 8))
+
+        self.desc_box = ctk.CTkTextbox(
+            self.left_panel,
+            font=("Arial", 13),
+            text_color=TITLE_COLOR,
+            fg_color=CARD_BG,
+            corner_radius=12,
+            border_width=1,
+            border_color=BORDER_COLOR,
+            wrap="word",
+        )
+        self.desc_box.grid(row=2, column=0, sticky="nsew")
+        self.desc_box.insert("0.0", "Pilih kos untuk melihat detail.")
+        self.desc_box.configure(state="disabled")
+
+        # Right panel
+        self.right_panel = ctk.CTkFrame(
+            self.body,
+            fg_color=CARD_BG,
+            corner_radius=18,
+            border_width=1,
+            border_color=BORDER_COLOR,
+            width=340,
+        )
+        self.right_panel.grid(row=0, column=1, sticky="nsew")
+        self.right_panel.grid_propagate(False)
+        self.right_panel.grid_rowconfigure(0, weight=1)
+
+        self.scroll_area = ctk.CTkScrollableFrame(self.right_panel, fg_color="transparent", width=320)
+        self.scroll_area.pack(fill="both", expand=True, padx=8, pady=(8, 0))
+
+        self.info_panel = ctk.CTkFrame(self.scroll_area, fg_color="transparent")
+        self.info_panel.pack(fill="both", expand=True, padx=10, pady=10)
+
+        self.badge_row = ctk.CTkFrame(self.info_panel, fg_color="transparent")
+        self.badge_row.pack(fill="x", pady=(0, 10))
+
+        self.badge_label = ctk.CTkLabel(
+            self.badge_row,
+            text="PUTRA",
+            font=("Arial", 10, "bold"),
+            text_color="white",
+            fg_color=ACCENT_COLOR,
+            corner_radius=6,
+            width=55,
+            height=22,
+        )
+        self.badge_label.pack(side="left")
+
+        self.updated_label = ctk.CTkLabel(
+            self.badge_row,
+            text="Baru saja diperbarui",
+            font=("Arial", 10),
+            text_color=TEXT_SUBTLE,
+        )
+        self.updated_label.pack(side="right")
+
+        self.name_label = ctk.CTkLabel(
+            self.info_panel,
+            text="Kos Tanpa Nama",
+            font=("Arial", 22, "bold"),
+            text_color=PRIMARY_COLOR,
+            justify="left",
+            anchor="w",
+            wraplength=280,
+        )
+        self.name_label.pack(anchor="w", pady=(4, 2))
+
+        self.address_label = ctk.CTkLabel(
+            self.info_panel,
+            text="Lokasi belum tersedia",
+            font=("Arial", 11),
+            text_color=TEXT_SUBTLE,
+            justify="left",
+            anchor="w",
+            wraplength=280,
+        )
+        self.address_label.pack(anchor="w", pady=(0, 15))
+
+        ctk.CTkLabel(
+            self.info_panel,
+            text="HARGA SEWA",
+            font=("Arial", 10, "bold"),
+            text_color=TEXT_SUBTLE,
+            anchor="w",
+        ).pack(anchor="w")
+
+        price_row = ctk.CTkFrame(self.info_panel, fg_color="transparent")
+        price_row.pack(fill="x", pady=(0, 20))
+        price_row.grid_columnconfigure(0, weight=0)
+
+        self.price_label = ctk.CTkLabel(
+            price_row,
+            text="-",
+            font=("Arial", 26, "bold"),
+            text_color=TITLE_COLOR,
+        )
+        self.price_label.pack(side="left")
+
+        self.price_suffix = ctk.CTkLabel(
+            price_row,
+            text=" / bln",
+            font=("Arial", 12),
+            text_color=TEXT_SUBTLE,
+        )
+        self.price_suffix.pack(side="left", pady=(8, 0))
+
+        self._create_facility_section("FASILITAS KAMAR", self.info_panel, "fasilitas_kamar")
+        self._create_facility_section("FASILITAS BERSAMA", self.info_panel, "fasilitas_bersama")
+
+        ctk.CTkFrame(self.info_panel, fg_color="transparent", height=14).pack(fill="x")
+
+        contact_title = ctk.CTkLabel(
+            self.info_panel,
+            text="NOMOR TELEPON",
+            font=("Arial", 10, "bold"),
+            text_color=TEXT_SUBTLE,
+            anchor="w",
+        )
+        contact_title.pack(anchor="w", pady=(0, 4))
+
+        self.contact_box = ctk.CTkFrame(
+            self.info_panel,
+            fg_color=SUCCESS_SURFACE,
+            corner_radius=12,
+            border_width=1,
+            border_color=BORDER,
+        )
+        self.contact_box.pack(fill="x", pady=(0, 12))
+
+        contact_inner = ctk.CTkFrame(self.contact_box, fg_color="transparent")
+        contact_inner.pack(fill="x", padx=12, pady=12)
+        contact_inner.grid_columnconfigure(1, weight=1)
+
+        ctk.CTkLabel(
+            contact_inner,
+            text="☎",
+            font=("Arial", 18),
+            text_color=ORANGE,
+            width=24,
+        ).grid(row=0, column=0, sticky="w", padx=(0, 10))
+
+        self.contact_value = ctk.CTkLabel(
+            contact_inner,
+            text="Kontak tidak tersedia",
+            font=("Arial", 14, "bold"),
+            text_color=TITLE_COLOR,
             anchor="w",
             justify="left",
         )
-        self.detail_label.pack(fill="both", expand=True, padx=22, pady=22)
+        self.contact_value.grid(row=0, column=1, sticky="w")
 
-        action_row = ctk.CTkFrame(self.body, fg_color="transparent")
-        action_row.pack(fill="x", padx=22, pady=(0, 22))
-        action_row.grid_columnconfigure(0, weight=1)
-        action_row.grid_columnconfigure(1, weight=1)
-
-        self.btn_favorite = ctk.CTkButton(
-            action_row,
-            text="Favorit",
-            fg_color=ACCENT_COLOR,
-            hover_color="#B45E24",
-            text_color="white",
-            corner_radius=12,
-            height=44,
-            font=("Arial", 13, "bold"),
-            command=self._on_toggle_favorite,
-        )
-        self.btn_favorite.grid(row=0, column=0, sticky="ew", padx=(0, 8))
-
-        self.btn_compare = ctk.CTkButton(
-            action_row,
-            text="Bandingkan",
+        self.btn_fav = ctk.CTkButton(
+            self.info_panel,
+            text="♥ Simpan ke Favorit",
             fg_color=PRIMARY_COLOR,
             hover_color="#013A62",
             text_color="white",
+            height=48,
             corner_radius=12,
-            height=44,
-            font=("Arial", 13, "bold"),
+            font=("Arial", 14, "bold"),
+            command=self._on_toggle_favorite,
+        )
+        self.btn_fav.pack(fill="x", pady=(0, 10))
+
+        self.btn_compare = ctk.CTkButton(
+            self.info_panel,
+            text="Bandingkan",
+            fg_color="#1E3A5F",
+            hover_color="#12283E",
+            text_color="white",
+            height=48,
+            corner_radius=12,
+            font=("Arial", 14, "bold"),
             command=self._on_toggle_compare,
         )
-        self.btn_compare.grid(row=0, column=1, sticky="ew")
+        self.btn_compare.pack(fill="x", pady=(0, 18))
+
+        self.btn_close = ctk.CTkButton(
+            self.info_panel,
+            text="TUTUP",
+            fg_color="#C0392B",
+            hover_color="#962D22",
+            text_color="white",
+            width=140,
+            height=42,
+            corner_radius=8,
+            font=("Arial", 12, "bold"),
+            command=self.back_callback,
+        )
+        self.btn_close.pack(anchor="center", pady=(4, 0))
+
+    def _create_facility_section(self, title, master, key):
+        section_title = ctk.CTkLabel(
+            master,
+            text=title,
+            font=("Arial", 10, "bold"),
+            text_color=TEXT_SUBTLE,
+            anchor="w",
+        )
+        section_title.pack(anchor="w", pady=(5, 4))
+
+        box = ctk.CTkFrame(master, fg_color=SUCCESS_SURFACE, corner_radius=8)
+        box.pack(fill="x", pady=(0, 12))
+        label = ctk.CTkLabel(
+            box,
+            text="Informasi tidak tersedia",
+            font=("Arial", 11),
+            text_color=TITLE_COLOR,
+            wraplength=250,
+            justify="left",
+            anchor="w",
+        )
+        label.pack(padx=10, pady=8, anchor="w")
+        setattr(self, f"_{key}_label", label)
 
     def set_detail(self, kos_item, is_favorite=False, is_compared=False):
         self.current_item = kos_item
         title = _safe_text(kos_item.get("nama_kos") or kos_item.get("nama"), "Kos Tanpa Nama")
         harga = _safe_text(kos_item.get("harga")) if isinstance(kos_item.get("harga"), str) else f"Rp {int(kos_item.get('harga',0)):,}".replace(",", ".")
-        alamat = _safe_text(kos_item.get("alamat") or kos_item.get("lokasi"))
-        wifi = kos_item.get("wifi")
-        wifi_text = "Ya" if wifi else "Tidak"
-        fasilitas_kamar = ", ".join(kos_item.get("fasilitas_kamar") or [])
-        fasilitas_bersama = ", ".join(kos_item.get("fasilitas_bersama") or [])
+        alamat = _safe_text(kos_item.get("alamat") or kos_item.get("lokasi"), "Lokasi belum tersedia")
+        deskripsi = _safe_text(kos_item.get("deskripsi") or kos_item.get("alamat") or "Tidak ada deskripsi tambahan.")
+        telepon = _safe_text(kos_item.get("telepon") or kos_item.get("nomor_telepon") or "Kontak tidak tersedia")
+        tipe = _safe_text(kos_item.get("tipe") or "PUTRA")
+        tipe_upper = tipe.upper()
+        if "PUTRI" in tipe_upper:
+            badge = "PUTRI"
+        elif "CAMPUR" in tipe_upper:
+            badge = "CAMPUR"
+        else:
+            badge = "PUTRA"
 
-        detail_text = (
-            f"Nama: {title}\n"
-            f"Harga: {harga}\n"
-            f"Alamat: {alamat}\n"
-            f"WiFi: {wifi_text}\n"
-            f"Fasilitas Kamar: {fasilitas_kamar or '-'}\n"
-            f"Fasilitas Bersama: {fasilitas_bersama or '-'}\n"
-        )
-        self.detail_label.configure(text=detail_text)
-        self.btn_favorite.configure(text="Hapus Favorit" if is_favorite else "Simpan Favorit")
+        fasilitas_kamar = [str(x).strip() for x in (kos_item.get("fasilitas_kamar") or []) if str(x).strip()]
+        fasilitas_bersama = [str(x).strip() for x in (kos_item.get("fasilitas_bersama") or []) if str(x).strip()]
+        last_updated = _safe_text(kos_item.get("last_updated") or "Baru saja diperbarui")
+        foto_list = _normalize_foto(kos_item.get("foto") or [])
+
+        self.title_label.configure(text=f"Detail - {title}")
+        self.name_label.configure(text=title)
+        self.address_label.configure(text=alamat)
+        self.price_label.configure(text=harga)
+        self.badge_label.configure(text=badge)
+        self.updated_label.configure(text=last_updated)
+        self.desc_box.configure(state="normal")
+        self.desc_box.delete("0.0", "end")
+        self.desc_box.insert("0.0", deskripsi)
+        self.desc_box.configure(state="disabled")
+        self.contact_value.configure(text=telepon)
+        self.btn_fav.configure(text="Hapus Favorit" if is_favorite else "Simpan Favorit")
         self.btn_compare.configure(text="Hapus Bandingkan" if is_compared else "Bandingkan")
+
+        self._fasilitas_kamar_label.configure(text=", ".join(fasilitas_kamar) if fasilitas_kamar else "Informasi tidak tersedia")
+        self._fasilitas_bersama_label.configure(text=", ".join(fasilitas_bersama) if fasilitas_bersama else "Informasi tidak tersedia")
+
+        self.photo_label.configure(text="Memuat gambar...", image=None)
+
+        def on_preview_loaded(preview_image):
+            try:
+                if preview_image:
+                    self.photo_label.configure(text="", image=preview_image)
+                    self.photo_label.image = preview_image
+                else:
+                    self.photo_label.configure(text="Gambar tidak tersedia", image=None)
+            except Exception:
+                pass
+
+        _load_remote_image_async(foto_list[0] if foto_list else "", (640, 360), self, on_preview_loaded)
 
     def _on_toggle_favorite(self):
         if self.current_item and callable(self.toggle_favorite):
@@ -1458,9 +1727,199 @@ class PlaceholderPage(ctk.CTkFrame):
         pass
 
 
-class AnalyticsPage(PlaceholderPage):
+class AnalyticsPage(ctk.CTkFrame):
+    """Halaman Analytics yang menampilkan grafik dari KosAnalytics secara embedded."""
+
     def __init__(self, parent, *args, **kwargs):
-        super().__init__(parent, "📊 Analytics", "Fitur Analytics belum tersedia\n\nComing soon...", *args, **kwargs)
+        super().__init__(parent, *args, **kwargs)
+
+        self.grid_rowconfigure(1, weight=1)
+        self.grid_columnconfigure(0, weight=1)
+
+        # ── Header ──────────────────────────────────────────
+        header = ctk.CTkFrame(self, fg_color="transparent")
+        header.grid(row=0, column=0, sticky="ew", padx=20, pady=(20, 10))
+        header.grid_columnconfigure(0, weight=1)
+
+        title_label = ctk.CTkLabel(
+            header,
+            text="📊  Analytics",
+            font=("Arial", 28, "bold"),
+            text_color=NAVY,
+            anchor="w",
+        )
+        title_label.grid(row=0, column=0, sticky="w")
+
+        subtitle_label = ctk.CTkLabel(
+            header,
+            text="Visualisasi data pasar kos Jabodetabek & Bandung.",
+            font=("Arial", 13),
+            text_color=GRAY_TEXT,
+            anchor="w",
+        )
+        subtitle_label.grid(row=1, column=0, sticky="w", pady=(4, 0))
+
+        # ── Content area (non-scrollable) ───────────────────
+        self.content_frame = ctk.CTkFrame(self, fg_color=BG, corner_radius=0, border_width=0)
+        self.content_frame.grid(row=1, column=0, sticky="nsew")
+        self.content_frame.grid_rowconfigure(0, weight=1)
+        self.content_frame.grid_columnconfigure(0, weight=1)
+
+        self._canvas_widget = None
+        self._built = False
+        self._render_job = None
+
+    def refresh(self, *args, **kwargs):
+        """Build or rebuild the analytics charts."""
+        if self._render_job is not None:
+            try:
+                self.after_cancel(self._render_job)
+            except Exception:
+                pass
+        self._render_job = self.after(25, self._render_charts)
+
+    def _render_charts(self):
+        """Generate analytics PNG and embed it as a scaled image."""
+        try:
+            import matplotlib.pyplot as plt
+        except ImportError as e:
+            err = ctk.CTkLabel(
+                self.content_frame,
+                text=f"Modul matplotlib tidak ditemukan:\n{e}",
+                font=("Arial", 14),
+                text_color="#EF4444",
+            )
+            err.pack(pady=40)
+            return
+
+        try:
+            from analytics import KosAnalytics
+        except ImportError as e:
+            err = ctk.CTkLabel(
+                self.content_frame,
+                text=f"Gagal memuat modul analytics:\n{e}",
+                font=("Arial", 14),
+                text_color="#EF4444",
+            )
+            err.pack(pady=40)
+            return
+
+        try:
+            analytics = KosAnalytics()
+        except Exception as e:
+            err = ctk.CTkLabel(
+                self.content_frame,
+                text=f"Gagal memuat data analytics:\n{e}",
+                font=("Arial", 14),
+                text_color="#EF4444",
+            )
+            err.pack(pady=40)
+            return
+
+        # Render PNG without opening an interactive matplotlib window.
+        old_show = plt.show
+        plt.show = lambda *args, **kwargs: None
+        try:
+            analytics.tampilkan_analytics()
+        finally:
+            plt.show = old_show
+
+        if Image is None:
+            err = ctk.CTkLabel(
+                self.content_frame,
+                text="PIL/Pillow tidak tersedia untuk menampilkan gambar analytics.",
+                font=("Arial", 14),
+                text_color="#EF4444",
+            )
+            err.pack(pady=40)
+            return
+
+        try:
+            pil_image = Image.open(analytics.OUTPUT_PATH).convert("RGB")
+        except Exception as e:
+            err = ctk.CTkLabel(
+                self.content_frame,
+                text=f"Gagal membuka gambar analytics:\n{e}",
+                font=("Arial", 14),
+                text_color="#EF4444",
+            )
+            err.pack(pady=40)
+            return
+
+        # Fit image to the actual content area available in the page.
+        try:
+            self.update_idletasks()
+            view_w = max(960, self.content_frame.winfo_width())
+            view_h = max(680, self.content_frame.winfo_height())
+            if view_w <= 1 or view_h <= 1:
+                view_w = max(960, self.winfo_toplevel().winfo_width())
+                view_h = max(680, self.winfo_toplevel().winfo_height() - 120)
+        except Exception:
+            view_w, view_h = 1400, 860
+
+        max_width = max(720, min(int(view_w * 0.82), 1100))
+        max_height = max(460, min(int(view_h * 0.58), 620))
+
+        ratio = min(max_width / float(pil_image.width), max_height / float(pil_image.height), 1.0)
+        new_size = (int(pil_image.width * ratio), int(pil_image.height * ratio))
+        if new_size != pil_image.size:
+            pil_image = pil_image.resize(new_size, Image.LANCZOS)
+
+        display_image = ctk.CTkImage(light_image=pil_image, dark_image=pil_image, size=pil_image.size)
+
+        try:
+            import tkinter as tk
+        except Exception:
+            tk = None
+
+        try:
+            from PIL import ImageTk
+        except Exception:
+            ImageTk = None
+
+        shell_w = pil_image.width + 20
+        shell_h = pil_image.height + 20
+        shell = ctk.CTkFrame(
+            self.content_frame,
+            fg_color=CARD_BG,
+            corner_radius=18,
+            border_width=1,
+            border_color=BORDER,
+            width=shell_w,
+            height=shell_h,
+        )
+        shell.place(relx=0.5, rely=0.5, anchor="center")
+        shell.grid_columnconfigure(0, weight=1)
+        shell.grid_propagate(False)
+
+        if tk is not None:
+            image_box = tk.Canvas(shell, width=pil_image.width, height=pil_image.height, highlightthickness=0, bd=0)
+            image_box.configure(bg=CARD_BG)
+            image_box.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
+            if ImageTk is not None:
+                tk_image = ImageTk.PhotoImage(pil_image)
+                image_box.create_image(0, 0, anchor="nw", image=tk_image)
+                image_box.image = tk_image
+            else:
+                image_box.create_text(pil_image.width // 2, pil_image.height // 2, text="PIL ImageTk tidak tersedia", fill="#EF4444")
+            image_widget = image_box
+        else:
+            image_label = ctk.CTkLabel(shell, text="", image=display_image)
+            image_label.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
+            image_label.image = display_image
+            image_widget = image_label
+
+        self._canvas_widget = image_widget
+        self._image_shell = shell
+        self._analytics_image = pil_image
+        self._built = True
+
+        # Keep the page centered and sized to the rendered chart.
+        try:
+            shell.update_idletasks()
+            shell.pack_propagate(False)
+        except Exception:
+            pass
 
 
 class HistoryPage(PlaceholderPage):
@@ -1527,7 +1986,7 @@ class App(ctk.CTk):
         self.minsize(1200, 760)
         self.configure(fg_color=APP_BG)
 
-        self.current_user = current_user
+        self.current_user = current_user or session.current_session.get_current_user()
         self.logout_requested = False
 
         self.controller = IntegrationController()
@@ -1702,12 +2161,15 @@ class App(ctk.CTk):
     def show_frame(self, frame_name):
         # ─── GERBANG TOL LOGIN SI PENCOS ───
         if frame_name == "favorites":
-            if not getattr(session, 'is_logged_in', False):
+            if not session.current_session.check_auth():
                 # Panggil window login
                 login_win = AuthWindow()
                 login_win.mainloop()
+                if session.current_session.check_auth():
+                    self.current_user = session.current_session.get_current_user()
                 # Stop eksekusi di sini agar tidak pindah halaman!
-                return 
+                if not session.current_session.check_auth():
+                    return
         # ───────────────────────────────────
 
         frame = self.frames.get(frame_name)
@@ -1789,6 +2251,7 @@ class App(ctk.CTk):
         self.show_frame("detail")
 
     def logout_and_close(self):
+        session.current_session.logout()
         self.logout_requested = True
         self.destroy()
 

@@ -18,6 +18,11 @@ class SessionManager:
    
         return self.current_user
 
+    def get_username(self):
+        if isinstance(self.current_user, dict):
+            return str(self.current_user.get("username", "")).strip()
+        return ""
+
     def check_auth(self):
         return self.is_logged_in
 

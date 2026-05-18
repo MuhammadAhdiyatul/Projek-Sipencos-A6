@@ -15,13 +15,17 @@ TEXT_SUBTLE = "#6F7C85"
 
 
 class FavoritesManager:
-    def __init__(self, filepath=None):
+    def __init__(self, filepath=None, owner_username=None):
         self.filepath = filepath or os.path.join(os.path.dirname(__file__), "favorites.json")
+        self.owner_username = owner_username or ""
         self.favorites = self.load_favorites()
 
     def _normalize_item_id(self, kos_item):
-        nama = str(kos_item.get("nama_kos", "") or "").strip().lower()
-        alamat = str(kos_item.get("alamat", "") or "").strip().lower()
+        if not isinstance(kos_item, dict):
+            return "", ""
+
+        nama = str(kos_item.get("nama_kos") or kos_item.get("nama") or "").strip().lower()
+        alamat = str(kos_item.get("alamat") or kos_item.get("lokasi") or "").strip().lower()
         return nama, alamat
 
     def _sort_favorites(self, data):

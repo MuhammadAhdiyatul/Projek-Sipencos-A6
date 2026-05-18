@@ -20,15 +20,32 @@ class AuthWindow(ctk.CTk):
         
         # Tampilkan frame login saat popup pertama kali dibuka
         self.show_login_frame()
+        self._close_job = None
+
+    def _set_feedback(self, label_widget, message, is_error=True):
+        if label_widget is None:
+            return
+        color = "#DC2626" if is_error else "#16A34A"
+        label_widget.configure(text=str(message or ""), text_color=color)
+
+    def _schedule_close(self, delay_ms=850):
+        if self._close_job is not None:
+            try:
+                self.after_cancel(self._close_job)
+            except Exception:
+                pass
+        self._close_job = self.after(delay_ms, self.destroy)
 
     def show_login_frame(self, event=None):
         """Menyembunyikan frame register dan menampilkan frame login"""
         self.register_frame.pack_forget()
+        self._set_feedback(self.register_feedback, "", is_error=False)
         self.login_frame.pack(fill="both", expand=True, padx=20, pady=20)
 
     def show_register_frame(self, event=None):
         """Menyembunyikan frame login dan menampilkan frame register"""
         self.login_frame.pack_forget()
+        self._set_feedback(self.login_feedback, "", is_error=False)
         self.register_frame.pack(fill="both", expand=True, padx=20, pady=20)
 
     def _setup_login_frame(self):
@@ -37,9 +54,9 @@ class AuthWindow(ctk.CTk):
         label_title = ctk.CTkLabel(self.login_frame, text="Login", font=ctk.CTkFont(size=24, weight="bold"))
         label_title.pack(pady=(30, 40))
 
-        # Input Email
-        self.entry_login_email = ctk.CTkEntry(self.login_frame, placeholder_text="Email", width=300, height=40)
-        self.entry_login_email.pack(pady=(0, 15))
+        # Input Username
+        self.entry_login_username = ctk.CTkEntry(self.login_frame, placeholder_text="Username", width=300, height=40)
+        self.entry_login_username.pack(pady=(0, 15))
 
         # Input Password
         self.entry_login_password = ctk.CTkEntry(self.login_frame, placeholder_text="Password", show="*", width=300, height=40)
@@ -48,6 +65,16 @@ class AuthWindow(ctk.CTk):
         # Ubah bagian tombol login jadi seperti ini:
         btn_login = ctk.CTkButton(self.login_frame, text="Login", width=300, height=40, command=self.proses_login)
         btn_login.pack(pady=(0, 25))
+
+        self.login_feedback = ctk.CTkLabel(
+            self.login_frame,
+            text="",
+            text_color="#DC2626",
+            font=ctk.CTkFont(size=12),
+            wraplength=300,
+            justify="center",
+        )
+        self.login_feedback.pack(pady=(0, 8))
 
         # Bagian Bawah: Belum punya akun? Daftar sekarang
         switch_frame = ctk.CTkFrame(self.login_frame, fg_color="transparent")
@@ -71,9 +98,9 @@ class AuthWindow(ctk.CTk):
         self.entry_reg_name = ctk.CTkEntry(self.register_frame, placeholder_text="Nama Lengkap", width=300, height=40)
         self.entry_reg_name.pack(pady=(0, 15))
 
-        # Input Email
-        self.entry_reg_email = ctk.CTkEntry(self.register_frame, placeholder_text="Email", width=300, height=40)
-        self.entry_reg_email.pack(pady=(0, 15))
+        # Input Username
+        self.entry_reg_username = ctk.CTkEntry(self.register_frame, placeholder_text="Username (unik)", width=300, height=40)
+        self.entry_reg_username.pack(pady=(0, 15))
 
         # Input Password
         self.entry_reg_password = ctk.CTkEntry(self.register_frame, placeholder_text="Password", show="*", width=300, height=40)
@@ -86,6 +113,16 @@ class AuthWindow(ctk.CTk):
         # Tombol Daftar (SUDAH DITAMBAH COMMAND)
         btn_register = ctk.CTkButton(self.register_frame, text="Daftar", width=300, height=40, command=self.proses_register)
         btn_register.pack(pady=(0, 25))
+
+        self.register_feedback = ctk.CTkLabel(
+            self.register_frame,
+            text="",
+            text_color="#DC2626",
+            font=ctk.CTkFont(size=12),
+            wraplength=300,
+            justify="center",
+        )
+        self.register_feedback.pack(pady=(0, 8))
 
         # Bagian Bawah: Sudah punya akun? Login
         switch_frame = ctk.CTkFrame(self.register_frame, fg_color="transparent")
@@ -101,47 +138,71 @@ class AuthWindow(ctk.CTk):
 
     # POSISI DEF INI SUDAH SEJAJAR DENGAN DEF LAINNYA
     def proses_login(self):
-        email = self.entry_login_email.get().strip()
+        username = self.entry_login_username.get().strip()
         password = self.entry_login_password.get().strip()
+        self._set_feedback(self.login_feedback, "", is_error=False)
         
         # Validasi input kosong
-        if not email or not password:
-            print("Email dan Password tidak boleh kosong!")
+        if not username or not password:
+            self._set_feedback(self.login_feedback, "Username dan Password tidak boleh kosong!", is_error=True)
             return
         
-        # Panggil fungsi verify_login bawaan auth.py kelompok kalian
-        if verify_login(email, password):  
-            session.is_logged_in = True    # Set status global jadi sudah login
-            session.current_user = email   # Catat email yang sedang aktif
-            print(f"[Auth] Login berhasil untuk: {email}")
-            
-            self.destroy()                 
+        # Panggil fungsi verify_login dan unpack result tuple (ok, payload)
+        ok, payload = verify_login(username, password)
+        if ok:
+            user_data = payload if isinstance(payload, dict) else {
+                "username": username,
+                "display_name": username,
+                "full_name": "",
+            }
+            session.current_session.login(user_data)
+            self._set_feedback(self.login_feedback, "Login berhasil.", is_error=False)
+            self._schedule_close()
         else:
-            print("Login Gagal: Email atau Password salah!")
+            self._set_feedback(self.login_feedback, f"Login gagal: {payload}", is_error=True)
 
     def proses_register(self):
         name = self.entry_reg_name.get().strip()
-        email = self.entry_reg_email.get().strip()
+        username = self.entry_reg_username.get().strip()
         password = self.entry_reg_password.get().strip()
         confirm_pass = self.entry_reg_confirm_password.get().strip()
+        self._set_feedback(self.register_feedback, "", is_error=False)
 
-        if not name or not email or not password:
-            print("Semua kolom wajib diisi!")
+        if not name or not username or not password:
+            self._set_feedback(self.register_feedback, "Semua kolom wajib diisi!", is_error=True)
             return
 
         if password != confirm_pass:
-            print("Registrasi Gagal: Konfirmasi password tidak cocok!")
+            self._set_feedback(self.register_feedback, "Registrasi gagal: Konfirmasi password tidak cocok!", is_error=True)
             return
 
         if len(password) < 8:
-            print("Registrasi Gagal: Password minimal harus 8 karakter!")
+            self._set_feedback(self.register_feedback, "Registrasi gagal: Password minimal harus 8 karakter!", is_error=True)
             return
 
-        if register_user(name, email, password):
-            print(f"[Auth] Akun baru berhasil dibuat untuk: {email}")
-            
-            session.is_logged_in = True
-            session.current_user = email
-            self.destroy() 
+        ok, payload = register_user(username, password, full_name=name)
+        if ok:
+            # Jangan auto-login / auto-close: arahkan pengguna ke frame Login
+            user_data = payload if isinstance(payload, dict) else {
+                "username": username,
+                "display_name": name or username,
+                "full_name": name,
+            }
+            # Tampilkan pesan sukses dan pindah ke form login dengan username terisi
+            self._set_feedback(self.register_feedback, "Registrasi berhasil. Silakan login.", is_error=False)
+            # Bersihkan field register (opsional) dan tunjukkan login
+            try:
+                self.entry_reg_password.delete(0, 'end')
+                self.entry_reg_confirm_password.delete(0, 'end')
+            except Exception:
+                pass
+            self.show_login_frame()
+            # Prefill username di form login dan fokus ke password
+            try:
+                self.entry_login_username.delete(0, 'end')
+                self.entry_login_username.insert(0, username)
+                self.entry_login_password.focus_set()
+            except Exception:
+                pass
         else:
-            print("Registrasi Gagal: Email mungkin sudah digunakan!")
+            self._set_feedback(self.register_feedback, f"Registrasi gagal: {payload}", is_error=True)

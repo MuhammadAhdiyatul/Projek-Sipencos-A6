@@ -12,7 +12,7 @@ import numpy as np
 
 
 class KosAnalytics:
-    DATA_PATH   = "output_dataKos/data_kos.json"
+    DATA_PATH   = "output_dataKos/data_kos_bersih.json"
     OUTPUT_PATH = "output_dataKos/analytics.png"
 
     WARNA = {

@@ -203,18 +203,6 @@
     ]
   },
   {
-    "nama_kos": "Kos baru nyaman dan superlengkap",
-    "link": "https://www.sewakost.com/kost/jakarta/jakarta-barat/kos-baru-nyaman-dan-superlengkap-201204/",
-    "harga_listing": "",
-    "kota": "jakarta",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out.",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
     "nama_kos": "Terima Kos Wanita",
     "kota": "jakarta",
     "harga": "Rp 800.000",
@@ -1225,18 +1213,6 @@
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/11-2025/ad10094508046/kost-exclusive-cikini-menteng-tim-ikj-ja-1889206816.jpg",
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/11-2025/ad10094508046/kost-exclusive-cikini-menteng-tim-ikj-ja-1977461963.jpg"
     ]
-  },
-  {
-    "nama_kos": "KOS A 30",
-    "link": "https://www.sewakost.com/kost/jakarta/jakarta-pusat/kos-a-30-200063/",
-    "harga_listing": "",
-    "kota": "jakarta",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out.",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
   },
   {
     "nama_kos": "Kost Tanjung Duren Eminence dekat Mall Central Par",
@@ -3230,18 +3206,6 @@
     ]
   },
   {
-    "nama_kos": "Kost Khusus Pria - Pramuka Jayasari",
-    "link": "https://www.sewakost.com/kost/jakarta/jakarta-pusat/kost-khusus-pria-pramuka-jayasari-201046/",
-    "harga_listing": "",
-    "kota": "jakarta",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out.",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
     "nama_kos": "Kost Sejahtra Tanjung Duren dekat Mall Ciputra dan",
     "kota": "jakarta",
     "harga": "Rp 1.700.000",
@@ -3669,30 +3633,6 @@
     ]
   },
   {
-    "nama_kos": "Blue Door Kost Cikarang",
-    "link": "https://www.sewakost.com/kost/bekasi/blue-door-kost-cikarang-200804/",
-    "harga_listing": "",
-    "kota": "bekasi",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out.",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
-    "nama_kos": "KOST BEKASI MURAH SIAP HUNI",
-    "link": "https://www.sewakost.com/kost/bekasi/kost-bekasi-murah-siap-huni-200797/",
-    "harga_listing": "",
-    "kota": "bekasi",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out.",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
     "nama_kos": "Kosan di dekat kawasan MM2100 & Jababeka",
     "kota": "bekasi",
     "harga": "Rp 1.600.000",
@@ -3919,18 +3859,6 @@
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/10-2025/ad10022755764/kost-samping-grand-kota-bintang-2084239652.jpg",
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/10-2025/ad10022755764/kost-samping-grand-kota-bintang-698203977.jpg"
     ]
-  },
-  {
-    "nama_kos": "Kost Adam",
-    "link": "https://www.sewakost.com/kost/bekasi/kost-adam-200327/",
-    "harga_listing": "",
-    "kota": "bekasi",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out.",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
   },
   {
     "nama_kos": "Kost Lippo Cikarang",
@@ -4401,18 +4329,6 @@
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/07-2025/ad10084694773/kos-putra-pci-2076863823.jpg",
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/07-2025/ad10084694773/kos-putra-pci-1416507560.jpg"
     ]
-  },
-  {
-    "nama_kos": "Kost Mikhaiko House",
-    "link": "https://www.sewakost.com/kost/bekasi/kost-mikhaiko-house-193813/",
-    "harga_listing": "",
-    "kota": "bekasi",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out. (read timeout=20)",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
   },
   {
     "nama_kos": "Kost Tipe Ekonomi Cikarang Bekasi",
@@ -4906,18 +4822,6 @@
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/02-2025/ad191492/rumah-kost-519250787.jpg",
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/02-2025/ad191492/rumah-kost-1219629316.jpg"
     ]
-  },
-  {
-    "nama_kos": "Kost Ibu Wanih Bekasi",
-    "link": "https://www.sewakost.com/kost/bekasi/kost-ibu-wanih-bekasi-190951/",
-    "harga_listing": "",
-    "kota": "bekasi",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out. (read timeout=20)",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
   },
   {
     "nama_kos": "Fasyara kost 02",
@@ -9598,18 +9502,6 @@
     ]
   },
   {
-    "nama_kos": "Kos 1 pintu kosong",
-    "link": "https://www.sewakost.com/kost/bogor/kos-1-pintu-kosong-178409/",
-    "harga_listing": "",
-    "kota": "bogor",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out. (read timeout=20)",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
     "nama_kos": "Kontrakan PETAKAN",
     "kota": "bogor",
     "harga": "Rp 770.000",
@@ -9664,18 +9556,6 @@
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/08-2024/ad177535/listing-1205131810.jpg",
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/08-2024/ad177535/listing-734310878.jpg"
     ]
-  },
-  {
-    "nama_kos": "Kost Bogor Kota (Belakang BTM)",
-    "link": "https://www.sewakost.com/kost/bogor/kost-bogor-kota-belakang-btm-3942/",
-    "harga_listing": "",
-    "kota": "bogor",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out.",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
   },
   {
     "nama_kos": "Kost mezzanin di tengah kota bogor",
@@ -9782,18 +9662,6 @@
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/06-2024/ad172526/rumah-kost-c1-1875995270.jpg",
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/06-2024/ad172526/rumah-kost-c1-424669643.jpg"
     ]
-  },
-  {
-    "nama_kos": "Kos PRIA",
-    "link": "https://www.sewakost.com/kost/bogor/kos-pria-171542/",
-    "harga_listing": "",
-    "kota": "bogor",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out.",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
   },
   {
     "nama_kos": "Rumah Kost Firdaus dekat kampus IPB",
@@ -10470,18 +10338,6 @@
     ]
   },
   {
-    "nama_kos": "KOS MGD",
-    "link": "https://www.sewakost.com/kost/bogor/kos-mgd-147822/",
-    "harga_listing": "",
-    "kota": "bogor",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out.",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
     "nama_kos": "Kos campur dekat stasiun batu tulis",
     "kota": "bogor",
     "harga": "Rp 2.100.000",
@@ -10572,18 +10428,6 @@
     ]
   },
   {
-    "nama_kos": "Kost AA Housing Bogor Barat",
-    "link": "https://www.sewakost.com/kost/bogor/kost-aa-housing-bogor-barat-142898/",
-    "harga_listing": "",
-    "kota": "bogor",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out.",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
     "nama_kos": "Nyaman Feels Like Home Sukasari Bogor - Kost dekat",
     "kota": "bogor",
     "harga": "Rp 1.800.000",
@@ -10671,30 +10515,6 @@
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/09-2023/ad139760/d-queen-kost-638664134.jpg",
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/09-2023/ad139760/d-queen-kost-1166135628.jpg"
     ]
-  },
-  {
-    "nama_kos": "Diva Kost",
-    "link": "https://www.sewakost.com/kost/bogor/diva-kost-139754/",
-    "harga_listing": "",
-    "kota": "bogor",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out.",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
-    "nama_kos": "Kostan nyaman strategis",
-    "link": "https://www.sewakost.com/kost/bogor/kostan-nyaman-strategis-139695/",
-    "harga_listing": "",
-    "kota": "bogor",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out.",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
   },
   {
     "nama_kos": "Disewakan Ruman Nyaman Asri",
@@ -10961,18 +10781,6 @@
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/07-2023/ad131439/kost-mumer-350k-org-atau-550-2-org-wa-1699265686.jpg",
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/07-2023/ad131439/kost-mumer-350k-org-atau-550-2-org-wa-1172669771.jpg"
     ]
-  },
-  {
-    "nama_kos": "rumah yang aman dan nyaman di perumahan griya inda",
-    "link": "https://www.sewakost.com/kost/bogor/rumah-yang-aman-dan-nyaman-di-perumahan-griya-inda-130654/",
-    "harga_listing": "",
-    "kota": "bogor",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out.",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
   },
   {
     "nama_kos": "Kost Putri Casa Natura Bogor (Dekat IPB)",
@@ -15253,18 +15061,6 @@
     ]
   },
   {
-    "nama_kos": "Kost Bogor Pusat kota, Jln Raya Tajur dekat Lippo",
-    "link": "https://www.sewakost.com/kost/bogor/kost-bogor-pusat-kota-jln-raya-tajur-dekat-lippo-22273/",
-    "harga_listing": "",
-    "kota": "bogor",
-    "status": "error",
-    "error_msg": "('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
     "nama_kos": "Kost khusus Putri",
     "kota": "bogor",
     "harga": "Rp 400.000",
@@ -16440,18 +16236,6 @@
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/01-2017/ad13520/1485068923683117108.jpg",
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/01-2017/ad13520/14850689252143583382.jpg"
     ]
-  },
-  {
-    "nama_kos": "PROMO RUMAH 12 (Kosan Putri dan Pasturi)",
-    "link": "https://www.sewakost.com/kost/bogor/promo-rumah-12-kosan-putri-dan-pasturi-13439/",
-    "harga_listing": "",
-    "kota": "bogor",
-    "status": "error",
-    "error_msg": "('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
   },
   {
     "nama_kos": "Kost putri bogor dekat IPB D3 dan Universitas Paku",
@@ -23570,18 +23354,6 @@
     ]
   },
   {
-    "nama_kos": "Rumah Lima Enam (Kost Putri, Pasutri, Keluarga) -",
-    "link": "https://www.sewakost.com/kost/depok/rumah-lima-enam-kost-putri-pasutri-keluarga-25034/",
-    "harga_listing": "",
-    "kota": "depok",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out. (read timeout=20)",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
     "nama_kos": "Kost RoomME  DEPOK Lotus House",
     "kota": "depok",
     "harga": "Rp 1.500.000",
@@ -23783,18 +23555,6 @@
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/08-2019/ad24679/virodia-kost-595692413.jpeg",
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/08-2019/ad24679/virodia-kost-429928086.jpeg"
     ]
-  },
-  {
-    "nama_kos": "Disewa margonda residence 2, dekat UI",
-    "link": "https://www.sewakost.com/kost/depok/disewa-margonda-residence-2-dekat-ui-24560/",
-    "harga_listing": "",
-    "kota": "depok",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out.",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
   },
   {
     "nama_kos": "Apartemen Saladin Mansion [Mini Studio]",
@@ -24144,18 +23904,6 @@
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/05-2019/ad23203/kost-graha-citra-116045423.jpg",
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/05-2019/ad23203/kost-graha-citra-438033192.jpg"
     ]
-  },
-  {
-    "nama_kos": "Dave Apartement Nempel Universitas Indonesia",
-    "link": "https://www.sewakost.com/kost/depok/dave-apartement-nempel-universitas-indonesia-23157/",
-    "harga_listing": "",
-    "kota": "depok",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out.",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
   },
   {
     "nama_kos": "Rumah Kos  \" WISMA ALJABAR\" 200 M Dari U",
@@ -24782,18 +24530,6 @@
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/05-2018/ad18812/wisma-pesona-kos-pria-depok-margonda-1723869887.jpg",
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/05-2018/ad18812/wisma-pesona-kos-pria-depok-margonda-1020257031.jpg"
     ]
-  },
-  {
-    "nama_kos": "Kos / Kost / Kosan Strategis Cibubur",
-    "link": "https://www.sewakost.com/kost/depok/kos-kost-kosan-strategis-cibubur-18033/",
-    "harga_listing": "",
-    "kota": "depok",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out.",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
   },
   {
     "nama_kos": "DAFFA KOST PUTRI",
@@ -27054,18 +26790,6 @@
     ]
   },
   {
-    "nama_kos": "Kost Putri Lippo Karawaci dekat UPH,Dynaplas ,Gedu",
-    "link": "https://www.sewakost.com/kost/tangerang/kost-putri-lippo-karawaci-dekat-uph-dynaplas-gedu-200541/",
-    "harga_listing": "",
-    "kota": "tangerang",
-    "status": "error",
-    "error_msg": "('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
     "nama_kos": "Sewa Kostan Bulanan / Mingguan",
     "kota": "tangerang",
     "harga": "Rp 850.000",
@@ -27147,18 +26871,6 @@
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/11-2025/ad10079420525/disewakan-kos-campur-binong-karawaci-qq-2082250194.jpg",
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/11-2025/ad10079420525/disewakan-kos-campur-binong-karawaci-qq-978262257.jpg"
     ]
-  },
-  {
-    "nama_kos": "In Kost dekat kampus Poltekim dan STMG Tangerang",
-    "link": "https://www.sewakost.com/kost/tangerang/in-kost-dekat-kampus-poltekim-dan-stmg-tangerang-193266/",
-    "harga_listing": "",
-    "kota": "tangerang",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out. (read timeout=20)",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
   },
   {
     "nama_kos": "KOST PUTRI H. UMAR. CILEDUG PARUNG SERAB, PASAR LE",
@@ -27597,18 +27309,6 @@
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/05-2025/ad10040994767/kost-adi-larangan-ciledug-1543840171.jpg",
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/05-2025/ad10040994767/kost-adi-larangan-ciledug-184964531.jpg"
     ]
-  },
-  {
-    "nama_kos": "Kos rasa Apartemen di Beverly Gading Serpong - Dek",
-    "link": "https://www.sewakost.com/kost/tangerang/kos-rasa-apartemen-di-beverly-gading-serpong-dek-193801/",
-    "harga_listing": "",
-    "kota": "tangerang",
-    "status": "error",
-    "error_msg": "('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
   },
   {
     "nama_kos": "KOST DEKAT PASAR BENGKOK PINANG DAN GRAHA RAYA",
@@ -31077,18 +30777,6 @@
     ]
   },
   {
-    "nama_kos": "Kost GK2 Tipe A Kelapa Dua Tangerang",
-    "link": "https://www.sewakost.com/kost/tangerang/kost-gk2-tipe-a-kelapa-dua-tangerang-130434/",
-    "harga_listing": "",
-    "kota": "tangerang",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out.",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
     "nama_kos": "Kosan putri muslimah",
     "kota": "tangerang",
     "harga": "Rp 1.300.000",
@@ -32887,18 +32575,6 @@
     ]
   },
   {
-    "nama_kos": "Bilqis kost",
-    "link": "https://www.sewakost.com/kost/tangerang/bilqis-kost-106032/",
-    "harga_listing": "",
-    "kota": "tangerang",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out.",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
     "nama_kos": "beHomy 36 Residence",
     "kota": "tangerang",
     "harga": "Rp 1.750.000",
@@ -32994,18 +32670,6 @@
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/11-2022/ad104925/behomy-kost-12-residence-301294043.jpg",
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/11-2022/ad104925/behomy-kost-12-residence-1649112878.jpg"
     ]
-  },
-  {
-    "nama_kos": "Kost Putih Parahyangan",
-    "link": "https://www.sewakost.com/kost/tangerang/kost-putih-parahyangan-22476/",
-    "harga_listing": "",
-    "kota": "tangerang",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out.",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
   },
   {
     "nama_kos": "Rumah Kost",
@@ -33135,18 +32799,6 @@
     ]
   },
   {
-    "nama_kos": "Sewa kost di BSD",
-    "link": "https://www.sewakost.com/kost/tangerang/sewa-kost-di-bsd-95520/",
-    "harga_listing": "",
-    "kota": "tangerang",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out.",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
     "nama_kos": "Kost Studento",
     "kota": "tangerang",
     "harga": "Rp 1.800.000",
@@ -33176,18 +32828,6 @@
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/09-2022/ad93854/kost-studento-434785542.jpg",
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/09-2022/ad93854/kost-studento-1793177003.jpg"
     ]
-  },
-  {
-    "nama_kos": "Kost Roemah Palupie Deket Bandara Soekarno Hatta",
-    "link": "https://www.sewakost.com/kost/tangerang/kost-roemah-palupie-deket-bandara-soekarno-hatta-92114/",
-    "harga_listing": "",
-    "kota": "tangerang",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out. (read timeout=20)",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
   },
   {
     "nama_kos": "sewa kamar kost bsd city",
@@ -33394,18 +33034,6 @@
     ]
   },
   {
-    "nama_kos": "Kontrakan Kos Murah Karyawan Mahasiswa",
-    "link": "https://www.sewakost.com/kost/tangerang/kontrakan-kos-murah-karyawan-mahasiswa-85404/",
-    "harga_listing": "",
-    "kota": "tangerang",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out. (read timeout=20)",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
     "nama_kos": "Kosan Murah n Fresh",
     "kota": "tangerang",
     "harga": "-",
@@ -33597,18 +33225,6 @@
     ]
   },
   {
-    "nama_kos": "Kost Karawaci Cluster Permata Sari No 30",
-    "link": "https://www.sewakost.com/kost/tangerang/kost-karawaci-cluster-permata-sari-no-30-77512/",
-    "harga_listing": "",
-    "kota": "tangerang",
-    "status": "error",
-    "error_msg": "('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
     "nama_kos": "Disewakan kamar kos lokasi strategis (hanya untuk",
     "kota": "tangerang",
     "harga": "Rp 2.000.000",
@@ -33796,18 +33412,6 @@
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/01-2022/ad72535/kost-uph-siloam-lippo-karawaci-utama18-residen-1819664171.jpg",
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/01-2022/ad72535/kost-uph-siloam-lippo-karawaci-utama18-residenc-318359038.jpg"
     ]
-  },
-  {
-    "nama_kos": "Daffa Kost Khusus putri dekat dengan Summarecon ma",
-    "link": "https://www.sewakost.com/kost/tangerang/daffa-kost-khusus-putri-dekat-dengan-summarecon-ma-72348/",
-    "harga_listing": "",
-    "kota": "tangerang",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out.",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
   },
   {
     "nama_kos": "D'Rari Kost",
@@ -34015,18 +33619,6 @@
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/12-2021/ad67070/kost-murah-dekat-eaon-bsd-dan-stasiun-554244144.jpg",
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/12-2021/ad67070/kost-murah-dekat-eaon-bsd-dan-stasiun-1166414998.jpg"
     ]
-  },
-  {
-    "nama_kos": "Kost Harian Bulanan di BSD Anggrek Loka",
-    "link": "https://www.sewakost.com/kost/tangerang/kost-harian-bulanan-di-bsd-anggrek-loka-66748/",
-    "harga_listing": "",
-    "kota": "tangerang",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out.",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
   },
   {
     "nama_kos": "Kosan/Kontrakan Suka Asih, Pasir Awi, Kecamatan Pa",
@@ -34527,18 +34119,6 @@
     ]
   },
   {
-    "nama_kos": "Airaya Kost",
-    "link": "https://www.sewakost.com/kost/tangerang/airaya-kost-13900/",
-    "harga_listing": "",
-    "kota": "tangerang",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out.",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
     "nama_kos": "Kost di Tangerang Kota (Bengkel Motorworld)",
     "kota": "tangerang",
     "harga": "Rp 700.000",
@@ -34733,18 +34313,6 @@
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/04-2021/ad53158/kost-exclusive-947426439.jpg",
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/04-2021/ad53158/kost-exclusive-396790268.jpg"
     ]
-  },
-  {
-    "nama_kos": "Kos Wanita Karawaci Tangerang (Azalea kos)",
-    "link": "https://www.sewakost.com/kost/tangerang/kos-wanita-karawaci-tangerang-azalea-kos-53064/",
-    "harga_listing": "",
-    "kota": "tangerang",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out. (read timeout=20)",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
   },
   {
     "nama_kos": "KOS PEAR HOUSE FORESTA STUDENTO BLOK L 8 NO 11",
@@ -35234,18 +34802,6 @@
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/01-2021/ad48373/sewa-kamar-kost-anarta-vanya-park-1164012991.jpeg",
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/01-2021/ad48373/sewa-kamar-kost-anarta-vanya-park-1772313910.jpeg"
     ]
-  },
-  {
-    "nama_kos": "Kamar Strategis di Tangerang",
-    "link": "https://www.sewakost.com/kost/tangerang/kamar-strategis-di-tangerang-48277/",
-    "harga_listing": "",
-    "kota": "tangerang",
-    "status": "error",
-    "error_msg": "('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
   },
   {
     "nama_kos": "Kost kostan",
@@ -36411,18 +35967,6 @@
     ]
   },
   {
-    "nama_kos": "Kost HM Ciledug",
-    "link": "https://www.sewakost.com/kost/tangerang/kost-hm-ciledug-39455/",
-    "harga_listing": "",
-    "kota": "tangerang",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out.",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
     "nama_kos": "Hidayat Kost",
     "kota": "tangerang",
     "harga": "Rp 1.250.000",
@@ -37050,18 +36594,6 @@
     ]
   },
   {
-    "nama_kos": "Kost Kunciran Tangerang",
-    "link": "https://www.sewakost.com/kost/tangerang/kost-kunciran-tangerang-29048/",
-    "harga_listing": "",
-    "kota": "tangerang",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out.",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
     "nama_kos": "Kost Exclusive dekat Kampus Prasetya Mulya BSD",
     "kota": "tangerang",
     "harga": "Rp 1.900.000",
@@ -37469,18 +37001,6 @@
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/11-2019/ad27524/kost-putri-rava-house-2-jalan-cendrawasih-2-no-186831826.jpg",
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/11-2019/ad27524/kost-putri-rava-house-2-jalan-cendrawasih-2-no-1161482083.jpg"
     ]
-  },
-  {
-    "nama_kos": "Kost Putri Rava House Arafah IV  G3/12A Villa Ilha",
-    "link": "https://www.sewakost.com/kost/tangerang/kost-putri-rava-house-arafah-iv-g3-12a-villa-ilha-27449/",
-    "harga_listing": "",
-    "kota": "tangerang",
-    "status": "error",
-    "error_msg": "('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
   },
   {
     "nama_kos": "KOST E811",
@@ -38671,28 +38191,6 @@
     ]
   },
   {
-    "nama_kos": "Casa de Parco Apartment BSD",
-    "kota": "tangerang",
-    "harga": "Rp 3.500.000",
-    "telepon": "-",
-    "alamat": "-",
-    "fasilitas_kamar": [
-      "-"
-    ],
-    "fasilitas_bersama": [
-      "Dapur",
-      "Keamanan",
-      "Parkir Motor",
-      "Parkir Mobil"
-    ],
-    "foto": [
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/06-2019/ad23513/casa-de-parco-apartment-bsd-696947966_large.jpg",
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/06-2019/ad23513/casa-de-parco-apartment-bsd-311547055.jpg",
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/06-2019/ad23513/casa-de-parco-apartment-bsd-1985169631.JPG",
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/06-2019/ad23513/casa-de-parco-apartment-bsd-1347084778.JPG"
-    ]
-  },
-  {
     "nama_kos": "Kosmologi Kost Wanita di Studento BSD City dekat I",
     "kota": "tangerang",
     "harga": "Rp 1.800.000",
@@ -38752,30 +38250,6 @@
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/05-2019/ad23446/scandinavian-style-rumah-kost-anarta-house-dekat-741413531.jpg",
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/05-2019/ad23446/scandinavian-style-rumah-kost-anarta-house-267062169.jpeg"
     ]
-  },
-  {
-    "nama_kos": "Kos Murah Belakang Summarecon Mall Tangerang",
-    "link": "https://www.sewakost.com/kost/tangerang/kos-murah-belakang-summarecon-mall-tangerang-23438/",
-    "harga_listing": "",
-    "kota": "tangerang",
-    "status": "error",
-    "error_msg": "('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
-    "nama_kos": "Kost Damai 51",
-    "link": "https://www.sewakost.com/kost/tangerang/kost-damai-51-23281/",
-    "harga_listing": "",
-    "kota": "tangerang",
-    "status": "error",
-    "error_msg": "('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
   },
   {
     "nama_kos": "Disewa Apartment Casa de Parco di BSD",
@@ -39071,18 +38545,6 @@
     ]
   },
   {
-    "nama_kos": "Kost Putra & Putri Gunung Bromo No. 10 Lippo K",
-    "link": "https://www.sewakost.com/kost/tangerang/kost-putra-amp-putri-gunung-bromo-no-10-lippo-k-22440/",
-    "harga_listing": "",
-    "kota": "tangerang",
-    "status": "error",
-    "error_msg": "('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
     "nama_kos": "Kost Putra & Putri Gunung Bromo No. 6 Lippo Ka",
     "kota": "tangerang",
     "harga": "Rp 1.900.000",
@@ -39139,30 +38601,6 @@
     ]
   },
   {
-    "nama_kos": "Kost di ICON BSD CITY AC KM DALAM",
-    "link": "https://www.sewakost.com/kost/tangerang/kost-di-icon-bsd-city-ac-km-dalam-4406/",
-    "harga_listing": "",
-    "kota": "tangerang",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out.",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
-    "nama_kos": "Disewakan kamar kostan murah khusus wanita (karyaw",
-    "link": "https://www.sewakost.com/kost/tangerang/disewakan-kamar-kostan-murah-khusus-wanita-karyaw-22360/",
-    "harga_listing": "",
-    "kota": "tangerang",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out.",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
     "nama_kos": "Dikontrakan Rumah, Perum 2, Karawaci, Tangerang",
     "kota": "tangerang",
     "harga": "Rp 25.000.000",
@@ -39184,18 +38622,6 @@
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/03-2019/ad22358/dikontrakan-rumah-perum-2-karawaci-1742350809.jpeg",
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/03-2019/ad22358/dikontrakan-rumah-perum-2-karawaci-1612613787.jpeg"
     ]
-  },
-  {
-    "nama_kos": "Kost Murah Medang Tangerang",
-    "link": "https://www.sewakost.com/kost/tangerang/kost-murah-medang-tangerang-22302/",
-    "harga_listing": "",
-    "kota": "tangerang",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out. (read timeout=20)",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
   },
   {
     "nama_kos": "Kost-Kostan Putra dan Putri",
@@ -39235,30 +38661,6 @@
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/02-2019/ad22197/kontrakan-kosan-di-industri-7-jatake-686728321.jpeg",
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/02-2019/ad22197/kontrakan-kosan-di-industri-7-jatake-492015658.jpeg"
     ]
-  },
-  {
-    "nama_kos": "RUMAH KOST NYAMAN",
-    "link": "https://www.sewakost.com/kost/tangerang/rumah-kost-nyaman-22026/",
-    "harga_listing": "",
-    "kota": "tangerang",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out. (read timeout=20)",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
-    "nama_kos": "Kost myHIUm khusus untuk wanita",
-    "link": "https://www.sewakost.com/kost/tangerang/kost-myhium-khusus-untuk-wanita-22029/",
-    "harga_listing": "",
-    "kota": "tangerang",
-    "status": "error",
-    "error_msg": "('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
   },
   {
     "nama_kos": "KOST HARIAN/ MINGGUAN / BULANAN MURAH",
@@ -39755,18 +39157,6 @@
     ]
   },
   {
-    "nama_kos": "Kost Kamar Keluarga Taman Mahkota V",
-    "link": "https://www.sewakost.com/kost/tangerang/kost-kamar-keluarga-taman-mahkota-v-20479/",
-    "harga_listing": "",
-    "kota": "tangerang",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out.",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
     "nama_kos": "Kost Eksklusif di Vanya Park Anartha House Tangera",
     "kota": "tangerang",
     "harga": "Rp 1.600.000",
@@ -40046,30 +39436,6 @@
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/05-2018/ad18969/kos-dekat-uph-karawaci-nyaman-terjangkau-1374955528.jpg",
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/05-2018/ad18969/kos-dekat-uph-karawaci-nyaman-terjangkau-405174363.jpg"
     ]
-  },
-  {
-    "nama_kos": "Kos Kawasan Tenang Karawaci",
-    "link": "https://www.sewakost.com/kost/tangerang/kos-kawasan-tenang-karawaci-18902/",
-    "harga_listing": "",
-    "kota": "tangerang",
-    "status": "error",
-    "error_msg": "('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
-    "nama_kos": "Kost Seventy Home",
-    "link": "https://www.sewakost.com/kost/tangerang/kost-seventy-home-18712/",
-    "harga_listing": "",
-    "kota": "tangerang",
-    "status": "error",
-    "error_msg": "('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
   },
   {
     "nama_kos": "Kost Baru di Studento BSD sewa bulanan hanya 2 jt",
@@ -40774,18 +40140,6 @@
     ]
   },
   {
-    "nama_kos": "Nick Residence - Kost Gading Serpong dekat UMN",
-    "link": "https://www.sewakost.com/kost/tangerang/nick-residence-kost-gading-serpong-dekat-umn-15826/",
-    "harga_listing": "",
-    "kota": "tangerang",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out.",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
     "nama_kos": "Casa Del Sol Quality Living close to Universitas M",
     "kota": "tangerang",
     "harga": "Rp 1.600.000",
@@ -40814,18 +40168,6 @@
     ]
   },
   {
-    "nama_kos": "KOST SPRING RESIDENCE",
-    "link": "https://www.sewakost.com/kost/tangerang/kost-spring-residence-15792/",
-    "harga_listing": "",
-    "kota": "tangerang",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out. (read timeout=20)",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
     "nama_kos": "Paradise Residence",
     "kota": "tangerang",
     "harga": "Rp 1.400.000",
@@ -40851,30 +40193,6 @@
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/11-2017/ad15785/1510378568780093974.jpeg",
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/11-2017/ad15785/15103785681183028149.jpeg"
     ]
-  },
-  {
-    "nama_kos": "Sky Airlines GuestHouse",
-    "link": "https://www.sewakost.com/kost/tangerang/sky-airlines-guesthouse-15552/",
-    "harga_listing": "",
-    "kota": "tangerang",
-    "status": "error",
-    "error_msg": "('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
-    "nama_kos": "Kost di Tangerang",
-    "link": "https://www.sewakost.com/kost/tangerang/kost-di-tangerang-15569/",
-    "harga_listing": "",
-    "kota": "tangerang",
-    "status": "error",
-    "error_msg": "('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
   },
   {
     "nama_kos": "Kost Di taman Mediteranian",
@@ -41459,18 +40777,6 @@
     ]
   },
   {
-    "nama_kos": "Kos wanita Karawaci Tangerang dekat Ruko Pinangsia",
-    "link": "https://www.sewakost.com/kost/tangerang/kos-wanita-karawaci-tangerang-dekat-ruko-pinangsia-14613/",
-    "harga_listing": "",
-    "kota": "tangerang",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out.",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
     "nama_kos": "kost tawakal karawaci dekat giant palem semi",
     "kota": "tangerang",
     "harga": "Rp 450.000",
@@ -41657,18 +40963,6 @@
     ]
   },
   {
-    "nama_kos": "Kos UPH Karawaci Jakarta Lavoston Home",
-    "link": "https://www.sewakost.com/kost/tangerang/kos-uph-karawaci-jakarta-lavoston-home-13927/",
-    "harga_listing": "",
-    "kota": "tangerang",
-    "status": "error",
-    "error_msg": "('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
     "nama_kos": "KOST MEDANG LESTARI ( DAAI KOST)",
     "kota": "tangerang",
     "harga": "Rp 1.650.000",
@@ -41693,18 +40987,6 @@
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/03-2017/ad13916/14888769183265017.jpg",
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/03-2017/ad13916/1488876921595811381.jpg"
     ]
-  },
-  {
-    "nama_kos": "LeParis Kost Tangerang tanah tinggi",
-    "link": "https://www.sewakost.com/kost/tangerang/leparis-kost-tangerang-tanah-tinggi-13905/",
-    "harga_listing": "",
-    "kota": "tangerang",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out. (read timeout=20)",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
   },
   {
     "nama_kos": "Kost Wanita Serpong",
@@ -41923,18 +41205,6 @@
     ]
   },
   {
-    "nama_kos": "Kost Batan Indah Serpong",
-    "link": "https://www.sewakost.com/kost/tangerang/kost-batan-indah-serpong-13391/",
-    "harga_listing": "",
-    "kota": "tangerang",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out. (read timeout=20)",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
     "nama_kos": "Kost AC Bulanan di Perumnas 1 Tangerang",
     "kota": "tangerang",
     "harga": "Rp 1.000.000",
@@ -42012,18 +41282,6 @@
     ]
   },
   {
-    "nama_kos": "Kost Exclusive Bandara Soeta Jakarta",
-    "link": "https://www.sewakost.com/kost/tangerang/kost-exclusive-bandara-soeta-jakarta-3548/",
-    "harga_listing": "",
-    "kota": "tangerang",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out. (read timeout=20)",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
     "nama_kos": "Kosan Alam sutera duta bintaro",
     "kota": "tangerang",
     "harga": "Rp 600.000",
@@ -42048,18 +41306,6 @@
     ]
   },
   {
-    "nama_kos": "KOST WANITA & KONTRAKAN MINIMALIS",
-    "link": "https://www.sewakost.com/kost/tangerang/kost-wanita-amp-kontrakan-minimalis-13069/",
-    "harga_listing": "",
-    "kota": "tangerang",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out.",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
     "nama_kos": "Griya Mozaik Girls - Kost Khusus Wanita",
     "kota": "tangerang",
     "harga": "Rp 800.000",
@@ -42082,18 +41328,6 @@
     ]
   },
   {
-    "nama_kos": "Kost Metro Permata",
-    "link": "https://www.sewakost.com/kost/tangerang/kost-metro-permata-12876/",
-    "harga_listing": "",
-    "kota": "tangerang",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out. (read timeout=20)",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
     "nama_kos": "Terima Kost kontrakan taman puspa citra raya cikup",
     "kota": "tangerang",
     "harga": "Rp 800.000",
@@ -42109,42 +41343,6 @@
     "foto": [
       "https://www.sewakost.com/templates/sewakost/img/logo.svg?rev=29"
     ]
-  },
-  {
-    "nama_kos": "Sewa kost wanita",
-    "link": "https://www.sewakost.com/kost/tangerang/sewa-kost-wanita-12514/",
-    "harga_listing": "",
-    "kota": "tangerang",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out.",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
-    "nama_kos": "Kos Putri Karawaci Tangerang Dekat UPH & RS Si",
-    "link": "https://www.sewakost.com/kost/tangerang/kos-putri-karawaci-tangerang-dekat-uph-amp-rs-si-12455/",
-    "harga_listing": "",
-    "kota": "tangerang",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out.",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
-    "nama_kos": "Kos Murah daerah Cikupa Tangerang",
-    "link": "https://www.sewakost.com/kost/tangerang/kos-murah-daerah-cikupa-tangerang-12446/",
-    "harga_listing": "",
-    "kota": "tangerang",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out.",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
   },
   {
     "nama_kos": "LANDED APARTEMEN",
@@ -42192,18 +41390,6 @@
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/08-2016/ad12376/14723431481123727207.jpg",
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/08-2016/ad12376/1472343148406464994.jpg"
     ]
-  },
-  {
-    "nama_kos": "Kost Bulanan Nyaman Murah Di Karawaci Perum Tanger",
-    "link": "https://www.sewakost.com/kost/tangerang/kost-bulanan-nyaman-murah-di-karawaci-perum-tanger-12362/",
-    "harga_listing": "",
-    "kota": "tangerang",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out. (read timeout=20)",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
   },
   {
     "nama_kos": "Kost Eksklusif Alam Sutera - Tangerang",
@@ -42255,18 +41441,6 @@
     ]
   },
   {
-    "nama_kos": "Kost 89",
-    "link": "https://www.sewakost.com/kost/tangerang/kost-89-12132/",
-    "harga_listing": "",
-    "kota": "tangerang",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out.",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
     "nama_kos": "Homey Kos Karawaci-UPH",
     "kota": "tangerang",
     "harga": "Rp 1.500.000",
@@ -42289,42 +41463,6 @@
     ]
   },
   {
-    "nama_kos": "KOST DEKAT UMN Gading Serpong DAAI KOST",
-    "link": "https://www.sewakost.com/kost/tangerang/kost-dekat-umn-gading-serpong-daai-kost-11742/",
-    "harga_listing": "",
-    "kota": "tangerang",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out. (read timeout=20)",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
-    "nama_kos": "Sasha In The Kost, Islamic Village, Karawaci, Tang",
-    "link": "https://www.sewakost.com/kost/tangerang/sasha-in-the-kost-islamic-village-karawaci-tang-11734/",
-    "harga_listing": "",
-    "kota": "tangerang",
-    "status": "error",
-    "error_msg": "('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
-    "nama_kos": "Kost di lippo karawaci",
-    "link": "https://www.sewakost.com/kost/tangerang/kost-di-lippo-karawaci-11577/",
-    "harga_listing": "",
-    "kota": "tangerang",
-    "status": "error",
-    "error_msg": "('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
     "nama_kos": "Terima Kost Duta Asri Citra Raya Cikupa Tangerang",
     "kota": "tangerang",
     "harga": "Rp 750.000",
@@ -42339,42 +41477,6 @@
     "foto": [
       "https://www.sewakost.com/templates/sewakost/img/logo.svg?rev=29"
     ]
-  },
-  {
-    "nama_kos": "KOST GADING SERPONG BELAKANG MALL SUMMARECON",
-    "link": "https://www.sewakost.com/kost/tangerang/kost-gading-serpong-belakang-mall-summarecon-11559/",
-    "harga_listing": "",
-    "kota": "tangerang",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out.",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
-    "nama_kos": "Kost Karawaci Mansion",
-    "link": "https://www.sewakost.com/kost/tangerang/kost-karawaci-mansion-11492/",
-    "harga_listing": "",
-    "kota": "tangerang",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out.",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
-    "nama_kos": "Kosan Baik-baik Daerah Tangerang Kota Murah",
-    "link": "https://www.sewakost.com/kost/tangerang/kosan-baik-baik-daerah-tangerang-kota-murah-11462/",
-    "harga_listing": "",
-    "kota": "tangerang",
-    "status": "error",
-    "error_msg": "('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
   },
   {
     "nama_kos": "Kost Exclusive Daerah Tanggerang",
@@ -42849,18 +41951,6 @@
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/04-2026/ad10066318935/listing-827727149.webp",
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/04-2026/ad10066318935/listing-804895306.webp"
     ]
-  },
-  {
-    "nama_kos": "Kost Putra Area Kampus ITB dan Unpad Daerah Tubagu",
-    "link": "https://www.sewakost.com/kost/bandung/kost-putra-area-kampus-itb-dan-unpad-daerah-tubagu-201189/",
-    "harga_listing": "",
-    "kota": "bandung",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Max retries exceeded with url: /kost/bandung/kost-putra-area-kampus-itb-dan-unpad-daerah-tubagu-201189/ (Caused by ConnectTimeoutError(<HTTPSConnection(host='www.sewakost.com', port=443) at 0x2a7513fb890>, 'Connection to www.sewakost.com timed out. (connect timeout=20)'))",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
   },
   {
     "nama_kos": "Kos telyu bubat",
@@ -44102,18 +43192,6 @@
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/07-2025/ad10049077637/kost-khusus-putri-bandung-1214399346.jpg",
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/07-2025/ad10049077637/kost-khusus-putri-bandung-2065790738.jpg"
     ]
-  },
-  {
-    "nama_kos": "KOS PINK COBLONG TERJANGKAU",
-    "link": "https://www.sewakost.com/kost/bandung/kos-pink-coblong-terjangkau-193905/",
-    "harga_listing": "",
-    "kota": "bandung",
-    "status": "error",
-    "error_msg": "('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
   },
   {
     "nama_kos": "Kost Glori Ecorooms",
@@ -45510,30 +44588,6 @@
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/12-2024/ad183133/listing-858378434.jpg",
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/12-2024/ad183133/listing-2034872884.jpg"
     ]
-  },
-  {
-    "nama_kos": "Kost Orange Sarijadi (Khusus Pria)",
-    "link": "https://www.sewakost.com/kost/bandung/kost-orange-sarijadi-khusus-pria-183088/",
-    "harga_listing": "",
-    "kota": "bandung",
-    "status": "error",
-    "error_msg": "('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
-    "nama_kos": "Disewakan Kamar Kos di Bandung",
-    "link": "https://www.sewakost.com/kost/bandung/disewakan-kamar-kos-di-bandung-182681/",
-    "harga_listing": "",
-    "kota": "bandung",
-    "status": "error",
-    "error_msg": "('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
   },
   {
     "nama_kos": "Kos Hanan (Khusus Putri)",
@@ -47054,18 +46108,6 @@
     ]
   },
   {
-    "nama_kos": "Kost Exclusive Murah dekat UNPAD Dipatiukur Pasirk",
-    "link": "https://www.sewakost.com/kost/bandung/kost-exclusive-murah-dekat-unpad-dipatiukur-pasirk-170692/",
-    "harga_listing": "",
-    "kota": "bandung",
-    "status": "error",
-    "error_msg": "('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
     "nama_kos": "Kos Pondok Putra Ciheulang",
     "kota": "bandung",
     "harga": "Rp 1.200.000",
@@ -47092,18 +46134,6 @@
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/05-2023/ad122704/listing-1708784252.jpg",
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/05-2023/ad122704/listing-1225368482.jpg"
     ]
-  },
-  {
-    "nama_kos": "160 Residence Leuwipanjang Bandung - Kost Bandung",
-    "link": "https://www.sewakost.com/kost/bandung/160-residence-leuwipanjang-bandung-kost-bandung-169792/",
-    "harga_listing": "",
-    "kota": "bandung",
-    "status": "error",
-    "error_msg": "('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
   },
   {
     "nama_kos": "KOST PUTRI BANDUNG - TAMANSARI (DEKAT UNISBA,UNPAS",
@@ -48680,18 +47710,6 @@
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/09-2023/ad139334/kost-strategis-sukamekar-1567106519.jpg",
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/09-2023/ad139334/kost-strategis-sukamekar-484449976.jpg"
     ]
-  },
-  {
-    "nama_kos": "Kos Pondok Hegar",
-    "link": "https://www.sewakost.com/kost/bandung/kos-pondok-hegar-150050/",
-    "harga_listing": "",
-    "kota": "bandung",
-    "status": "error",
-    "error_msg": "('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
   },
   {
     "nama_kos": "Rumah Kos Una",
@@ -50327,18 +49345,6 @@
     ]
   },
   {
-    "nama_kos": "Kos khusus putri kamar ac",
-    "link": "https://www.sewakost.com/kost/bandung/kos-khusus-putri-kamar-ac-129851/",
-    "harga_listing": "",
-    "kota": "bandung",
-    "status": "error",
-    "error_msg": "('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
     "nama_kos": "KOST PREMIUM PUSAT KOTA BANDUNG",
     "kota": "bandung",
     "harga": "-",
@@ -51882,30 +50888,6 @@
     ]
   },
   {
-    "nama_kos": "Kost Campur Dekat ITB Arjouna Cabin House Dago Ban",
-    "link": "https://www.sewakost.com/kost/bandung/kost-campur-dekat-itb-arjouna-cabin-house-dago-ban-115113/",
-    "harga_listing": "",
-    "kota": "bandung",
-    "status": "error",
-    "error_msg": "('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
-    "nama_kos": "KOS PUTRI DAGO CIHAMPELAS BANDUNG",
-    "link": "https://www.sewakost.com/kost/bandung/kos-putri-dago-cihampelas-bandung-114526/",
-    "harga_listing": "",
-    "kota": "bandung",
-    "status": "error",
-    "error_msg": "('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
     "nama_kos": "SEWA KOST PUTRA PER BULAN BANDUNG CIKUTRA CIBEUNYI",
     "kota": "bandung",
     "harga": "Rp 850.000",
@@ -52473,18 +51455,6 @@
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/10-2022/ad102500/kos-buah-batu-bandung-443406968.jpg",
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/10-2022/ad102500/kos-buah-batu-bandung-1404459988.jpg"
     ]
-  },
-  {
-    "nama_kos": "Kos Gardenia",
-    "link": "https://www.sewakost.com/kost/bandung/kos-gardenia-109585/",
-    "harga_listing": "",
-    "kota": "bandung",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out. (read timeout=20)",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
   },
   {
     "nama_kos": "Kostan Hegarmanah Eksklusif",
@@ -53333,30 +52303,6 @@
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/08-2022/ad89646/di-sewakan-rumah-1345397328.jpg",
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/08-2022/ad89646/di-sewakan-rumah-1773343311.jpg"
     ]
-  },
-  {
-    "nama_kos": "Di kontrakkan rumah di sekitar BTM Bandung",
-    "link": "https://www.sewakost.com/kost/bandung/di-kontrakkan-rumah-di-sekitar-btm-bandung-89436/",
-    "harga_listing": "",
-    "kota": "bandung",
-    "status": "error",
-    "error_msg": "('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
-    "nama_kos": "Dikontrakkan kost di daerah Awiligar cimenya bandu",
-    "link": "https://www.sewakost.com/kost/bandung/dikontrakkan-kost-di-daerah-awiligar-cimenya-bandu-89319/",
-    "harga_listing": "",
-    "kota": "bandung",
-    "status": "error",
-    "error_msg": "('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
   },
   {
     "nama_kos": "Kost putra/putri murah",
@@ -54809,30 +53755,6 @@
     ]
   },
   {
-    "nama_kos": "Disewakan kamar",
-    "link": "https://www.sewakost.com/kost/bandung/disewakan-kamar-66372/",
-    "harga_listing": "",
-    "kota": "bandung",
-    "status": "error",
-    "error_msg": "('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
-    "nama_kos": "Elsan House Kost Exclusive",
-    "link": "https://www.sewakost.com/kost/bandung/elsan-house-kost-exclusive-65194/",
-    "harga_listing": "",
-    "kota": "bandung",
-    "status": "error",
-    "error_msg": "('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
     "nama_kos": "Kamar kost nyaman dekat UIN cipadung Cibiru Bandun",
     "kota": "bandung",
     "harga": "Rp 750.000",
@@ -56197,42 +55119,6 @@
     ]
   },
   {
-    "nama_kos": "kosan murah di sukajadi",
-    "link": "https://www.sewakost.com/kost/bandung/kosan-murah-di-sukajadi-57497/",
-    "harga_listing": "",
-    "kota": "bandung",
-    "status": "error",
-    "error_msg": "('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
-    "nama_kos": "Kost bu apong 118",
-    "link": "https://www.sewakost.com/kost/bandung/kost-bu-apong-118-57452/",
-    "harga_listing": "",
-    "kota": "bandung",
-    "status": "error",
-    "error_msg": "('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
-    "nama_kos": "MI Kost Gegerkalong Hilir Bandung",
-    "link": "https://www.sewakost.com/kost/bandung/mi-kost-gegerkalong-hilir-bandung-57444/",
-    "harga_listing": "",
-    "kota": "bandung",
-    "status": "error",
-    "error_msg": "('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
     "nama_kos": "Rumah Kost Lux Mahasiswa ITB putra dekat ITB di Tu",
     "kota": "bandung",
     "harga": "Rp 1.800.000",
@@ -56811,18 +55697,6 @@
     ]
   },
   {
-    "nama_kos": "Kost Tubagus Ismail Dago",
-    "link": "https://www.sewakost.com/kost/bandung/kost-tubagus-ismail-dago-52466/",
-    "harga_listing": "",
-    "kota": "bandung",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out.",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
     "nama_kos": "Kost Pondok Anugrah",
     "kota": "bandung",
     "harga": "-",
@@ -57049,30 +55923,6 @@
     ]
   },
   {
-    "nama_kos": "Kost Bantal Guling Trans",
-    "link": "https://www.sewakost.com/kost/bandung/kost-bantal-guling-trans-49373/",
-    "harga_listing": "",
-    "kota": "bandung",
-    "status": "error",
-    "error_msg": "('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
-    "nama_kos": "Depot Kos Leuwi panjang",
-    "link": "https://www.sewakost.com/kost/bandung/depot-kos-leuwi-panjang-49049/",
-    "harga_listing": "",
-    "kota": "bandung",
-    "status": "error",
-    "error_msg": "('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
     "nama_kos": "Kost Bantal Guling Pasar Baru",
     "kota": "bandung",
     "harga": "Rp 1.500.000",
@@ -57103,18 +55953,6 @@
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/02-2021/ad48912/kost-bantal-2100782763.jpeg",
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/02-2021/ad48912/kost-bantal-196166172.jpeg"
     ]
-  },
-  {
-    "nama_kos": "Kost Muslimah Nyaman Pusat Kota",
-    "link": "https://www.sewakost.com/kost/bandung/kost-muslimah-nyaman-pusat-kota-48730/",
-    "harga_listing": "",
-    "kota": "bandung",
-    "status": "error",
-    "error_msg": "('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
   },
   {
     "nama_kos": "Kost Eyckman",
@@ -58019,42 +56857,6 @@
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/09-2020/ad42579/kostan-untuk-mahasiswa-wi-atsu-906524522.jpg",
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/09-2020/ad42579/kostan-untuk-mahasiswa-wi-atsu-614687291.jpg"
     ]
-  },
-  {
-    "nama_kos": "Kost campur murah bandung",
-    "link": "https://www.sewakost.com/kost/bandung/kost-campur-murah-bandung-42507/",
-    "harga_listing": "",
-    "kota": "bandung",
-    "status": "error",
-    "error_msg": "('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
-    "nama_kos": "Pondok Santosa",
-    "link": "https://www.sewakost.com/kost/bandung/pondok-santosa-42416/",
-    "harga_listing": "",
-    "kota": "bandung",
-    "status": "error",
-    "error_msg": "('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
-    "nama_kos": "sukamekar III nomor 9",
-    "link": "https://www.sewakost.com/kost/bandung/sukamekar-iii-nomor-9-42319/",
-    "harga_listing": "",
-    "kota": "bandung",
-    "status": "error",
-    "error_msg": "('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
   },
   {
     "nama_kos": "Kost Orchid Buah Batu Bandung",
@@ -59330,30 +58132,6 @@
     ]
   },
   {
-    "nama_kos": "Kost D'Homey 1 Bandung Type B",
-    "link": "https://www.sewakost.com/kost/bandung/kost-d-homey-1-bandung-type-b-38171/",
-    "harga_listing": "",
-    "kota": "bandung",
-    "status": "error",
-    "error_msg": "('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
-    "nama_kos": "kosan dekat kampus telkom",
-    "link": "https://www.sewakost.com/kost/bandung/kosan-dekat-kampus-telkom-38120/",
-    "harga_listing": "",
-    "kota": "bandung",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Max retries exceeded with url: /kost/bandung/kosan-dekat-kampus-telkom-38120/ (Caused by ConnectTimeoutError(<HTTPSConnection(host='www.sewakost.com', port=443) at 0x2a7522ad1d0>, 'Connection to www.sewakost.com timed out. (connect timeout=20)'))",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
     "nama_kos": "Kost Putri Pondok Nayla, Dekat Bhakti Kencana, Uni",
     "kota": "bandung",
     "harga": "Rp 780.000",
@@ -60428,42 +59206,6 @@
     ]
   },
   {
-    "nama_kos": "Padma Kost Cisitu Indah (Dekat ITB)",
-    "link": "https://www.sewakost.com/kost/bandung/padma-kost-cisitu-indah-dekat-itb-28462/",
-    "harga_listing": "",
-    "kota": "bandung",
-    "status": "error",
-    "error_msg": "('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
-    "nama_kos": "Kost baru dekat ITB",
-    "link": "https://www.sewakost.com/kost/bandung/kost-baru-dekat-itb-28443/",
-    "harga_listing": "",
-    "kota": "bandung",
-    "status": "error",
-    "error_msg": "('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
-    "nama_kos": "OYO Life 2529 Azalia Residence",
-    "link": "https://www.sewakost.com/kost/bandung/oyo-life-2529-azalia-residence-28412/",
-    "harga_listing": "",
-    "kota": "bandung",
-    "status": "error",
-    "error_msg": "('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
     "nama_kos": "Kost Wanita Antapani bandung nyaman bersih",
     "kota": "bandung",
     "harga": "Rp 850.000",
@@ -61073,18 +59815,6 @@
     ]
   },
   {
-    "nama_kos": "OYO 1340 Wisma Alamanda",
-    "link": "https://www.sewakost.com/kost/bandung/oyo-1340-wisma-alamanda-26787/",
-    "harga_listing": "",
-    "kota": "bandung",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out.",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
     "nama_kos": "Kost Premium Dedy Beach Inn",
     "kota": "bandung",
     "harga": "Rp 3.500.000",
@@ -61133,18 +59863,6 @@
     ]
   },
   {
-    "nama_kos": "OYO 497 De Tropis Family Guest House",
-    "link": "https://www.sewakost.com/kost/bandung/oyo-497-de-tropis-family-guest-house-26783/",
-    "harga_listing": "",
-    "kota": "bandung",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out.",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
     "nama_kos": "OYO 701 Ardellia Hotel",
     "kota": "bandung",
     "harga": "Rp 3.200.000",
@@ -61167,18 +59885,6 @@
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/10-2019/ad26719/oyo-701-ardellia-179755247.jpg",
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/10-2019/ad26719/oyo-701-ardellia-1621288557.jpg"
     ]
-  },
-  {
-    "nama_kos": "OYO 352 Hotel Sabang",
-    "link": "https://www.sewakost.com/kost/bandung/oyo-352-hotel-sabang-26718/",
-    "harga_listing": "",
-    "kota": "bandung",
-    "status": "error",
-    "error_msg": "('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
   },
   {
     "nama_kos": "OYO 295 Grha Ciumbuleuit Guest House",
@@ -61205,18 +59911,6 @@
     ]
   },
   {
-    "nama_kos": "OYO 249 Hotel Astria Graha",
-    "link": "https://www.sewakost.com/kost/bandung/oyo-249-hotel-astria-graha-26716/",
-    "harga_listing": "",
-    "kota": "bandung",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out.",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
     "nama_kos": "OYO 226 Lj Hotel Bandung",
     "kota": "bandung",
     "harga": "Rp 2.800.000",
@@ -61239,30 +59933,6 @@
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/10-2019/ad26715/oyo-226-lj-hotel-815507329.jpg",
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/10-2019/ad26715/oyo-226-lj-hotel-989898888.jpg"
     ]
-  },
-  {
-    "nama_kos": "OYO 1308 Darmo Residence",
-    "link": "https://www.sewakost.com/kost/bandung/oyo-1308-darmo-residence-26682/",
-    "harga_listing": "",
-    "kota": "bandung",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out.",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
-    "nama_kos": "Pondok Naturaliza - Telkom University",
-    "link": "https://www.sewakost.com/kost/bandung/pondok-naturaliza-telkom-university-26641/",
-    "harga_listing": "",
-    "kota": "bandung",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out.",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
   },
   {
     "nama_kos": "Capital O 1010 Isola Resort",
@@ -61361,18 +60031,6 @@
     ]
   },
   {
-    "nama_kos": "OYO 367 Ridha Residence",
-    "link": "https://www.sewakost.com/kost/bandung/oyo-367-ridha-residence-26620/",
-    "harga_listing": "",
-    "kota": "bandung",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out.",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
     "nama_kos": "OYO 794 Ln 9 Bandung Guest House",
     "kota": "bandung",
     "harga": "Rp 4.300.000",
@@ -61443,18 +60101,6 @@
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/10-2019/ad26617/oyo-944-doorman-guest-1277437710.jpg",
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/10-2019/ad26617/oyo-944-doorman-guest-966638998.jpg"
     ]
-  },
-  {
-    "nama_kos": "di sewakan kamar kost",
-    "link": "https://www.sewakost.com/kost/bandung/di-sewakan-kamar-kost-26581/",
-    "harga_listing": "",
-    "kota": "bandung",
-    "status": "error",
-    "error_msg": "('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
   },
   {
     "nama_kos": "Sewa Harian dan Bulanan De Sun Pasteur Guesthouse",
@@ -61614,18 +60260,6 @@
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/10-2019/ad26256/kost-an-pondok-anugrah-89287555_large.jpg",
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/10-2019/ad26256/kost-an-pondok-anugrah-1963051189.jpg"
     ]
-  },
-  {
-    "nama_kos": "kos tamblong",
-    "link": "https://www.sewakost.com/kost/bandung/kos-tamblong-26249/",
-    "harga_listing": "",
-    "kota": "bandung",
-    "status": "error",
-    "error_msg": "('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
   },
   {
     "nama_kos": "Kosan di lokasi tenang dan nyaman",
@@ -61863,18 +60497,6 @@
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/09-2019/ad25817/apartment-541190441.jpeg",
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/09-2019/ad25817/apartment-1034064264.jpg"
     ]
-  },
-  {
-    "nama_kos": "Kost Batununggal Lestari. Putri. Aman Baru Lengkap",
-    "link": "https://www.sewakost.com/kost/bandung/kost-batununggal-lestari-putri-aman-baru-lengkap-25760/",
-    "harga_listing": "",
-    "kota": "bandung",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out. (read timeout=20)",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
   },
   {
     "nama_kos": "Kamar pelajar/pegawai dekat DT, UPI, UNPAS, NHI, S",
@@ -62950,18 +61572,6 @@
     ]
   },
   {
-    "nama_kos": "kos citrayudha11",
-    "link": "https://www.sewakost.com/kost/bandung/kos-citrayudha11-23107/",
-    "harga_listing": "",
-    "kota": "bandung",
-    "status": "error",
-    "error_msg": "('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
     "nama_kos": "Kost Putri Bandung",
     "kota": "bandung",
     "harga": "Rp 750.000",
@@ -64034,30 +62644,6 @@
     ]
   },
   {
-    "nama_kos": "Kos Haji Munaf",
-    "link": "https://www.sewakost.com/kost/bandung/kos-haji-munaf-21906/",
-    "harga_listing": "",
-    "kota": "bandung",
-    "status": "error",
-    "error_msg": "('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
-    "nama_kos": "Kost bandung cowok cibeunying kolot dekat itenas d",
-    "link": "https://www.sewakost.com/kost/bandung/kost-bandung-cowok-cibeunying-kolot-dekat-itenas-d-21901/",
-    "harga_listing": "",
-    "kota": "bandung",
-    "status": "error",
-    "error_msg": "('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
     "nama_kos": "Kontrakan Jatiendah Regency B2 Pasir Jati Ujung Be",
     "kota": "bandung",
     "harga": "Rp 15.000.000",
@@ -64381,42 +62967,6 @@
     ]
   },
   {
-    "nama_kos": "Kost bangbayang dago",
-    "link": "https://www.sewakost.com/kost/bandung/kost-bangbayang-dago-21402/",
-    "harga_listing": "",
-    "kota": "bandung",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out. (read timeout=20)",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
-    "nama_kos": "Kamar kost sederhana Di sarijadi Bandung Hub  Haji",
-    "link": "https://www.sewakost.com/kost/bandung/kamar-kost-sederhana-di-sarijadi-bandung-hub-haji-21388/",
-    "harga_listing": "",
-    "kota": "bandung",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out. (read timeout=20)",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
-    "nama_kos": "Kamar kost sederhana Di sarijadi Bandung",
-    "link": "https://www.sewakost.com/kost/bandung/kamar-kost-sederhana-di-sarijadi-bandung-21387/",
-    "harga_listing": "",
-    "kota": "bandung",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out.",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
     "nama_kos": "Kontrakan Murah di daerah STT Telkom - Telkom Unvi",
     "kota": "bandung",
     "harga": "Rp 23.000.000",
@@ -64504,18 +63054,6 @@
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/12-2018/ad21226/listing-360859159.jpg",
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/12-2018/ad21226/listing-3420907.jpg"
     ]
-  },
-  {
-    "nama_kos": "Kost Putri Sapujagat Sukaluyu Bandung",
-    "link": "https://www.sewakost.com/kost/bandung/kost-putri-sapujagat-sukaluyu-bandung-21187/",
-    "harga_listing": "",
-    "kota": "bandung",
-    "status": "error",
-    "error_msg": "('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
   },
   {
     "nama_kos": "Kos Putri dan Mahasiswi di Ciumbuleuit, Bandung. L",
@@ -64752,18 +63290,6 @@
     ]
   },
   {
-    "nama_kos": "kost pondok sabina sarijadi",
-    "link": "https://www.sewakost.com/kost/bandung/kost-pondok-sabina-sarijadi-20115/",
-    "harga_listing": "",
-    "kota": "bandung",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out.",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
     "nama_kos": "Kost Putri Gg Pelita 1 (Samping Widyatama)",
     "kota": "bandung",
     "harga": "Rp 850.000",
@@ -64815,18 +63341,6 @@
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/07-2018/ad19966/kost-untuk-khusus-putra-dan-1652449442_large.jpg",
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/07-2018/ad19966/kost-untuk-khusus-putra-dan-1080166516.jpg"
     ]
-  },
-  {
-    "nama_kos": "Kost Putri Exclusive - Delima Cikutra",
-    "link": "https://www.sewakost.com/kost/bandung/kost-putri-exclusive-delima-cikutra-19956/",
-    "harga_listing": "",
-    "kota": "bandung",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out.",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
   },
   {
     "nama_kos": "Kost Lily Khusus Putri",
@@ -64968,30 +63482,6 @@
     ]
   },
   {
-    "nama_kos": "Antapani Townhouse E5",
-    "link": "https://www.sewakost.com/kost/bandung/antapani-townhouse-e5-19634/",
-    "harga_listing": "",
-    "kota": "bandung",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out. (read timeout=20)",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
-    "nama_kos": "kosant campur di setiabudi",
-    "link": "https://www.sewakost.com/kost/bandung/kosant-campur-di-setiabudi-19562/",
-    "harga_listing": "",
-    "kota": "bandung",
-    "status": "error",
-    "error_msg": "('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
     "nama_kos": "Kost Putra OK",
     "kota": "bandung",
     "harga": "Rp 550.000",
@@ -65027,18 +63517,6 @@
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/06-2018/ad19446/kost-dekat-uin-dan-transmart-carrefour-1555114964_large.jpg",
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/06-2018/ad19446/kost-dekat-uin-dan-transmart-carrefour-1926138542.jpg"
     ]
-  },
-  {
-    "nama_kos": "Kos Art Deco untuk putra Mahasiswa ITB/Unpad",
-    "link": "https://www.sewakost.com/kost/bandung/kos-art-deco-untuk-putra-mahasiswa-itb-unpad-19345/",
-    "harga_listing": "",
-    "kota": "bandung",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out.",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
   },
   {
     "nama_kos": "KOST MURAH DAGO ASRI UNTUK PRIA/WANITA",
@@ -65355,18 +63833,6 @@
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/11-2023/ad14574/kost-sauyunan-uin-sgd-stikes-ut-upi-cibiru-1003897269.jpg",
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/11-2023/ad14574/kost-sauyunan-uin-sgd-stikes-ut-upi-cibiru-1340481205.jpg"
     ]
-  },
-  {
-    "nama_kos": "Kos Strategis Buah Batu Ancol BKR Tegalega Harian/",
-    "link": "https://www.sewakost.com/kost/bandung/kos-strategis-buah-batu-ancol-bkr-tegalega-harian-18780/",
-    "harga_listing": "",
-    "kota": "bandung",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out.",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
   },
   {
     "nama_kos": "Kost Putri Rumah Rayna Bandung",
@@ -66849,18 +65315,6 @@
     ]
   },
   {
-    "nama_kos": "Oper Kontrak Kosan Tamansari Bandung (SOLD OUT)",
-    "link": "https://www.sewakost.com/kost/bandung/oper-kontrak-kosan-tamansari-bandung-sold-out-15613/",
-    "harga_listing": "",
-    "kota": "bandung",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out.",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
     "nama_kos": "KOST DAGO BANDUNG",
     "kota": "bandung",
     "harga": "Rp 1.000.000",
@@ -67072,18 +65526,6 @@
     ]
   },
   {
-    "nama_kos": "Kost M10",
-    "link": "https://www.sewakost.com/kost/bandung/kost-m10-15227/",
-    "harga_listing": "",
-    "kota": "bandung",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out.",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
     "nama_kos": "Kost Bandung Utara untuk Mahasiswi",
     "kota": "bandung",
     "harga": "Rp 2.500.000",
@@ -67207,18 +65649,6 @@
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/07-2017/ad15018/15006278121138578880.jpg",
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/07-2017/ad15018/1500627813279370369.jpg"
     ]
-  },
-  {
-    "nama_kos": "Kost Putra 18 kamar luas di Bangbayang dekat ITB &",
-    "link": "https://www.sewakost.com/kost/bandung/kost-putra-18-kamar-luas-di-bangbayang-dekat-itb-15007/",
-    "harga_listing": "",
-    "kota": "bandung",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out.",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
   },
   {
     "nama_kos": "Kost Kosan daerah Cikutra Universitas Widyatama mu",
@@ -69839,18 +68269,6 @@
     ]
   },
   {
-    "nama_kos": "Kost khusus PUTRI (Mahasiswi/Karyawati) Daerah Bua",
-    "link": "https://www.sewakost.com/kost/bandung/kost-khusus-putri-mahasiswi-karyawati-daerah-bua-12056/",
-    "harga_listing": "",
-    "kota": "bandung",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out.",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
     "nama_kos": "Kos DAGO ASRI 17A, Dekat ITB, Unpad, Unikom, Dll",
     "kota": "bandung",
     "harga": "Rp 2.000.000",
@@ -70012,18 +68430,6 @@
     ]
   },
   {
-    "nama_kos": "Pasteur Bandung Kamar Kos",
-    "link": "https://www.sewakost.com/kost/bandung/pasteur-bandung-kamar-kos-11930/",
-    "harga_listing": "",
-    "kota": "bandung",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out.",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
     "nama_kos": "Kost favorit dekat UPI CIBIRU + Fasilitas MESIN CU",
     "kota": "bandung",
     "harga": "Rp 3.500.000",
@@ -70086,18 +68492,6 @@
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/07-2016/ad11887/14680356171416139310.jpg",
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/07-2016/ad11887/1468035617905502672.jpg"
     ]
-  },
-  {
-    "nama_kos": "[ Kost Buahbatu Bandung ] Kos Gorgeous Rental Room",
-    "link": "https://www.sewakost.com/kost/bandung/kost-buahbatu-bandung-kos-gorgeous-rental-room-11864/",
-    "harga_listing": "",
-    "kota": "bandung",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out.",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
   },
   {
     "nama_kos": "Wisma Cahaya Rahayu",
@@ -70192,50 +68586,6 @@
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/06-2016/ad11770/14665661341929013676.jpg",
       "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/06-2016/ad11770/14665661341322064288.jpg"
     ]
-  },
-  {
-    "nama_kos": "Kost near bandung downtown",
-    "kota": "bandung",
-    "harga": "Rp 1.500.000",
-    "telepon": "-",
-    "alamat": "-",
-    "fasilitas_kamar": [
-      "-"
-    ],
-    "fasilitas_bersama": [
-      "Dapur"
-    ],
-    "foto": [
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/06-2016/ad11765/14664741031806300119_large.png",
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/06-2016/ad11765/14664741031806300119.png",
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/06-2016/ad11765/1466474105769734372.png",
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/06-2016/ad11765/14664741071699024710.png",
-      "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/06-2016/ad11765/1466474108108351631.JPG"
-    ]
-  },
-  {
-    "nama_kos": "TERIMA KOSTAN PUTRA & PUTRI DEKAT TELKOM UNIVE",
-    "link": "https://www.sewakost.com/kost/bandung/terima-kostan-putra-amp-putri-dekat-telkom-unive-11755/",
-    "harga_listing": "",
-    "kota": "bandung",
-    "status": "error",
-    "error_msg": "HTTPSConnectionPool(host='www.sewakost.com', port=443): Read timed out. (read timeout=20)",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
-    "nama_kos": "kost - kostan/kontrakan (karyawan, mahasiswa, dan",
-    "link": "https://www.sewakost.com/kost/bandung/kost-kostan-kontrakan-karyawan-mahasiswa-dan-11752/",
-    "harga_listing": "",
-    "kota": "bandung",
-    "status": "error",
-    "error_msg": "('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
   },
   {
     "nama_kos": "SEWA KOST MURAH DKT UNPAD JATINANGOR",
@@ -71529,30 +69879,6 @@
     ]
   },
   {
-    "nama_kos": "kost dekat maranatha",
-    "link": "https://www.sewakost.com/kost/bandung/kost-dekat-maranatha-6024/",
-    "harga_listing": "",
-    "kota": "bandung",
-    "status": "error",
-    "error_msg": "('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
-    "nama_kos": "KOST GRAHA PESONA BANDUNG",
-    "link": "https://www.sewakost.com/kost/bandung/kost-graha-pesona-bandung-6011/",
-    "harga_listing": "",
-    "kota": "bandung",
-    "status": "error",
-    "error_msg": "('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
-  },
-  {
     "nama_kos": "Kost di TKI Kopo Sayati Bandung",
     "kota": "bandung",
     "harga": "Rp 800.000",
@@ -72647,18 +70973,6 @@
     "foto": [
       "https://www.sewakost.com/templates/sewakost/img/logo.svg?rev=29"
     ]
-  },
-  {
-    "nama_kos": "Kost mahasiswa/i, karyawan/i daerah Sarijadi",
-    "link": "https://www.sewakost.com/kost/bandung/kost-mahasiswa-i-karyawan-i-daerah-sarijadi-3999/",
-    "harga_listing": "",
-    "kota": "bandung",
-    "status": "error",
-    "error_msg": "('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))",
-    "foto": [
-      "-"
-    ],
-    "alamat": "-"
   },
   {
     "nama_kos": "Kost Buah Batu Bandung Pondok Kayu Agung",
