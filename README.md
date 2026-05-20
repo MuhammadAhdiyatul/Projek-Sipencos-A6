@@ -32,5 +32,17 @@
 
 1. **Clone Repositori**
    ```bash
-   git clone [https://github.com/username/Projek-Sipencos-A6.git](https://github.com/username/Projek-Sipencos-A6.git)
+   git clone https://github.com/MuhammadAhdiyatul/Projek-Sipencos-A6.git
    cd Projek-Sipencos-A6
+   ```
+
+2. **Install Dependensi**
+   Pastikan Anda sudah menginstal Python (minimal versi 3.8). Kemudian jalankan perintah berikut untuk menginstal semua pustaka yang dibutuhkan:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. **Jalankan Aplikasi**
+   ```bash
+   python main.py
+   ```
