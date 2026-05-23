@@ -380,7 +380,7 @@ class KosAnalytics:
 
     def tampilkan_analytics(self):
         print("\n" + "=" * 55)
-        print("  Analitik Data Kos — KosFinder")
+        print("  Analitik Data Kos — SiPencos")
         print("=" * 55)
 
         tanggal     = self.ambil_tanggal_scraping()
