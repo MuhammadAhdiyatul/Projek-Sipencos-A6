@@ -287,6 +287,7 @@ class KosScraper:
         # Fasilitas
         fasilitas_kamar   = self.fasilitas_setelah(soup, r"Fasilitas Kamar")
         fasilitas_bersama = self.fasilitas_setelah(soup, r"Fasilitas Bersama")
+        tanggal_posting = self.ekstraktanggaldarifoto(foto)
 
         hasil = {
             "nama_kos"         : nama,
@@ -294,6 +295,7 @@ class KosScraper:
             "harga"            : harga,
             "telepon"          : telepon,
             "alamat"           : alamat,
+            "tanggal_posting"  : tanggal_posting, 
             "fasilitas_kamar"  : fasilitas_kamar,
             "fasilitas_bersama": fasilitas_bersama,
             "foto"             : foto,
@@ -425,6 +427,22 @@ class KosScraper:
                     return [li.get_text(strip=True) for li in ul.find_all("li")]
         return []
 
+    def ekstraktanggaldarifoto(self, foto: list) -> str:
+        """Estimasi tanggal posting dari URL foto"""
+        for url in foto:
+            m = re.search(r'/listings/(\d{2}-\d{4})/', url)
+            if m:
+                bulan_tahun = m.group(1)
+                bulan, tahun = bulan_tahun.split("-")
+                bulan_nama = {
+                    "01": "Januari",  "02": "Februari", "03": "Maret",
+                    "04": "April",    "05": "Mei",       "06": "Juni",
+                    "07": "Juli",     "08": "Agustus",   "09": "September",
+                    "10": "Oktober",  "11": "November",  "12": "Desember"
+                }
+                return f"{bulan_nama.get(bulan, bulan)} {tahun}"
+        return "-"    
+
     def isi_kosong(self, data: dict) -> dict:
         """Mengisi semua nilai kosong dalam dictionary dengan tanda -"""
         hasil = {}
@@ -458,6 +476,7 @@ class KosScraper:
                 tipe          TEXT,
                 alamat        TEXT,
                 nomor_telepon TEXT,
+                tanggal_posting TEXT,
                 foto          TEXT
             )
         """)
@@ -467,14 +486,15 @@ class KosScraper:
                     if isinstance(item.get("foto"), list)
                     else item.get("foto", ""))
             cursor.execute("""
-                INSERT INTO kos (nama_kos, kota, tipe, alamat, nomor_telepon, foto)
-                VALUES (?, ?, ?, ?, ?, ?)
+                INSERT INTO kos (nama_kos, kota, tipe, alamat, nomor_telepon, tanggal_posting, foto)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
             """, (
-                item.get("nama_kos", "-"),
-                item.get("kota",     "-"),
-                item.get("tipe",     "-"),
-                item.get("alamat",   "-"),
-                item.get("telepon",  "-"),
+                item.get("nama_kos",        "-"),
+                item.get("kota",            "-"),
+                item.get("tipe",            "-"),
+                item.get("alamat",          "-"),
+                item.get("telepon",         "-"),
+                item.get("tanggal_posting", "-"),
                 foto if foto else "-",
             ))
 
@@ -491,6 +511,7 @@ class KosScraper:
             print(f"  Alamat   : {d['alamat']}")
             print(f"  Harga    : {d['harga']}")
             print(f"  Telepon  : {d['telepon']}")
+            print(f"  Tanggal  : {d.get('tanggal_posting', '-')}")
             print(f"  Fasilitas: {', '.join(d['fasilitas_kamar'][:4])}")
         print(f"\n  Total data tersimpan: {len(self.hasil)}")
         print("Selesai! Cek file: output_dataKos/data_kos.json")
