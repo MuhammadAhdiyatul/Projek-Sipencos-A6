@@ -262,7 +262,7 @@ class DetailWindow(ctk.CTkToplevel):
         right_col.pack_propagate(False)
 
         self.scroll_area = ctk.CTkScrollableFrame(right_col, fg_color="transparent", width=300)
-        self.scroll_area.pack(fill="both", expand=True, padx=5, pady=(5, 0))
+        self.scroll_area.pack(fill="both", expand=True, padx=5, pady=(5, 5))
 
         info_panel = ctk.CTkFrame(self.scroll_area, fg_color="transparent")
         info_panel.pack(fill="both", expand=True, padx=10, pady=10)
@@ -271,16 +271,19 @@ class DetailWindow(ctk.CTkToplevel):
         status_row.pack(fill="x", pady=(0, 10))
         
         tipe_upper = tipe.upper()
-        if "CAMPUR" in tipe_upper:
+        if "CAMPUR" in tipe_upper or "SEMUA" in tipe_upper:
             badge_text = "CAMPUR"
+            badge_bg = "#e67e22"
         elif "PUTRI" in tipe_upper:
             badge_text = "PUTRI"
+            badge_bg = "#ff9ff3"
         else:
             badge_text = "PUTRA"
+            badge_bg = "#3498db"
             
         ctk.CTkLabel(
             status_row, text=badge_text, font=("Arial", 10, "bold"), 
-            text_color="white", fg_color=ACCENT_COLOR, corner_radius=6, 
+            text_color="white", fg_color=badge_bg, corner_radius=6, 
             width=55, height=22
         ).pack(side="left")
         
@@ -311,19 +314,13 @@ class DetailWindow(ctk.CTkToplevel):
         ctk.CTkFrame(info_panel, fg_color="transparent", height=20).pack(fill="x")
         
         ctk.CTkLabel(
-            info_panel,
-            text="NOMOR TELEPON",
-            font=("Arial", 10, "bold"),
-            text_color=TEXT_SUBTLE,
-            anchor="w",
+            info_panel, text="NOMOR TELEPON", font=("Arial", 10, "bold"),
+            text_color=TEXT_SUBTLE, anchor="w",
         ).pack(anchor="w", pady=(0, 4))
 
         contact_box = ctk.CTkFrame(
-            info_panel,
-            fg_color=SUCCESS_SURFACE,
-            corner_radius=8,
-            border_width=1,
-            border_color=BORDER_COLOR,
+            info_panel, fg_color=SUCCESS_SURFACE, corner_radius=8,
+            border_width=1, border_color=BORDER_COLOR,
         )
         contact_box.pack(fill="x", pady=(0, 12))
 
@@ -332,41 +329,39 @@ class DetailWindow(ctk.CTkToplevel):
         contact_row.grid_columnconfigure(1, weight=1)
 
         ctk.CTkLabel(
-            contact_row,
-            text="☎",
-            font=("Arial", 18),
-            text_color=ACCENT_COLOR,
-            width=24,
+            contact_row, text="☎", font=("Arial", 18),
+            text_color=ACCENT_COLOR, width=24,
         ).grid(row=0, column=0, sticky="w", padx=(0, 8))
 
         ctk.CTkLabel(
-            contact_row,
-            text=telepon,
-            font=("Arial", 14, "bold"),
-            text_color=TITLE_COLOR,
-            anchor="w",
-            justify="left",
+            contact_row, text=telepon, font=("Arial", 14, "bold"),
+            text_color=TITLE_COLOR, anchor="w", justify="left",
         ).grid(row=0, column=1, sticky="w")
 
+        self.btn_contact = ctk.CTkButton(
+            info_panel, text="📞 Hubungi Pemilik", 
+            fg_color="#D35400", hover_color="#A04000", text_color="white",
+            height=46, corner_radius=12, font=("Arial", 13, "bold"),
+            command=lambda: print(f"[DetailWindow] Menghubungi: {telepon}")
+        )
+        self.btn_contact.pack(fill="x", pady=(0, 10))
+
         self.btn_fav = ctk.CTkButton(
-            info_panel, text="♥ Simpan ke Favorit", 
-            fg_color="#1A3A5A", hover_color="#12283E", 
-            height=48, corner_radius=12, font=("Arial", 14, "bold")
+            info_panel, text="♡ Simpan ke Favorit", 
+            fg_color="transparent", border_color="#1A365D", border_width=2,
+            text_color="#1A365D", hover_color="#F0F4F8",
+            height=46, corner_radius=12, font=("Arial", 13, "bold"),
+            command=lambda: print("[DetailWindow] Tombol Favorit Ditekan")
         )
         self.btn_fav.pack(fill="x", pady=(0, 10))
 
-        sticky_bottom = ctk.CTkFrame(right_col, fg_color="transparent", height=65)
-        sticky_bottom.pack(fill="x", side="bottom", padx=20, pady=(5, 20))
-        sticky_bottom.pack_propagate(False)
-
-        self.btn_tutup = ctk.CTkButton(
-            sticky_bottom, text="TUTUP", 
-            fg_color="#C0392B", hover_color="#962D22",
-            text_color="white", width=140, height=42, corner_radius=8,
-            font=("Arial", 12, "bold"),
-            command=self.destroy
+        self.btn_compare = ctk.CTkButton(
+            info_panel, text="⇄ Tambah ke Perbandingan", 
+            fg_color="transparent", text_color="#2D3748", hover_color="#EDF2F7",
+            height=36, corner_radius=8, font=("Arial", 12, "bold"),
+            command=lambda: print("[DetailWindow] Tombol Bandingkan Ditekan")
         )
-        self.btn_tutup.pack(expand=True)
+        self.btn_compare.pack(fill="x", pady=(0, 15))
 
         def _force_scroll(event=None, direction=0, unit="units"):
             if event and hasattr(event, "delta") and event.delta != 0:
