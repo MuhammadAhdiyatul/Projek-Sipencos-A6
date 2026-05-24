@@ -11,12 +11,9 @@ try:
 except Exception:
     Image = None
 
-# Force light mode for consistent dashboard look
 ctk.set_appearance_mode("Light")
 ctk.set_default_color_theme("blue")
 
-
-# Color palette
 PRIMARY_COLOR = "#002B49"
 ACCENT_COLOR = "#C96A28"
 APP_BG = "#F0F2F5"
@@ -108,7 +105,6 @@ def _load_remote_image(url, size):
     if cache_key in _IMAGE_CACHE:
         return _IMAGE_CACHE[cache_key]
 
-    # Try disk cache
     cache_filename = None
     if _CACHE_DIR is not None:
         try:
@@ -130,7 +126,6 @@ def _load_remote_image(url, size):
         response.raise_for_status()
 
         pil_image = Image.open(BytesIO(response.content)).convert("RGB")
-        # create thumbnail preserving aspect ratio
         try:
             pil_copy = pil_image.copy()
             pil_copy.thumbnail(size, Image.LANCZOS)
@@ -138,7 +133,6 @@ def _load_remote_image(url, size):
         except Exception:
             pass
 
-        # save to disk cache
         if cache_filename is not None:
             try:
                 pil_image.save(str(cache_filename), format="JPEG", quality=75)
@@ -183,7 +177,6 @@ def _load_remote_image_async(url, size, widget, callback):
     try:
         _EXECUTOR.submit(fetch_and_callback)
     except Exception:
-        # fallback to thread if executor unavailable
         threading.Thread(target=fetch_and_callback, daemon=True).start()
 
 
@@ -206,7 +199,6 @@ class DetailWindow(ctk.CTkToplevel):
         fasilitas_bersama = _as_list(data_kos.get("fasilitas_bersama"))
         foto_list = _normalize_foto(data_kos.get("foto"))
 
-        # --- 3. FIX POSISI TENGAH (PAKAI RESOLUSI LAYAR) ---
         self.title(f"Detail - {nama}")
         self.update_idletasks()
         
@@ -222,7 +214,6 @@ class DetailWindow(ctk.CTkToplevel):
         self.resizable(False, False)
         self.configure(fg_color=APP_BG)
 
-        # --- 4. PEMBUNGKUS UTAMA ---
         shell = ctk.CTkFrame(self, fg_color="transparent")
         shell.pack(fill="both", expand=True, padx=25, pady=25)
 
