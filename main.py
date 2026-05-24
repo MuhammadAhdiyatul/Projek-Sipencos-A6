@@ -1417,7 +1417,6 @@ class DetailPage(ctk.CTkFrame):
         self.desc_box.insert("0.0", "Pilih kos untuk melihat detail.")
         self.desc_box.configure(state="disabled")
 
-        # Right panel
         self.right_panel = ctk.CTkFrame(
             self.body,
             fg_color=CARD_BG,
@@ -1514,85 +1513,44 @@ class DetailPage(ctk.CTkFrame):
 
         ctk.CTkFrame(self.info_panel, fg_color="transparent", height=14).pack(fill="x")
 
-        contact_title = ctk.CTkLabel(
+        self.btn_contact = ctk.CTkButton(
             self.info_panel,
-            text="NOMOR TELEPON",
-            font=("Arial", 10, "bold"),
-            text_color=TEXT_SUBTLE,
-            anchor="w",
-        )
-        contact_title.pack(anchor="w", pady=(0, 4))
-
-        self.contact_box = ctk.CTkFrame(
-            self.info_panel,
-            fg_color=SUCCESS_SURFACE,
+            text="📞 Hubungi Pemilik",
+            fg_color="#D35400",
+            hover_color="#A04000",
+            text_color="white",
+            height=46,
             corner_radius=12,
-            border_width=1,
-            border_color=BORDER,
+            font=("Arial", 13, "bold"),
+            command=lambda: print(f"[Aksi] Menghubungi: {self.contact_value.cget('text')}")
         )
-        self.contact_box.pack(fill="x", pady=(0, 12))
-
-        contact_inner = ctk.CTkFrame(self.contact_box, fg_color="transparent")
-        contact_inner.pack(fill="x", padx=12, pady=12)
-        contact_inner.grid_columnconfigure(1, weight=1)
-
-        ctk.CTkLabel(
-            contact_inner,
-            text="☎",
-            font=("Arial", 18),
-            text_color=ORANGE,
-            width=24,
-        ).grid(row=0, column=0, sticky="w", padx=(0, 10))
-
-        self.contact_value = ctk.CTkLabel(
-            contact_inner,
-            text="Kontak tidak tersedia",
-            font=("Arial", 14, "bold"),
-            text_color=TITLE_COLOR,
-            anchor="w",
-            justify="left",
-        )
-        self.contact_value.grid(row=0, column=1, sticky="w")
+        self.btn_contact.pack(fill="x", pady=(0, 12))
 
         self.btn_fav = ctk.CTkButton(
             self.info_panel,
-            text="♥ Simpan ke Favorit",
-            fg_color=PRIMARY_COLOR,
-            hover_color="#013A62",
-            text_color="white",
-            height=48,
+            text="♡ Simpan ke Favorit",
+            fg_color="#C53030",     
+            hover_color="#9B2C2C",    
+            text_color="white",       
+            height=46,
             corner_radius=12,
-            font=("Arial", 14, "bold"),
+            font=("Arial", 13, "bold"),
             command=self._on_toggle_favorite,
         )
         self.btn_fav.pack(fill="x", pady=(0, 10))
 
         self.btn_compare = ctk.CTkButton(
             self.info_panel,
-            text="Bandingkan",
-            fg_color="#1E3A5F",
-            hover_color="#12283E",
-            text_color="white",
-            height=48,
+            text="⇌ Tambah ke Perbandingan",
+            fg_color="#2B6CB0",
+            hover_color="#2C5282",    
+            text_color="white",       
+            height=46,                
             corner_radius=12,
-            font=("Arial", 14, "bold"),
+            font=("Arial", 13, "bold"),
             command=self._on_toggle_compare,
         )
         self.btn_compare.pack(fill="x", pady=(0, 18))
-
-        self.btn_close = ctk.CTkButton(
-            self.info_panel,
-            text="TUTUP",
-            fg_color="#C0392B",
-            hover_color="#962D22",
-            text_color="white",
-            width=140,
-            height=42,
-            corner_radius=8,
-            font=("Arial", 12, "bold"),
-            command=self.back_callback,
-        )
-        self.btn_close.pack(anchor="center", pady=(4, 0))
 
     def _create_facility_section(self, title, master, key):
         section_title = ctk.CTkLabel(
@@ -1625,14 +1583,21 @@ class DetailPage(ctk.CTkFrame):
         alamat = _safe_text(kos_item.get("alamat") or kos_item.get("lokasi"), "Lokasi belum tersedia")
         deskripsi = _safe_text(kos_item.get("deskripsi") or kos_item.get("alamat") or "Tidak ada deskripsi tambahan.")
         telepon = _safe_text(kos_item.get("telepon") or kos_item.get("nomor_telepon") or "Kontak tidak tersedia")
+        
         tipe = _safe_text(kos_item.get("tipe") or "PUTRA")
         tipe_upper = tipe.upper()
+        
         if "PUTRI" in tipe_upper:
-            badge = "PUTRI"
+            badge_text = "PUTRI"
+            badge_color = "#ff9ff3"
         elif "CAMPUR" in tipe_upper:
-            badge = "CAMPUR"
+            badge_text = "CAMPUR"
+            badge_color = "#e67e22"
         else:
-            badge = "PUTRA"
+            badge_text = "PUTRA"
+            badge_color = "#3498db"
+            
+        self.badge_label.configure(text=badge_text, fg_color=badge_color)
 
         fasilitas_kamar = [str(x).strip() for x in (kos_item.get("fasilitas_kamar") or []) if str(x).strip()]
         fasilitas_bersama = [str(x).strip() for x in (kos_item.get("fasilitas_bersama") or []) if str(x).strip()]
@@ -1964,13 +1929,6 @@ class AnalyticsPage(ctk.CTkFrame):
         except Exception:
             pass
 
-
-class HistoryPage(PlaceholderPage):
-    def __init__(self, parent, *args, **kwargs):
-        current_user = kwargs.pop("current_user", None)
-        super().__init__(parent, "🕘 History", "Fitur History belum tersedia\n\nComing soon...", current_user=current_user, *args, **kwargs)
-
-
 class SettingsPage(PlaceholderPage):
     def __init__(self, parent, logout_callback=None, *args, **kwargs):
         current_user = kwargs.pop("current_user", None)
@@ -2237,7 +2195,10 @@ class App(ctk.CTk):
         elif frame_name == "compare":
             frame.refresh(self.compare_list)
         elif frame_name == "history":
-            frame.refresh()
+            try:
+                frame.refresh()
+            except Exception as e:
+                print(f"[Debug History] Gagal refresh konten: {e}")
         elif frame_name == "settings":
             frame.refresh()
         elif frame_name == "detail":
@@ -2247,6 +2208,34 @@ class App(ctk.CTk):
                     is_favorite=self._contains(self.favorites, self.detail_item),
                     is_compared=self._contains(self.compare_list, self.detail_item),
                 )
+                
+                try:
+                    import session
+                    nama_kos = "Detail Kos"
+                    item = self.detail_item
+                    
+                    if isinstance(item, dict):
+                        nama_kos = item.get("nama") or item.get("nama_kos") or item.get("title") or item.get("name") or "Detail Kos"
+                    else:
+                        nama_kos = getattr(item, "nama", getattr(item, "nama_kos", getattr(item, "title", "Detail Kos")))
+                    
+                    user_aktif = "Guest"
+                    if session.current_session.check_auth():
+                        raw_user = session.current_session.get_current_user()
+                        if isinstance(raw_user, str):
+                            user_aktif = raw_user
+                        elif hasattr(raw_user, "email"):
+                            user_aktif = raw_user.email
+                        elif hasattr(raw_user, "username"):
+                            user_aktif = raw_user.username
+                        elif isinstance(raw_user, dict):
+                            user_aktif = raw_user.get("email") or raw_user.get("username")
+                    
+                    from history import add_history
+                    add_history(user_email=user_aktif, keyword=nama_kos, filter_type="DETAIL", item_data=self.detail_item)
+                    
+                except Exception as e:
+                    print(f"[Debug History Detail] Gagal mencatat snapshot: {e}")
 
         frame.tkraise()
 
