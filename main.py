@@ -10,6 +10,8 @@ from backend import BackendManager
 from search_page import SearchPage
 import session
 from login_ui import AuthWindow
+from history import HistoryPage
+from history import add_history
 
 try:
     from PIL import Image
@@ -1350,8 +1352,8 @@ class DetailPage(ctk.CTkFrame):
         btn_back = ctk.CTkButton(
             header,
             text="Kembali",
-            fg_color=ACCENT_COLOR,
-            hover_color="#B45E24",
+            fg_color="#C0392B",
+            hover_color="#962D22",
             text_color="white",
             corner_radius=12,
             height=38,
@@ -1439,10 +1441,10 @@ class DetailPage(ctk.CTkFrame):
 
         self.badge_label = ctk.CTkLabel(
             self.badge_row,
-            text="PUTRA",
+            text="MEMUAT...",  
             font=("Arial", 10, "bold"),
             text_color="white",
-            fg_color=ACCENT_COLOR,
+            fg_color="gray",  
             corner_radius=6,
             width=55,
             height=22,
@@ -2136,11 +2138,7 @@ class App(ctk.CTk):
             current_user=self.current_user,
             fg_color="transparent",
         )
-        self.frames["history"] = HistoryPage(
-            self.content_frame,
-            current_user=self.current_user,
-            fg_color="transparent",
-        )
+        self.frames["history"] = HistoryPage(self.content_frame, current_user=self.current_user, fg_color="transparent")
         self.frames["settings"] = SettingsPage(
             self.content_frame,
             logout_callback=self.logout_and_close,
@@ -2159,18 +2157,21 @@ class App(ctk.CTk):
             frame.grid(row=0, column=0, sticky="nsew")
 
     def show_frame(self, frame_name):
-        # ─── GERBANG TOL LOGIN SI PENCOS ───
-        if frame_name == "favorites":
+        if frame_name in ["favorites", "history"]:
+            import session
             if not session.current_session.check_auth():
-                # Panggil window login
                 login_win = AuthWindow()
                 login_win.mainloop()
+                
+                try:
+                    login_win.destroy()
+                except Exception:
+                    pass
+                
                 if session.current_session.check_auth():
                     self.current_user = session.current_session.get_current_user()
-                # Stop eksekusi di sini agar tidak pindah halaman!
-                if not session.current_session.check_auth():
+                else:
                     return
-        # ───────────────────────────────────
 
         frame = self.frames.get(frame_name)
         if not frame:
