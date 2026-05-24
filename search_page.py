@@ -1,5 +1,6 @@
 import customtkinter as ctk
 from ui_components import KosCard
+from history import add_history
 
 # Theme palette
 PRIMARY_COLOR = "#002B49"
@@ -353,15 +354,40 @@ class SearchPage(ctk.CTkFrame):
     def _on_search(self):
         keyword = self.entry_search.get().strip()
         raw_results = self.search_callback(keyword) if self.search_callback else []
-
-        # Apply local filters
         filtered_results = []
         
         price_filter = self.filter_price_var.get()
         type_filter = self.filter_type_var.get()
         
+        user_aktif = "Guest"
+        try:
+            import session
+            if session.current_session.check_auth():
+                raw_user = session.current_session.get_current_user()
+                if isinstance(raw_user, str):
+                    user_aktif = raw_user
+                elif hasattr(raw_user, "email"):
+                    user_aktif = raw_user.email
+                elif hasattr(raw_user, "username"):
+                    user_aktif = raw_user.username
+                elif isinstance(raw_user, dict):
+                    user_aktif = raw_user.get("email") or raw_user.get("username")
+        except Exception:
+            pass
+
+        if type_filter == "Putra":
+            badge_filter = "Putra"
+        elif type_filter == "Putri":
+            badge_filter = "Putri"
+        else:
+            badge_filter = "Semua"
+
+        keyword_display = keyword if keyword != "" else "Semua Kos"
+        
+        from history import add_history
+        add_history(user_email=user_aktif, keyword=keyword_display, filter_type=badge_filter)
+        
         for item in raw_results:
-            # Type Filter
             if type_filter != "Semua Tipe":
                 item_type = str(item.get("tipe", "")).lower()
                 if type_filter == "Putra":
