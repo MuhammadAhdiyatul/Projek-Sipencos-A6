@@ -21,46 +21,46 @@ def _load_history():
         return {}
 
 def _save_history(data):
-    """Menyimpan data kembali ke history.json"""
     with open(HISTORY_FILE, "w") as f:
         json.dump(data, f, indent=4)
 
-def add_history(keyword, filter_type="Semua"):
-    """
-    Fungsi ini dipanggil saat user menekan tombol 'Cari' di halaman Search.
-    Otomatis mencatat kata kunci, filter, dan waktu saat ini untuk user yang login.
-    """
-    if not getattr(session, 'is_logged_in', False) or not getattr(session, 'current_user', None):
-        return  # Jika belum login (misal Guest), tidak perlu disimpan ke riwayat
+def add_history(user_email, keyword, filter_type="Semua", item_data=None):
+    """Mencatat pencarian atau detail kos yang dilihat"""
+    if not user_email or str(user_email).lower() == "guest":
+        return  
 
     data = _load_history()
-    user = session.current_user
 
-    # Jika user belum punya riwayat sama sekali, buatkan list kosong
-    if user not in data:
-        data[user] = []
+    if user_email not in data:
+        data[user_email] = []
 
-    # Buat timestamp waktu pencarian (Format: DD-MM-YYYY HH:MM)
     timestamp = datetime.now().strftime("%d-%m-%Y %H:%M")
 
     new_entry = {
         "keyword": keyword,
         "timestamp": timestamp,
-        "filter": filter_type
+        "filter": filter_type,
+        "item_data": item_data
     }
 
-    # Masukkan riwayat terbaru ke urutan paling atas (index 0)
-    data[user].insert(0, new_entry)
+    if filter_type == "DETAIL" and data[user_email]:
+        if data[user_email][0].get("keyword") == keyword and data[user_email][0].get("filter") == "DETAIL":
+            data[user_email][0]["timestamp"] = timestamp
+            _save_history(data)
+            return
+
+    data[user_email].insert(0, new_entry)
     _save_history(data)
 
-def get_history():
-    """Mengambil list riwayat pencarian khusus untuk user yang sedang aktif"""
-    if not getattr(session, 'is_logged_in', False) or not getattr(session, 'current_user', None):
-        return []
-        
+def clear_history(user_email):
+    if not user_email or str(user_email).lower() == "guest":
+        return False
     data = _load_history()
-    user = session.current_user
-    return data.get(user, [])
+    if user_email in data:
+        data[user_email] = []
+        _save_history(data)
+        return True
+    return False
 
 # 2. LOGIKA UI (TAMPILAN CUSTOMTKINTER)
 
