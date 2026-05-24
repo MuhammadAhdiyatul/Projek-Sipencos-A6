@@ -11,9 +11,12 @@ try:
 except Exception:
     Image = None
 
+# Force light mode for consistent dashboard look
 ctk.set_appearance_mode("Light")
 ctk.set_default_color_theme("blue")
 
+
+# Color palette
 PRIMARY_COLOR = "#002B49"
 ACCENT_COLOR = "#C96A28"
 APP_BG = "#F0F2F5"
@@ -37,6 +40,8 @@ except Exception:
 def _format_price(value):
     if isinstance(value, (int, float)):
         nominal = int(value)
+        if nominal == 0:
+            return "Harga belum tersedia"
         return f"Rp {nominal:,}".replace(",", ".")
 
     if isinstance(value, str):
@@ -105,6 +110,7 @@ def _load_remote_image(url, size):
     if cache_key in _IMAGE_CACHE:
         return _IMAGE_CACHE[cache_key]
 
+    # Try disk cache
     cache_filename = None
     if _CACHE_DIR is not None:
         try:
@@ -126,6 +132,7 @@ def _load_remote_image(url, size):
         response.raise_for_status()
 
         pil_image = Image.open(BytesIO(response.content)).convert("RGB")
+        # create thumbnail preserving aspect ratio
         try:
             pil_copy = pil_image.copy()
             pil_copy.thumbnail(size, Image.LANCZOS)
@@ -133,6 +140,7 @@ def _load_remote_image(url, size):
         except Exception:
             pass
 
+        # save to disk cache
         if cache_filename is not None:
             try:
                 pil_image.save(str(cache_filename), format="JPEG", quality=75)
@@ -165,18 +173,39 @@ def _load_remote_image_async(url, size, widget, callback):
         try:
             image = _load_remote_image(url, size)
             try:
-                widget.after(0, lambda: callback(image))
+                # Check if widget exists before scheduling UI update
+                if widget.winfo_exists():
+                    target = widget.winfo_toplevel() if widget.winfo_toplevel().winfo_exists() else widget
+
+                    def deliver_image():
+                        if widget.winfo_exists():
+                            callback(image)
+
+                    job_id = target.after(0, deliver_image)
+                    if hasattr(target, "_pending_callbacks"):
+                        target._pending_callbacks.append(job_id)
             except Exception:
                 pass
         except Exception:
             try:
-                widget.after(0, lambda: callback(None))
+                # Check if widget exists before scheduling UI update
+                if widget.winfo_exists():
+                    target = widget.winfo_toplevel() if widget.winfo_toplevel().winfo_exists() else widget
+
+                    def deliver_failure():
+                        if widget.winfo_exists():
+                            callback(None)
+
+                    job_id = target.after(0, deliver_failure)
+                    if hasattr(target, "_pending_callbacks"):
+                        target._pending_callbacks.append(job_id)
             except Exception:
                 pass
 
     try:
         _EXECUTOR.submit(fetch_and_callback)
     except Exception:
+        # fallback to thread if executor unavailable
         threading.Thread(target=fetch_and_callback, daemon=True).start()
 
 
@@ -185,8 +214,14 @@ class DetailWindow(ctk.CTkToplevel):
         super().__init__(parent, *args, **kwargs)
 
         self.transient(parent)
-        self.after(10, self.grab_set) 
+        grab_job = self.after(10, self.grab_set)
 
+        self._pending_callbacks = []
+        self._window_closing = False
+        self._pending_callbacks.append(grab_job)
+
+        # Register window close handler
+        self.protocol("WM_DELETE_WINDOW", self._on_closing)
         nama = _safe_text(data_kos.get("nama_kos"), "Kos")
         harga = _format_price(data_kos.get("harga"))
         alamat = _safe_text(data_kos.get("alamat"))
@@ -199,6 +234,7 @@ class DetailWindow(ctk.CTkToplevel):
         fasilitas_bersama = _as_list(data_kos.get("fasilitas_bersama"))
         foto_list = _normalize_foto(data_kos.get("foto"))
 
+        # --- 3. FIX POSISI TENGAH (PAKAI RESOLUSI LAYAR) ---
         self.title(f"Detail - {nama}")
         self.update_idletasks()
         
@@ -214,6 +250,7 @@ class DetailWindow(ctk.CTkToplevel):
         self.resizable(False, False)
         self.configure(fg_color=APP_BG)
 
+        # --- 4. PEMBUNGKUS UTAMA ---
         shell = ctk.CTkFrame(self, fg_color="transparent")
         shell.pack(fill="both", expand=True, padx=25, pady=25)
 
@@ -237,6 +274,9 @@ class DetailWindow(ctk.CTkToplevel):
                     self.preview_label.image = preview_image
                     self.preview_label.pack(fill="both", expand=True)
                 else:
+                    # Check if window still exists before updating UI
+                    if not self.winfo_exists():
+                        return
                     self.preview_label.configure(text="Gambar tidak tersedia")
             except Exception:
                 pass
@@ -246,9 +286,15 @@ class DetailWindow(ctk.CTkToplevel):
         ctk.CTkLabel(left_col, text="Deskripsi Kos", font=("Arial", 18, "bold"), text_color=TITLE_COLOR).pack(anchor="w", pady=(5, 5))
         
         desc_scroll = ctk.CTkTextbox(
-            left_col, font=("Arial", 13), text_color=TITLE_COLOR, 
-            fg_color=CARD_BG, corner_radius=12, height=180, 
-            border_width=1, border_color=BORDER_COLOR, wrap="word"
+            left_col,
+            font=("Arial", 13),
+            text_color=TITLE_COLOR,
+            fg_color=CARD_BG,
+            corner_radius=12,
+            height=180,
+            border_width=1,
+            border_color=BORDER_COLOR,
+            wrap="word",
         )
         desc_scroll.pack(fill="both", expand=True)
         desc_scroll.insert("0.0", deskripsi)
@@ -262,7 +308,7 @@ class DetailWindow(ctk.CTkToplevel):
         right_col.pack_propagate(False)
 
         self.scroll_area = ctk.CTkScrollableFrame(right_col, fg_color="transparent", width=300)
-        self.scroll_area.pack(fill="both", expand=True, padx=5, pady=(5, 5))
+        self.scroll_area.pack(fill="both", expand=True, padx=5, pady=(5, 0))
 
         info_panel = ctk.CTkFrame(self.scroll_area, fg_color="transparent")
         info_panel.pack(fill="both", expand=True, padx=10, pady=10)
@@ -271,19 +317,16 @@ class DetailWindow(ctk.CTkToplevel):
         status_row.pack(fill="x", pady=(0, 10))
         
         tipe_upper = tipe.upper()
-        if "CAMPUR" in tipe_upper or "SEMUA" in tipe_upper:
+        if "CAMPUR" in tipe_upper:
             badge_text = "CAMPUR"
-            badge_bg = "#e67e22"
         elif "PUTRI" in tipe_upper:
             badge_text = "PUTRI"
-            badge_bg = "#ff9ff3"
         else:
             badge_text = "PUTRA"
-            badge_bg = "#3498db"
             
         ctk.CTkLabel(
             status_row, text=badge_text, font=("Arial", 10, "bold"), 
-            text_color="white", fg_color=badge_bg, corner_radius=6, 
+            text_color="white", fg_color=ACCENT_COLOR, corner_radius=6, 
             width=55, height=22
         ).pack(side="left")
         
@@ -314,13 +357,19 @@ class DetailWindow(ctk.CTkToplevel):
         ctk.CTkFrame(info_panel, fg_color="transparent", height=20).pack(fill="x")
         
         ctk.CTkLabel(
-            info_panel, text="NOMOR TELEPON", font=("Arial", 10, "bold"),
-            text_color=TEXT_SUBTLE, anchor="w",
+            info_panel,
+            text="NOMOR TELEPON",
+            font=("Arial", 10, "bold"),
+            text_color=TEXT_SUBTLE,
+            anchor="w",
         ).pack(anchor="w", pady=(0, 4))
 
         contact_box = ctk.CTkFrame(
-            info_panel, fg_color=SUCCESS_SURFACE, corner_radius=8,
-            border_width=1, border_color=BORDER_COLOR,
+            info_panel,
+            fg_color=SUCCESS_SURFACE,
+            corner_radius=8,
+            border_width=1,
+            border_color=BORDER_COLOR,
         )
         contact_box.pack(fill="x", pady=(0, 12))
 
@@ -329,39 +378,41 @@ class DetailWindow(ctk.CTkToplevel):
         contact_row.grid_columnconfigure(1, weight=1)
 
         ctk.CTkLabel(
-            contact_row, text="☎", font=("Arial", 18),
-            text_color=ACCENT_COLOR, width=24,
+            contact_row,
+            text="☎",
+            font=("Arial", 18),
+            text_color=ACCENT_COLOR,
+            width=24,
         ).grid(row=0, column=0, sticky="w", padx=(0, 8))
 
         ctk.CTkLabel(
-            contact_row, text=telepon, font=("Arial", 14, "bold"),
-            text_color=TITLE_COLOR, anchor="w", justify="left",
+            contact_row,
+            text=telepon,
+            font=("Arial", 14, "bold"),
+            text_color=TITLE_COLOR,
+            anchor="w",
+            justify="left",
         ).grid(row=0, column=1, sticky="w")
 
-        self.btn_contact = ctk.CTkButton(
-            info_panel, text="📞 Hubungi Pemilik", 
-            fg_color="#D35400", hover_color="#A04000", text_color="white",
-            height=46, corner_radius=12, font=("Arial", 13, "bold"),
-            command=lambda: print(f"[DetailWindow] Menghubungi: {telepon}")
-        )
-        self.btn_contact.pack(fill="x", pady=(0, 10))
-
         self.btn_fav = ctk.CTkButton(
-            info_panel, text="♡ Simpan ke Favorit", 
-            fg_color="transparent", border_color="#1A365D", border_width=2,
-            text_color="#1A365D", hover_color="#F0F4F8",
-            height=46, corner_radius=12, font=("Arial", 13, "bold"),
-            command=lambda: print("[DetailWindow] Tombol Favorit Ditekan")
+            info_panel, text="♥ Simpan ke Favorit", 
+            fg_color="#1A3A5A", hover_color="#12283E", 
+            height=48, corner_radius=12, font=("Arial", 14, "bold")
         )
         self.btn_fav.pack(fill="x", pady=(0, 10))
 
-        self.btn_compare = ctk.CTkButton(
-            info_panel, text="⇄ Tambah ke Perbandingan", 
-            fg_color="transparent", text_color="#2D3748", hover_color="#EDF2F7",
-            height=36, corner_radius=8, font=("Arial", 12, "bold"),
-            command=lambda: print("[DetailWindow] Tombol Bandingkan Ditekan")
+        sticky_bottom = ctk.CTkFrame(right_col, fg_color="transparent", height=65)
+        sticky_bottom.pack(fill="x", side="bottom", padx=20, pady=(5, 20))
+        sticky_bottom.pack_propagate(False)
+
+        self.btn_tutup = ctk.CTkButton(
+            sticky_bottom, text="TUTUP", 
+            fg_color="#C0392B", hover_color="#962D22",
+            text_color="white", width=140, height=42, corner_radius=8,
+            font=("Arial", 12, "bold"),
+            command=self._on_closing
         )
-        self.btn_compare.pack(fill="x", pady=(0, 15))
+        self.btn_tutup.pack(expand=True)
 
         def _force_scroll(event=None, direction=0, unit="units"):
             if event and hasattr(event, "delta") and event.delta != 0:
@@ -376,6 +427,17 @@ class DetailWindow(ctk.CTkToplevel):
         self.bind("<Prior>", lambda e: _force_scroll(direction=-1, unit="pages")) 
         self.bind("<Next>", lambda e: _force_scroll(direction=1, unit="pages"))
         self.focus_set()
+
+    def _on_closing(self):
+        """Handle window close with proper cleanup of pending callbacks."""
+        self._window_closing = True
+        for job_id in self._pending_callbacks:
+            try:
+                self.after_cancel(job_id)
+            except Exception:
+                pass
+        self._pending_callbacks.clear()
+        self.destroy()
 
     def _build_facility_chips(self, master, title, items):
         ctk.CTkLabel(master, text=title.upper(), font=("Arial", 10, "bold"), text_color=TEXT_SUBTLE).pack(anchor="w", pady=(5, 2))
@@ -412,21 +474,17 @@ class KosCard(ctk.CTkFrame):
         nama_kos = _truncate_text(data_kos.get("nama_kos"), 48, "Nama kos tidak tersedia")
         alamat = _truncate_text(data_kos.get("alamat"), 72, "Lokasi belum tersedia")
         harga = _format_price(data_kos.get("harga"))
-        
         tipe = _safe_text(data_kos.get("tipe"), "PUTRA").upper()
-        if "CAMPUR" in tipe or "SEMUA" in tipe:
+        if "CAMPUR" in tipe:
             badge_text = "CAMPUR"
-            badge_bg = "#e67e22"  
         elif "PUTRI" in tipe:
             badge_text = "PUTRI"
-            badge_bg = "#ff9ff3"  
         else:
             badge_text = "PUTRA"
-            badge_bg = "#3498db"  
-
         fasilitas_ringkas = _to_facility_text(data_kos.get("fasilitas_kamar"))
         foto_list = _normalize_foto(data_kos.get("foto"))
 
+        # Top image area placeholder
         image_box = ctk.CTkFrame(
             self,
             fg_color=IMAGE_BG,
@@ -436,9 +494,38 @@ class KosCard(ctk.CTkFrame):
         )
         image_box.grid(row=0, column=0, sticky="ew", padx=10, pady=(10, 8))
         image_box.grid_propagate(False)
-        
-        image_box.grid_rowconfigure(0, weight=1)
         image_box.grid_columnconfigure(0, weight=1)
+
+
+
+        badge = ctk.CTkLabel(
+            image_box,
+            text=badge_text,
+            fg_color=ACCENT_COLOR,
+            text_color="white",
+            corner_radius=8,
+            font=("Arial", 11, "bold"),
+            width=56,
+            height=24,
+        )
+        badge.place(x=10, y=10)
+
+        # Tombol Favorit (Aman & Terkoneksi)
+        self.favorite_btn = ctk.CTkButton(
+            image_box,
+            text="❤️" if is_favorite else "♡",
+            width=30,
+            height=30,
+            corner_radius=999,
+            fg_color=CARD_BG,
+            hover_color=APP_BG,
+            text_color="#EF4444" if is_favorite else TEXT_SUBTLE,
+            border_width=1,
+            border_color=BORDER_COLOR,
+            font=("Arial", 14, "bold"),
+            command=self._on_favorite_click,
+        )
+        self.favorite_btn.place(relx=1.0, x=-10, y=10, anchor="ne")
 
         self.image_label = ctk.CTkLabel(
             image_box,
@@ -446,48 +533,16 @@ class KosCard(ctk.CTkFrame):
             font=("Arial", 12),
             text_color=TEXT_SUBTLE,
         )
-        self.image_label.grid(row=0, column=0, sticky="nsew")
-
-        floating_overlay = ctk.CTkFrame(image_box, fg_color="transparent", border_width=0)
-        floating_overlay.grid(row=0, column=0, sticky="nwe", padx=10, pady=10) 
-        
-        floating_overlay.grid_rowconfigure(0, weight=0)
-        floating_overlay.grid_columnconfigure(0, weight=1)
-        floating_overlay.grid_columnconfigure(1, weight=0)
-
-        badge = ctk.CTkLabel(
-            floating_overlay,
-            text=badge_text,
-            fg_color=badge_bg,
-            text_color="white",
-            corner_radius=6,
-            font=("Arial", 10, "bold"),
-            width=50,
-            height=24,
-        )
-        badge.grid(row=0, column=0, sticky="w")
-
-        favorite_btn = ctk.CTkButton(
-            floating_overlay,
-            text="❤️" if is_favorite else "♡",
-            width=24,
-            height=24,
-            corner_radius=6,
-            fg_color="white",
-            text_color="#1A365D",
-            hover_color="#F0F4F8",
-            border_width=0,
-            font=("Arial", 12, "bold"),
-            command=lambda: self.favorites_callback(self.data_kos) if self.favorites_callback else None,
-        )
-        favorite_btn.grid(row=0, column=1, sticky="e")
+        self.image_label.grid(row=1, column=0, pady=(24, 0))
 
         def on_image_loaded(thumbnail):
             try:
                 if thumbnail:
                     self.image_label.configure(text="", image=thumbnail)
                     self.image_label.image = thumbnail
-                    floating_overlay.lift()
+                    self.image_label.grid(row=0, column=0, rowspan=2, sticky="nsew", pady=0)
+                    badge.tkraise()
+                    self.favorite_btn.tkraise()
                 else:
                     self.image_label.configure(text="No Image")
             except Exception:
@@ -561,8 +616,8 @@ class KosCard(ctk.CTkFrame):
         btn_detail = ctk.CTkButton(
             content,
             text="Lihat Detail",
-            fg_color="#D35400",   
-            hover_color="#A04000",
+            fg_color=PRIMARY_COLOR,
+            hover_color="#013A62",
             text_color="white",
             corner_radius=10,
             height=38,
@@ -570,3 +625,15 @@ class KosCard(ctk.CTkFrame):
             command=lambda: open_detail_callback(self.data_kos) if open_detail_callback else (DetailWindow(self, self.data_kos) if DetailWindow else print("[DEBUG] DetailWindow class not imported")),
         )
         btn_detail.grid(row=4, column=0, sticky="ew", pady=(4, 0))
+
+    def _on_image_click(self, event=None):
+        if self.detail_callback:
+            self.detail_callback(self.data_kos)
+
+    def _on_favorite_click(self):
+        if self.favorites_callback:
+            added = self.favorites_callback(self.data_kos)
+            if added is True:
+                self.favorite_btn.configure(text="❤️", text_color="#EF4444")
+            elif added is False:
+                self.favorite_btn.configure(text="♡", text_color=TEXT_SUBTLE)

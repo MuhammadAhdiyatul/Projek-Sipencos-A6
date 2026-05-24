@@ -24,6 +24,7 @@ class AnimatedFilterDropdown(ctk.CTkFrame):
         self.animating = False
         self.target_height = height
         self.current_height = height
+        self._animation_job = None
         
         self.configure(width=width, height=height)
         self.pack_propagate(False)
@@ -63,26 +64,43 @@ class AnimatedFilterDropdown(ctk.CTkFrame):
             self.animate_open()
             
     def animate_open(self):
+        if not self.winfo_exists():
+            return
+
         if self.current_height < self.target_height:
             self.current_height += 20
             if self.current_height > self.target_height:
                 self.current_height = self.target_height
             self.configure(height=self.current_height)
-            self.after(16, self.animate_open)
+            self._animation_job = self.after(16, self.animate_open)
         else:
             self.is_open = True
             self.animating = False
+            self._animation_job = None
             
     def animate_close(self):
+        if not self.winfo_exists():
+            return
+
         if self.current_height > self.base_height:
             self.current_height -= 20
             if self.current_height < self.base_height:
                 self.current_height = self.base_height
             self.configure(height=self.current_height)
-            self.after(16, self.animate_close)
+            self._animation_job = self.after(16, self.animate_close)
         else:
             self.is_open = False
             self.animating = False
+            self._animation_job = None
+
+    def destroy(self):
+        if self._animation_job is not None:
+            try:
+                self.after_cancel(self._animation_job)
+            except Exception:
+                pass
+            self._animation_job = None
+        super().destroy()
 
     def select(self, value):
         self.variable.set(value)
@@ -130,9 +148,6 @@ class SearchPage(ctk.CTkFrame):
         self.grid_rowconfigure(5, weight=1)
         self.grid_columnconfigure(0, weight=1)
 
-        # Row 0: Top Navigation
-        self._build_top_nav()
-
         # Row 1: Hero Section
         self._build_hero()
 
@@ -151,31 +166,7 @@ class SearchPage(ctk.CTkFrame):
         # Row 6: Pagination Controls
         self._build_pagination_bar()
 
-    def _build_top_nav(self):
-        top_nav = ctk.CTkFrame(self, fg_color=BG_COLOR)
-        top_nav.grid(row=0, column=0, sticky="ew", pady=(0, 14))
-        top_nav.grid_columnconfigure(1, weight=1)
 
-        # Left: Navigation labels
-        nav_left = ctk.CTkFrame(top_nav, fg_color=BG_COLOR)
-        nav_left.grid(row=0, column=0, sticky="w")
-
-        nav_items = [("Discover", True), ("Trending", False), ("Premium", False)]
-        for text, is_active in nav_items:
-            color = PRIMARY_COLOR if is_active else TEXT_SUBTLE
-            font = ("Arial", 14, "bold" if is_active else "normal")
-            label = ctk.CTkLabel(nav_left, text=text, text_color=color, font=font)
-            label.pack(side="left", padx=(0, 16))
-
-        # Right: Dummy icons (optional)
-        nav_right = ctk.CTkFrame(top_nav, fg_color=BG_COLOR)
-        nav_right.grid(row=0, column=1, sticky="e")
-
-        # Dummy icons: bell, message, profile
-        icons = ["🔔", "✉", "👤"]
-        for icon in icons:
-            icon_label = ctk.CTkLabel(nav_right, text=icon, font=("Arial", 16))
-            icon_label.pack(side="left", padx=8)
 
     def _build_hero(self):
         hero = ctk.CTkFrame(self, fg_color=BG_COLOR)
@@ -390,6 +381,20 @@ class SearchPage(ctk.CTkFrame):
         for item in raw_results:
             if type_filter != "Semua Tipe":
                 item_type = str(item.get("tipe", "")).lower()
+                if not item_type:
+                    # Fallback ke nama_kos dan deskripsi jika tipe tidak ada di data
+                    nama_kos = str(item.get("nama_kos", "")).lower()
+                    deskripsi = str(item.get("deskripsi", "")).lower()
+                    gabungan = nama_kos + " " + deskripsi
+                    if "putri" in gabungan and "putra" in gabungan:
+                        item_type = "campur"
+                    elif "putri" in gabungan or "cewek" in gabungan or "wanita" in gabungan:
+                        item_type = "putri"
+                    elif "putra" in gabungan or "cowok" in gabungan or "pria" in gabungan:
+                        item_type = "putra"
+                    else:
+                        item_type = "campur"
+
                 if type_filter == "Putra":
                     if "putri" in item_type or "putra" not in item_type:
                         continue
@@ -413,12 +418,20 @@ class SearchPage(ctk.CTkFrame):
                 elif price_filter == "> Rp 2.000.000" and harga <= 2000000:
                     continue
 
-            fasilitas = " ".join(item.get("fasilitas_kamar", [])).lower()
+            kamar = item.get("fasilitas_kamar", [])
+            bersama = item.get("fasilitas_bersama", [])
+            if isinstance(kamar, str): kamar = [kamar]
+            if isinstance(bersama, str): bersama = [bersama]
+            kamar = kamar if kamar else []
+            bersama = bersama if bersama else []
+            
+            fasilitas = " ".join([str(x).lower() for x in kamar + bersama])
+            
             if self.active_filters["WiFi"] and "wifi" not in fasilitas:
                 continue
             if self.active_filters["AC"] and "ac" not in fasilitas:
                 continue
-            if self.active_filters["KM Dalam"] and "km dalam" not in fasilitas:
+            if self.active_filters["KM Dalam"] and ("km dalam" not in fasilitas and "kamar mandi dalam" not in fasilitas):
                 continue
             if self.active_filters["Parkir"] and "parkir" not in fasilitas:
                 continue
@@ -459,6 +472,17 @@ class SearchPage(ctk.CTkFrame):
         start = (self._current_page - 1) * self.PAGE_SIZE
         end = start + self.PAGE_SIZE
         display_results = self._current_results[start:end]
+
+        if not display_results:
+            empty_label = ctk.CTkLabel(
+                self.results_grid,
+                text="Kos tidak ditemukan.\nSilakan coba kata kunci atau filter lain.",
+                font=("Arial", 16),
+                text_color=TEXT_SUBTLE,
+                justify="center"
+            )
+            empty_label.grid(row=0, column=0, columnspan=3, pady=100)
+            return
 
         for index, item in enumerate(display_results):
             row = index // 3
