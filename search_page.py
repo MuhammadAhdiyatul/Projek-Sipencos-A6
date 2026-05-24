@@ -400,7 +400,6 @@ class SearchPage(ctk.CTkFrame):
                     if "campur" not in item_type:
                         continue
 
-            # Price Filter
             if price_filter != "Semua Harga":
                 try:
                     harga = int(item.get("harga", 0))
@@ -425,7 +424,6 @@ class SearchPage(ctk.CTkFrame):
                 continue
             filtered_results.append(item)
 
-        # Sort
         sort_by = self.sort_price_var.get()
         if sort_by == "Harga Terendah":
             filtered_results.sort(key=lambda x: int(x.get("harga", 0) or 0))
