@@ -2,16 +2,15 @@ import json
 import os
 from datetime import datetime
 import customtkinter as ctk
-import session  # Memanggil session untuk mengecek user yang sedang aktif
+
+from ui_components import _load_remote_image_async, _normalize_foto
 
 HISTORY_FILE = "history.json"
 
 # 1. LOGIKA BACKEND (MANAJEMEN DATA)
 
 def _load_history():
-    """Membaca file, atau membuat file baru otomatis jika belum ada"""
     if not os.path.exists(HISTORY_FILE):
-        # Otomatis buat file kosong jika belum ada
         with open(HISTORY_FILE, "w") as f:
             json.dump({}, f)
         return {}
