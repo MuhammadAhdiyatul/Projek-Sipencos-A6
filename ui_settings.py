@@ -84,11 +84,9 @@ class SettingsViewModern(ctk.CTkFrame):
         self.profile_panel.grid(row=0, column=1, rowspan=2, padx=(30, 0), sticky="ne", ipadx=10, ipady=10)
         
         ctk.CTkLabel(self.profile_panel, text="👤", font=ctk.CTkFont(size=24), text_color=COLOR_ACCENT_ORANGE).pack(side="left", padx=10)
-        # REVISI: Mengubah email menjadi username
         ctk.CTkLabel(self.profile_panel, text="Username", justify="left", font=ctk.CTkFont(size=14, weight="normal"), text_color=COLOR_TEXT_SECONDARY).pack(side="left", padx=10)
-        # REVISI: Tombol Edit Profil dan badge premium sudah dihapus dari sini
 
-        # Kategori 1: Aplikasi & Antarmuka (Notifikasi Dihapus)
+        # Kategori 1: Aplikasi & Antarmuka
         self.card_interface = ctk.CTkFrame(self, fg_color=COLOR_BG_CARD, corner_radius=16)
         self.card_interface.pack(fill="x", pady=(0, 30), ipadx=5, ipady=5)
         self.card_interface.grid_columnconfigure(0, weight=0) 
@@ -119,12 +117,10 @@ class SettingsViewModern(ctk.CTkFrame):
         self.card_data_mgmt.pack(fill="x", pady=(0, 30), ipadx=5, ipady=5)
         self.card_data_mgmt.grid_columnconfigure(0, weight=1)
 
-        # REVISI: Judul diubah menjadi Informasi Data
         self.lbl_data_title = ctk.CTkLabel(self.card_data_mgmt, text="Informasi Data", font=ctk.CTkFont(size=16, weight="bold"), text_color=COLOR_TEXT_PRIMARY)
         self.lbl_data_title.grid(row=0, column=0, sticky="w", padx=20, pady=(20, 5))
         self.lbl_data_desc = ctk.CTkLabel(self.card_data_mgmt, text="Informasi status sinkronisasi dan riwayat pembaruan data kos.", font=ctk.CTkFont(size=14), text_color=COLOR_TEXT_SECONDARY)
         self.lbl_data_desc.grid(row=1, column=0, sticky="w", padx=20, pady=(0, 20))
-        # REVISI: Tombol-tombol ekspor dan hapus cache sudah dihilangkan dari sini
 
         self.frame_metrik_logger = ctk.CTkFrame(self.card_data_mgmt, fg_color=COLOR_BG_MAIN, corner_radius=12)
         self.frame_metrik_logger.grid(row=2, column=0, sticky="ew", padx=20, pady=(0, 20), ipadx=15, ipady=15)
@@ -132,7 +128,6 @@ class SettingsViewModern(ctk.CTkFrame):
         self.frame_metrik_logger.grid_columnconfigure(1, weight=1)
         self.frame_metrik_logger.grid_columnconfigure(2, weight=1)
 
-        # REVISI: Teks metrik diubah sesuai permintaan
         ctk.CTkLabel(self.frame_metrik_logger, text="TERAKHIR DI SCRAPING", font=ctk.CTkFont(size=12, weight="bold"), text_color=COLOR_TEXT_SECONDARY).grid(row=0, column=0, sticky="w", padx=10)
         ctk.CTkLabel(self.frame_metrik_logger, text="24 Mei 2026", font=ctk.CTkFont(size=20, weight="bold"), text_color=COLOR_TEXT_PRIMARY).grid(row=1, column=0, sticky="w", padx=10)
 
@@ -142,28 +137,22 @@ class SettingsViewModern(ctk.CTkFrame):
         ctk.CTkLabel(self.frame_metrik_logger, text="STATUS SCRAPING", font=ctk.CTkFont(size=12, weight="bold"), text_color=COLOR_TEXT_SECONDARY).grid(row=0, column=2, sticky="w", padx=10)
         ctk.CTkLabel(self.frame_metrik_logger, text="Berhasil", font=ctk.CTkFont(size=20, weight="bold"), text_color="#2ecc71").grid(row=1, column=2, sticky="w", padx=10)
 
-        # Kategori 3: Security & Access
-        self.card_security = ctk.CTkFrame(self, fg_color=COLOR_BG_CARD, corner_radius=16)
-        self.card_security.pack(fill="x", pady=(0, 30), ipadx=10, ipady=10)
-        self.card_security.grid_columnconfigure(0, weight=1)
-
-        self.lbl_security_title = ctk.CTkLabel(self.card_security, text="Security & Access", font=ctk.CTkFont(size=16, weight="bold"), text_color=("#991b1b", "#ef4444"))
-        self.lbl_security_title.grid(row=0, column=0, sticky="w", padx=20, pady=(10, 5))
-        self.lbl_security_desc = ctk.CTkLabel(self.card_security, text="Protect your account data or permanently deactivate your intelligence license.", font=ctk.CTkFont(size=14), text_color=("#b91c1c", "#f87171"))
-        self.lbl_security_desc.grid(row=1, column=0, sticky="w", padx=20, pady=(0, 10))
+        # Tombol Log Out (Bagian Bawah Kanan)
+        self.frame_logout = ctk.CTkFrame(self, fg_color="transparent")
+        self.frame_logout.pack(fill="x", pady=(10, 20))
 
         self.btn_logout_referensi = ctk.CTkButton(
-            self.card_security, 
-            text="Sign out from all devices ➔", 
+            self.frame_logout, 
+            text="Log Out ➔", 
             command=self.logout, 
             corner_radius=10, 
             fg_color="transparent", 
             text_color=("#991b1b", "#ef4444"),
             hover_color=("#fecdd3", "#7f1d1d"),
-            font=ctk.CTkFont(size=14, weight="bold"),
-            anchor="e"
+            font=ctk.CTkFont(size=16, weight="bold")
         )
-        self.btn_logout_referensi.grid(row=0, column=1, rowspan=2, padx=20, sticky="ne", pady=15)
+        # pack(side="right") akan menempatkannya tepat di pojok kanan bawah
+        self.btn_logout_referensi.pack(side="right", padx=25)
 
     def ubah_tema(self, mode_text):
         if "Dark" in mode_text:
@@ -173,7 +162,7 @@ class SettingsViewModern(ctk.CTkFrame):
         ctk.set_appearance_mode(mode)
 
     def logout(self):
-        konfirmasi = messagebox.askyesno("Konfirmasi", "Anda yakin ingin keluar dari semua perangkat?")
+        konfirmasi = messagebox.askyesno("Konfirmasi", "Anda yakin ingin keluar dari aplikasi?")
         if konfirmasi:
             print("[UI Info] User berhasil Log Out.")
 
