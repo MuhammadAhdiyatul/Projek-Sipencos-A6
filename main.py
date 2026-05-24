@@ -10,6 +10,7 @@ from backend import BackendManager
 from search_page import SearchPage
 import session
 from login_ui import LoginPage
+from history import HistoryPage, add_history
 import database
 import tkinter.messagebox as messagebox
 
@@ -1964,10 +1965,7 @@ class AnalyticsPage(ctk.CTkFrame):
         # Kept the page centered and sized to the rendered chart.
 
 
-class HistoryPage(PlaceholderPage):
-    def __init__(self, parent, *args, **kwargs):
-        current_user = kwargs.pop("current_user", None)
-        super().__init__(parent, "🕘 History", "Fitur History belum tersedia\n\nComing soon...", current_user=current_user, *args, **kwargs)
+
 
 
 class SettingsPage(PlaceholderPage):
@@ -2283,6 +2281,11 @@ class App(ctk.CTk):
         frame.tkraise()
 
     def search_items(self, keyword):
+        if keyword:
+            username = session.current_session.get_username()
+            if username and str(username).lower() != "guest":
+                add_history(username, keyword, "Pencarian")
+
         if not keyword:
             return self.kos_data
         return self.controller.search_for_ui(keyword)
@@ -2359,6 +2362,12 @@ class App(ctk.CTk):
             return
 
         self.detail_item = kos_item
+        
+        username = session.current_session.get_username()
+        if username and str(username).lower() != "guest":
+            name = kos_item.get("nama") or kos_item.get("keyword") or "Detail Kos"
+            add_history(username, name, "DETAIL", kos_item)
+
         self.show_frame("detail")
         
     def go_back_from_detail(self):
