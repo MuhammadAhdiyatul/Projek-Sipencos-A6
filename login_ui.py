@@ -3,22 +3,27 @@ from auth import verify_login, register_user
 import session
 
 class AuthWindow(ctk.CTk): 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, on_success_callback=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         
+        self.on_success_callback = on_success_callback
         self.title("Autentikasi SiPencos")
-        self.geometry("400x500")
+        
+        w, h = 400, 500
+        screen_w = self.winfo_screenwidth()
+        screen_h = self.winfo_screenheight()
+        pos_x = (screen_w // 2) - (w // 2)
+        pos_y = (screen_h // 2) - (h // 2)
+        self.geometry(f"{w}x{h}+{pos_x}+{pos_y}")
+        
         self.resizable(False, False)
         
-        # Inisialisasi Frame (keduanya diletakkan di dalam popup ini)
         self.login_frame = ctk.CTkFrame(self, fg_color="transparent")
         self.register_frame = ctk.CTkFrame(self, fg_color="transparent")
         
-        # Setup isi masing-masing frame
         self._setup_login_frame()
         self._setup_register_frame()
         
-        # Tampilkan frame login saat popup pertama kali dibuka
         self.show_login_frame()
         self._close_job = None
 
