@@ -412,17 +412,21 @@ class KosCard(ctk.CTkFrame):
         nama_kos = _truncate_text(data_kos.get("nama_kos"), 48, "Nama kos tidak tersedia")
         alamat = _truncate_text(data_kos.get("alamat"), 72, "Lokasi belum tersedia")
         harga = _format_price(data_kos.get("harga"))
+        
         tipe = _safe_text(data_kos.get("tipe"), "PUTRA").upper()
-        if "CAMPUR" in tipe:
+        if "CAMPUR" in tipe or "SEMUA" in tipe:
             badge_text = "CAMPUR"
+            badge_bg = "#e67e22"  
         elif "PUTRI" in tipe:
             badge_text = "PUTRI"
+            badge_bg = "#ff9ff3"  
         else:
             badge_text = "PUTRA"
+            badge_bg = "#3498db"  
+
         fasilitas_ringkas = _to_facility_text(data_kos.get("fasilitas_kamar"))
         foto_list = _normalize_foto(data_kos.get("foto"))
 
-        # Top image area placeholder
         image_box = ctk.CTkFrame(
             self,
             fg_color=IMAGE_BG,
@@ -432,40 +436,9 @@ class KosCard(ctk.CTkFrame):
         )
         image_box.grid(row=0, column=0, sticky="ew", padx=10, pady=(10, 8))
         image_box.grid_propagate(False)
+        
+        image_box.grid_rowconfigure(0, weight=1)
         image_box.grid_columnconfigure(0, weight=1)
-
-        overlay = ctk.CTkFrame(image_box, fg_color="transparent")
-        overlay.grid(row=0, column=0, sticky="ew", padx=10, pady=10)
-        overlay.grid_columnconfigure(0, weight=1)
-
-        badge = ctk.CTkLabel(
-            overlay,
-            text=badge_text,
-            fg_color=ACCENT_COLOR,
-            text_color="white",
-            corner_radius=8,
-            font=("Arial", 11, "bold"),
-            width=56,
-            height=24,
-        )
-        badge.grid(row=0, column=0, sticky="w")
-
-        # Tombol Favorit (Aman & Terkoneksi)
-        favorite_btn = ctk.CTkButton(
-            overlay,
-            text="❤️" if is_favorite else "♡",
-            width=30,
-            height=30,
-            corner_radius=999,
-            fg_color=CARD_BG,
-            text_color=PRIMARY_COLOR,
-            hover_color="#EEF2F7",
-            border_width=1,
-            border_color=BORDER_COLOR,
-            font=("Arial", 14, "bold"),
-            command=lambda: self.favorites_callback(self.data_kos) if self.favorites_callback else print("[DEBUG] No favorites callback"),
-        )
-        favorite_btn.grid(row=0, column=1, sticky="e")
 
         self.image_label = ctk.CTkLabel(
             image_box,
@@ -473,14 +446,48 @@ class KosCard(ctk.CTkFrame):
             font=("Arial", 12),
             text_color=TEXT_SUBTLE,
         )
-        self.image_label.grid(row=1, column=0, pady=(24, 0))
+        self.image_label.grid(row=0, column=0, sticky="nsew")
+
+        floating_overlay = ctk.CTkFrame(image_box, fg_color="transparent", border_width=0)
+        floating_overlay.grid(row=0, column=0, sticky="nwe", padx=10, pady=10) 
+        
+        floating_overlay.grid_rowconfigure(0, weight=0)
+        floating_overlay.grid_columnconfigure(0, weight=1)
+        floating_overlay.grid_columnconfigure(1, weight=0)
+
+        badge = ctk.CTkLabel(
+            floating_overlay,
+            text=badge_text,
+            fg_color=badge_bg,
+            text_color="white",
+            corner_radius=6,
+            font=("Arial", 10, "bold"),
+            width=50,
+            height=24,
+        )
+        badge.grid(row=0, column=0, sticky="w")
+
+        favorite_btn = ctk.CTkButton(
+            floating_overlay,
+            text="❤️" if is_favorite else "♡",
+            width=24,
+            height=24,
+            corner_radius=6,
+            fg_color="white",
+            text_color="#1A365D",
+            hover_color="#F0F4F8",
+            border_width=0,
+            font=("Arial", 12, "bold"),
+            command=lambda: self.favorites_callback(self.data_kos) if self.favorites_callback else None,
+        )
+        favorite_btn.grid(row=0, column=1, sticky="e")
 
         def on_image_loaded(thumbnail):
             try:
                 if thumbnail:
                     self.image_label.configure(text="", image=thumbnail)
                     self.image_label.image = thumbnail
-                    self.image_label.grid(row=0, column=0, rowspan=2, sticky="nsew", pady=0)
+                    floating_overlay.lift()
                 else:
                     self.image_label.configure(text="No Image")
             except Exception:
@@ -554,8 +561,8 @@ class KosCard(ctk.CTkFrame):
         btn_detail = ctk.CTkButton(
             content,
             text="Lihat Detail",
-            fg_color=PRIMARY_COLOR,
-            hover_color="#013A62",
+            fg_color="#D35400",   
+            hover_color="#A04000",
             text_color="white",
             corner_radius=10,
             height=38,
