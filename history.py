@@ -9,8 +9,11 @@ HISTORY_FILE = "history.json"
 # 1. LOGIKA BACKEND (MANAJEMEN DATA)
 
 def _load_history():
-    """Membaca isi file history.json"""
+    """Membaca file, atau membuat file baru otomatis jika belum ada"""
     if not os.path.exists(HISTORY_FILE):
+        # Otomatis buat file kosong jika belum ada
+        with open(HISTORY_FILE, "w") as f:
+            json.dump({}, f)
         return {}
     try:
         with open(HISTORY_FILE, "r") as f:
