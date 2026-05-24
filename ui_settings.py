@@ -85,7 +85,7 @@ class SettingsViewModern(ctk.CTkFrame):
         
         ctk.CTkLabel(self.profile_panel, text="👤", font=ctk.CTkFont(size=24), text_color=COLOR_ACCENT_ORANGE).pack(side="left", padx=10)
         # REVISI: Mengubah email menjadi username
-        ctk.CTkLabel(self.profile_panel, text="Username\n@gmail.com", justify="left", font=ctk.CTkFont(size=14, weight="normal"), text_color=COLOR_TEXT_SECONDARY).pack(side="left", padx=10)
+        ctk.CTkLabel(self.profile_panel, text="Username", justify="left", font=ctk.CTkFont(size=14, weight="normal"), text_color=COLOR_TEXT_SECONDARY).pack(side="left", padx=10)
         # REVISI: Tombol Edit Profil dan badge premium sudah dihapus dari sini
 
         # Kategori 1: Aplikasi & Antarmuka (Notifikasi Dihapus)
