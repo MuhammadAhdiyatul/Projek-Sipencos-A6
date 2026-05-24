@@ -1643,20 +1643,61 @@ class DetailPage(ctk.CTkFrame):
         self.name_label.configure(text=title)
         self.address_label.configure(text=alamat)
         self.price_label.configure(text=harga)
-        self.badge_label.configure(text=badge)
         self.updated_label.configure(text=last_updated)
+        
         self.desc_box.configure(state="normal")
         self.desc_box.delete("0.0", "end")
         self.desc_box.insert("0.0", deskripsi)
         self.desc_box.configure(state="disabled")
-        self.contact_value.configure(text=telepon)
-        self.btn_fav.configure(text="Hapus Favorit" if is_favorite else "Simpan Favorit")
-        self.btn_compare.configure(text="Hapus Bandingkan" if is_compared else "Bandingkan")
+        
+        self.btn_contact.configure(text=f"📞 {telepon}")
+        
+        if is_favorite:
+            self.btn_fav.configure(
+                text="❤️ Hapus Favorit", 
+                fg_color="#A51D24",
+                hover_color="#7A151A"
+            )
+        else:
+            self.btn_fav.configure(
+                text="❤️ Simpan Favorit", 
+                fg_color="#C53030",
+                hover_color="#9B2C2C"
+            )
+            
+        if is_compared:
+            self.btn_compare.configure(
+                text="⇌ Hapus Bandingkan", 
+                fg_color="#1A4F8B",
+                hover_color="#123864"
+            )
+        else:
+            self.btn_compare.configure(
+                text="⇌ Bandingkan", 
+                fg_color="#2B6CB0",
+                hover_color="#2C5282"
+            )
 
         self._fasilitas_kamar_label.configure(text=", ".join(fasilitas_kamar) if fasilitas_kamar else "Informasi tidak tersedia")
         self._fasilitas_bersama_label.configure(text=", ".join(fasilitas_bersama) if fasilitas_bersama else "Informasi tidak tersedia")
 
-        self.photo_label.configure(text="Memuat gambar...", image=None)
+        foto_list = _normalize_foto(kos_item.get("foto") or [])
+
+        def on_detail_image_loaded(thumbnail):
+            try:
+                if thumbnail:
+                    self.photo_label.configure(text="", image=thumbnail)
+                    self.photo_label.image = thumbnail
+                else:
+                    self.photo_label.configure(text="Gambar tidak tersedia", image=None)
+            except Exception:
+                self.photo_label.configure(text="Gagal memuat gambar", image=None)
+
+        if foto_list:
+            self.photo_label.configure(text="Memuat foto...", image=None)
+            _load_remote_image_async(foto_list[0], (300, 200), self, on_detail_image_loaded)
+        else:
+            self.photo_label.configure(text="Tidak ada foto", image=None)
 
         def on_preview_loaded(preview_image):
             try:
@@ -2179,7 +2220,11 @@ class App(ctk.CTk):
 
         self.active_frame = frame_name
         self.active_menu = frame_name
-        self._update_menu_highlight(frame_name)
+        
+        try:
+            self._update_menu_highlight(frame_name)
+        except Exception as e:
+            print(f"[Debug Navigasi] Gagal update highlight: {e}")
 
         if frame_name == "search":
             self.frames["search"].favorites = self.favorites
