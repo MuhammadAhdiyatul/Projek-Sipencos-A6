@@ -40,6 +40,8 @@ except Exception:
 def _format_price(value):
     if isinstance(value, (int, float)):
         nominal = int(value)
+        if nominal == 0:
+            return "Harga belum tersedia"
         return f"Rp {nominal:,}".replace(",", ".")
 
     if isinstance(value, str):
@@ -171,12 +173,32 @@ def _load_remote_image_async(url, size, widget, callback):
         try:
             image = _load_remote_image(url, size)
             try:
-                widget.after(0, lambda: callback(image))
+                # Check if widget exists before scheduling UI update
+                if widget.winfo_exists():
+                    target = widget.winfo_toplevel() if widget.winfo_toplevel().winfo_exists() else widget
+
+                    def deliver_image():
+                        if widget.winfo_exists():
+                            callback(image)
+
+                    job_id = target.after(0, deliver_image)
+                    if hasattr(target, "_pending_callbacks"):
+                        target._pending_callbacks.append(job_id)
             except Exception:
                 pass
         except Exception:
             try:
-                widget.after(0, lambda: callback(None))
+                # Check if widget exists before scheduling UI update
+                if widget.winfo_exists():
+                    target = widget.winfo_toplevel() if widget.winfo_toplevel().winfo_exists() else widget
+
+                    def deliver_failure():
+                        if widget.winfo_exists():
+                            callback(None)
+
+                    job_id = target.after(0, deliver_failure)
+                    if hasattr(target, "_pending_callbacks"):
+                        target._pending_callbacks.append(job_id)
             except Exception:
                 pass
 
@@ -192,8 +214,14 @@ class DetailWindow(ctk.CTkToplevel):
         super().__init__(parent, *args, **kwargs)
 
         self.transient(parent)
-        self.after(10, self.grab_set) 
+        grab_job = self.after(10, self.grab_set)
 
+        self._pending_callbacks = []
+        self._window_closing = False
+        self._pending_callbacks.append(grab_job)
+
+        # Register window close handler
+        self.protocol("WM_DELETE_WINDOW", self._on_closing)
         nama = _safe_text(data_kos.get("nama_kos"), "Kos")
         harga = _format_price(data_kos.get("harga"))
         alamat = _safe_text(data_kos.get("alamat"))
@@ -246,6 +274,9 @@ class DetailWindow(ctk.CTkToplevel):
                     self.preview_label.image = preview_image
                     self.preview_label.pack(fill="both", expand=True)
                 else:
+                    # Check if window still exists before updating UI
+                    if not self.winfo_exists():
+                        return
                     self.preview_label.configure(text="Gambar tidak tersedia")
             except Exception:
                 pass
@@ -255,9 +286,15 @@ class DetailWindow(ctk.CTkToplevel):
         ctk.CTkLabel(left_col, text="Deskripsi Kos", font=("Arial", 18, "bold"), text_color=TITLE_COLOR).pack(anchor="w", pady=(5, 5))
         
         desc_scroll = ctk.CTkTextbox(
-            left_col, font=("Arial", 13), text_color=TITLE_COLOR, 
-            fg_color=CARD_BG, corner_radius=12, height=180, 
-            border_width=1, border_color=BORDER_COLOR, wrap="word"
+            left_col,
+            font=("Arial", 13),
+            text_color=TITLE_COLOR,
+            fg_color=CARD_BG,
+            corner_radius=12,
+            height=180,
+            border_width=1,
+            border_color=BORDER_COLOR,
+            wrap="word",
         )
         desc_scroll.pack(fill="both", expand=True)
         desc_scroll.insert("0.0", deskripsi)
@@ -373,7 +410,7 @@ class DetailWindow(ctk.CTkToplevel):
             fg_color="#C0392B", hover_color="#962D22",
             text_color="white", width=140, height=42, corner_radius=8,
             font=("Arial", 12, "bold"),
-            command=self.destroy
+            command=self._on_closing
         )
         self.btn_tutup.pack(expand=True)
 
@@ -390,6 +427,17 @@ class DetailWindow(ctk.CTkToplevel):
         self.bind("<Prior>", lambda e: _force_scroll(direction=-1, unit="pages")) 
         self.bind("<Next>", lambda e: _force_scroll(direction=1, unit="pages"))
         self.focus_set()
+
+    def _on_closing(self):
+        """Handle window close with proper cleanup of pending callbacks."""
+        self._window_closing = True
+        for job_id in self._pending_callbacks:
+            try:
+                self.after_cancel(job_id)
+            except Exception:
+                pass
+        self._pending_callbacks.clear()
+        self.destroy()
 
     def _build_facility_chips(self, master, title, items):
         ctk.CTkLabel(master, text=title.upper(), font=("Arial", 10, "bold"), text_color=TEXT_SUBTLE).pack(anchor="w", pady=(5, 2))
@@ -448,12 +496,10 @@ class KosCard(ctk.CTkFrame):
         image_box.grid_propagate(False)
         image_box.grid_columnconfigure(0, weight=1)
 
-        overlay = ctk.CTkFrame(image_box, fg_color="transparent")
-        overlay.grid(row=0, column=0, sticky="ew", padx=10, pady=10)
-        overlay.grid_columnconfigure(0, weight=1)
+
 
         badge = ctk.CTkLabel(
-            overlay,
+            image_box,
             text=badge_text,
             fg_color=ACCENT_COLOR,
             text_color="white",
@@ -462,24 +508,24 @@ class KosCard(ctk.CTkFrame):
             width=56,
             height=24,
         )
-        badge.grid(row=0, column=0, sticky="w")
+        badge.place(x=10, y=10)
 
         # Tombol Favorit (Aman & Terkoneksi)
-        favorite_btn = ctk.CTkButton(
-            overlay,
+        self.favorite_btn = ctk.CTkButton(
+            image_box,
             text="❤️" if is_favorite else "♡",
             width=30,
             height=30,
             corner_radius=999,
             fg_color=CARD_BG,
-            text_color=PRIMARY_COLOR,
-            hover_color="#EEF2F7",
+            hover_color=APP_BG,
+            text_color="#EF4444" if is_favorite else TEXT_SUBTLE,
             border_width=1,
             border_color=BORDER_COLOR,
             font=("Arial", 14, "bold"),
-            command=lambda: self.favorites_callback(self.data_kos) if self.favorites_callback else print("[DEBUG] No favorites callback"),
+            command=self._on_favorite_click,
         )
-        favorite_btn.grid(row=0, column=1, sticky="e")
+        self.favorite_btn.place(relx=1.0, x=-10, y=10, anchor="ne")
 
         self.image_label = ctk.CTkLabel(
             image_box,
@@ -495,6 +541,8 @@ class KosCard(ctk.CTkFrame):
                     self.image_label.configure(text="", image=thumbnail)
                     self.image_label.image = thumbnail
                     self.image_label.grid(row=0, column=0, rowspan=2, sticky="nsew", pady=0)
+                    badge.tkraise()
+                    self.favorite_btn.tkraise()
                 else:
                     self.image_label.configure(text="No Image")
             except Exception:
@@ -577,3 +625,15 @@ class KosCard(ctk.CTkFrame):
             command=lambda: open_detail_callback(self.data_kos) if open_detail_callback else (DetailWindow(self, self.data_kos) if DetailWindow else print("[DEBUG] DetailWindow class not imported")),
         )
         btn_detail.grid(row=4, column=0, sticky="ew", pady=(4, 0))
+
+    def _on_image_click(self, event=None):
+        if self.detail_callback:
+            self.detail_callback(self.data_kos)
+
+    def _on_favorite_click(self):
+        if self.favorites_callback:
+            added = self.favorites_callback(self.data_kos)
+            if added is True:
+                self.favorite_btn.configure(text="❤️", text_color="#EF4444")
+            elif added is False:
+                self.favorite_btn.configure(text="♡", text_color=TEXT_SUBTLE)

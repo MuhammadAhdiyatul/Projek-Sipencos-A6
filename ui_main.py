@@ -76,6 +76,13 @@ class App(ctk.CTk):
         # Layout split: fixed sidebar + fluid content area
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=1)
+        
+        # Initialize window close tracking
+        self._pending_callbacks = []
+        self._window_closing = False
+
+        # Register window close handler for proper cleanup
+        self.protocol("WM_DELETE_WINDOW", self._on_closing)
 
         # Build UI structure
         self.setup_sidebar()
@@ -180,9 +187,12 @@ class App(ctk.CTk):
             # getattr dipakai agar tidak error jika session belum punya atribut is_logged_in
             if not getattr(session, 'is_logged_in', False):
                 # Jika belum login, buka window baru dan batalkan proses pindah halaman
-                login_win = AuthWindow()
-                login_win.mainloop()
-                return 
+                login_win = AuthWindow(self)
+                self.wait_window(login_win)
+                
+                if not getattr(session, 'is_logged_in', False):
+                    # Batal login
+                    return 
         # -----------------------------------------
 
         self.active_menu = page_name
@@ -243,6 +253,24 @@ class App(ctk.CTk):
         self.main_frame.grid_rowconfigure(4, weight=1)
         self.main_frame.grid_columnconfigure(0, weight=1)
 
+    def _on_closing(self):
+        """Handle window close event with proper cleanup of callbacks."""
+        self._window_closing = True
+        # Cancel all pending after() callbacks from threading_handler
+        if hasattr(self, 'thread_handler') and hasattr(self.thread_handler, 'cancel_all_pending'):
+            try:
+                self.thread_handler.cancel_all_pending()
+            except Exception:
+                pass
+        # Cancel any other pending callbacks managed by App
+        for job_id in self._pending_callbacks:
+            try:
+                self.after_cancel(job_id)
+            except Exception:
+                pass
+        self._pending_callbacks.clear()
+        # Destroy window
+        self.destroy()
 
     def render_search_page(self):
         """Render the search page with hero section and results grid."""
@@ -593,10 +621,16 @@ class App(ctk.CTk):
                 ctk_img = ctk.CTkImage(light_image=pil_image, dark_image=pil_image, size=size)
 
                 def apply_image():
+                    # Check if window is still open and label exists before updating
+                    if not self.winfo_exists() or not label.winfo_exists():
+                        return
                     label.configure(image=ctk_img, text="")
                     label.image = ctk_img
 
-                self.after(0, apply_image)
+                # Only schedule callback if window still exists
+                if self.winfo_exists():
+                    job_id = self.after(0, apply_image)
+                    self._pending_callbacks.append(job_id)
             except Exception:
                 pass
 

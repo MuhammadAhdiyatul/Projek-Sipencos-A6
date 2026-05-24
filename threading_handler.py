@@ -12,6 +12,7 @@ class ThreadingHandler:
         self._polling_active = False
         self._active_workers = 0
         self._lock = threading.Lock()
+        self._pending_callbacks = []
 
     def run_task(self, task_func, on_success=None, on_error=None):
         if not callable(task_func):
@@ -44,9 +45,15 @@ class ThreadingHandler:
             return
 
         self._polling_active = True
-        self.ui_root.after(self.poll_interval_ms, self._poll_results)
+        job_id = self.ui_root.after(self.poll_interval_ms, self._poll_results)
+        self._pending_callbacks.append(job_id)
 
     def _poll_results(self):
+        # Check if root window still exists
+        if not self.ui_root.winfo_exists():
+            self._polling_active = False
+            return
+
         while True:
             try:
                 status, payload, callback = self._result_queue.get_nowait()
@@ -57,7 +64,8 @@ class ThreadingHandler:
                 continue
 
             try:
-                callback(payload)
+                if self.ui_root.winfo_exists():
+                    callback(payload)
             except Exception:
                 traceback.print_exc()
 
@@ -65,7 +73,19 @@ class ThreadingHandler:
             still_running = self._active_workers > 0
 
         if still_running or not self._result_queue.empty():
-            self.ui_root.after(self.poll_interval_ms, self._poll_results)
+            # Check if window still exists before scheduling another poll
+            if self.ui_root.winfo_exists():
+                job_id = self.ui_root.after(self.poll_interval_ms, self._poll_results)
+                self._pending_callbacks.append(job_id)
             return
 
         self._polling_active = False
+
+    def cancel_all_pending(self):
+        """Cancel all pending after() callbacks. Called on window close."""
+        for job_id in self._pending_callbacks:
+            try:
+                self.ui_root.after_cancel(job_id)
+            except Exception:
+                pass
+        self._pending_callbacks.clear()

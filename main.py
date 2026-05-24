@@ -1,4 +1,4 @@
-﻿import json
+import json
 import os
 import re
 import requests
@@ -9,7 +9,10 @@ from ui_components import KosCard, _load_remote_image_async, _normalize_foto
 from backend import BackendManager
 from search_page import SearchPage
 import session
-from login_ui import AuthWindow
+from login_ui import LoginPage
+import database
+import tkinter.messagebox as messagebox
+
 
 try:
     from PIL import Image
@@ -172,7 +175,23 @@ class IntegrationController:
             ).lower()
             wifi = "wifi" in gabung_fasilitas
 
-        deskripsi = raw.get("deskripsi") or raw.get("alamat") or "-"
+        deskripsi = raw.get("deskripsi")
+        if not deskripsi:
+            deskripsi = f"Fasilitas lengkap dan strategis di {lokasi}."
+            
+        gabungan = (nama + " " + deskripsi).lower()
+        if "putri" in gabungan and "putra" in gabungan:
+            tipe_default = "Campur"
+        elif "putri" in gabungan or "cewek" in gabungan or "wanita" in gabungan:
+            tipe_default = "Putri"
+        elif "putra" in gabungan or "cowok" in gabungan or "pria" in gabungan:
+            tipe_default = "Putra"
+        else:
+            tipe_default = "Campur"
+            
+        tipe = raw.get("tipe")
+        if not tipe:
+            tipe = tipe_default
 
         return {
             "id": item_id,
@@ -182,7 +201,7 @@ class IntegrationController:
             "wifi": wifi,
             "deskripsi": deskripsi,
             "telepon": raw.get("telepon", raw.get("nomor_telepon", "-")),
-            "tipe": raw.get("tipe", ""),
+            "tipe": tipe,
             "fasilitas_kamar": fasilitas_kamar if isinstance(fasilitas_kamar, list) else ["-"],
             "fasilitas_bersama": fasilitas_bersama if isinstance(fasilitas_bersama, list) else ["-"],
             "foto": self._normalize_foto(raw.get("foto", [])),
@@ -198,8 +217,8 @@ class IntegrationController:
             "deskripsi": item.get("deskripsi", "-"),
             "nama_kos": item.get("nama", "Kos Tanpa Nama"),
             "alamat": item.get("lokasi", "Bandung"),
+            "tipe": item.get("tipe", "Campur"),
             "telepon": item.get("telepon", "-"),
-            "tipe": item.get("tipe", ""),
             "fasilitas_kamar": item.get("fasilitas_kamar", ["-"]),
             "fasilitas_bersama": item.get("fasilitas_bersama", ["-"]),
             "foto": item.get("foto", []),
@@ -412,6 +431,9 @@ class FavoritesPage(ctk.CTkFrame):
         self.list_container.grid_columnconfigure(0, weight=1)
 
     def refresh(self, favorites, compare_list):
+        # Perbarui label user
+        self.user_label.configure(text=f"Session aktif: {_display_name(self.current_user)}")
+
         for widget in self.list_container.winfo_children():
             widget.destroy()
 
@@ -737,8 +759,9 @@ class ComparePage(ctk.CTkFrame):
         }
 
 
-    def refresh(self, compare_list):
+    def refresh(self, compare_list, favorites_list=None):
         self.compare_list = (compare_list or [])[:3]
+        self.favorites_list = favorites_list or []
         for widget in self.winfo_children():
             widget.destroy()
 
@@ -1081,57 +1104,75 @@ class ComparePage(ctk.CTkFrame):
 
         label = ctk.CTkLabel(
             row,
-            text="Fasilitas Utama",
+            text="Semua Fasilitas",
             font=("Arial", 12, "bold"),
             text_color=NAVY,
-            anchor="w",
+            anchor="nw",
             width=190,
         )
-        label.pack(side="left", padx=16, pady=16)
+        label.pack(side="left", padx=16, pady=16, anchor="nw")
 
         for item in self.compare_list:
             cell = ctk.CTkFrame(row, fg_color="transparent")
             cell.pack(side="left", fill="both", expand=True, padx=8, pady=16)
 
-            for facility in ["WiFi", "AC", "KM Dalam", "Parkir", "Air Panas"]:
-                available = self._facility_available(item, facility)
+            fk = item.get("fasilitas_kamar", [])
+            fb = item.get("fasilitas_bersama", [])
+            all_fasilitas = []
+            if isinstance(fk, list): all_fasilitas.extend(fk)
+            if isinstance(fb, list): all_fasilitas.extend(fb)
+            
+            clean_fasilitas = []
+            for f in all_fasilitas:
+                f_clean = str(f).strip()
+                if f_clean and f_clean != "-" and f_clean not in clean_fasilitas:
+                    clean_fasilitas.append(f_clean)
+            
+            if not clean_fasilitas:
+                clean_fasilitas = ["-"]
+
+            for facility in clean_fasilitas:
                 facility_row = ctk.CTkFrame(cell, fg_color="transparent")
-                facility_row.pack(fill="x", pady=4)
+                facility_row.pack(fill="x", pady=2)
+
+                bullet = ctk.CTkLabel(
+                    facility_row,
+                    text="• ",
+                    font=("Arial", 14, "bold"),
+                    text_color="#16A34A",
+                    anchor="nw",
+                    width=15,
+                )
+                bullet.pack(side="left", anchor="nw")
 
                 name = ctk.CTkLabel(
                     facility_row,
                     text=facility,
-                    font=("Arial", 10),
+                    font=("Arial", 11),
                     text_color=self.section_style["muted"],
                     anchor="w",
-                    width=120,
+                    wraplength=180,
+                    justify="left"
                 )
-                name.pack(side="left")
-
-                status = ctk.CTkLabel(
-                    facility_row,
-                    text="✓" if available else "✕",
-                    font=("Arial", 10, "bold"),
-                    text_color="#16A34A" if available else "#DC2626",
-                )
-                status.pack(side="right")
+                name.pack(side="left", fill="x", expand=True)
 
     def _create_action_button_section(self, master):
         row = ctk.CTkFrame(master, fg_color="transparent")
         row.pack(fill="x", pady=20, padx=0)
 
-        for item in self.compare_list:
+        items = self.compare_list
+        for i, item in enumerate(items):
             cell = ctk.CTkFrame(row, fg_color="transparent")
             cell.pack(side="left", fill="both", expand=True, padx=10)
 
             detail_btn = ctk.CTkButton(
                 cell,
-                text="Lihat Detail",
-                fg_color=PRIMARY_COLOR,
-                hover_color="#013A62",
-                text_color="white",
-                border_color=PRIMARY_COLOR,
-                border_width=0,
+                text="Lihat Detail Kos",
+                fg_color="transparent",
+                hover_color="#E5E7EB",
+                text_color=NAVY,
+                border_width=1,
+                border_color=BORDER,
                 corner_radius=10,
                 height=42,
                 font=("Arial", 11, "bold"),
@@ -1139,12 +1180,20 @@ class ComparePage(ctk.CTkFrame):
             )
             detail_btn.pack(fill="x", pady=(0, 10))
 
+            is_fav = False
+            if hasattr(self, 'favorites_list'):
+                def _item_key_safe(k):
+                    nama = str(k.get("nama_kos") or k.get("nama") or "").strip().lower()
+                    alamat = str(k.get("alamat") or k.get("lokasi") or "").strip().lower()
+                    return f"{nama}_{alamat}"
+                is_fav = any(_item_key_safe(f) == _item_key_safe(item) for f in self.favorites_list)
+
             fav_btn = ctk.CTkButton(
                 cell,
-                text="♥ Simpan Favorit",
-                fg_color=ORANGE,
-                hover_color="#B45E24",
-                text_color="white",
+                text="❤️ Tersimpan" if is_fav else "❤️ Simpan Favorit",
+                fg_color="#F3F4F6" if is_fav else ORANGE,
+                hover_color="#E5E7EB" if is_fav else "#B45E24",
+                text_color=ORANGE if is_fav else "white",
                 corner_radius=10,
                 height=42,
                 font=("Arial", 11, "bold"),
@@ -1706,13 +1755,13 @@ class PlaceholderPage(ctk.CTkFrame):
         )
         title_label.grid(row=0, column=0, pady=(0, 16))
 
-        user_label = ctk.CTkLabel(
+        self.user_label = ctk.CTkLabel(
             container,
             text=f"Akun aktif: {_display_name(self.current_user)}",
             font=("Arial", 12),
             text_color=TEXT_SUBTLE,
         )
-        user_label.grid(row=1, column=0, pady=(0, 10))
+        self.user_label.grid(row=1, column=0, pady=(0, 10))
 
         message_label = ctk.CTkLabel(
             container,
@@ -1724,7 +1773,8 @@ class PlaceholderPage(ctk.CTkFrame):
 
     def refresh(self, *args, **kwargs):
         """Placeholder refresh method."""
-        pass
+        if hasattr(self, "user_label"):
+            self.user_label.configure(text=f"Akun aktif: {_display_name(self.current_user)}")
 
 
 class AnalyticsPage(ctk.CTkFrame):
@@ -1759,10 +1809,9 @@ class AnalyticsPage(ctk.CTkFrame):
         )
         subtitle_label.grid(row=1, column=0, sticky="w", pady=(4, 0))
 
-        # ── Content area (non-scrollable) ───────────────────
-        self.content_frame = ctk.CTkFrame(self, fg_color=BG, corner_radius=0, border_width=0)
+        # ── Content area (scrollable) ───────────────────
+        self.content_frame = ctk.CTkScrollableFrame(self, fg_color=BG, corner_radius=0, border_width=0)
         self.content_frame.grid(row=1, column=0, sticky="nsew")
-        self.content_frame.grid_rowconfigure(0, weight=1)
         self.content_frame.grid_columnconfigure(0, weight=1)
 
         self._canvas_widget = None
@@ -1780,6 +1829,9 @@ class AnalyticsPage(ctk.CTkFrame):
 
     def _render_charts(self):
         """Generate analytics PNG and embed it as a scaled image."""
+        for child in self.content_frame.winfo_children():
+            child.destroy()
+
         try:
             import matplotlib.pyplot as plt
         except ImportError as e:
@@ -1857,10 +1909,10 @@ class AnalyticsPage(ctk.CTkFrame):
         except Exception:
             view_w, view_h = 1400, 860
 
-        max_width = max(720, min(int(view_w * 0.82), 1100))
-        max_height = max(460, min(int(view_h * 0.58), 620))
+        max_width = int(view_w * 1.3)
+        max_height = int(view_h * 1.3)
 
-        ratio = min(max_width / float(pil_image.width), max_height / float(pil_image.height), 1.0)
+        ratio = min(max_width / float(pil_image.width), max_height / float(pil_image.height))
         new_size = (int(pil_image.width * ratio), int(pil_image.height * ratio))
         if new_size != pil_image.size:
             pil_image = pil_image.resize(new_size, Image.LANCZOS)
@@ -1877,20 +1929,15 @@ class AnalyticsPage(ctk.CTkFrame):
         except Exception:
             ImageTk = None
 
-        shell_w = pil_image.width + 20
-        shell_h = pil_image.height + 20
         shell = ctk.CTkFrame(
             self.content_frame,
             fg_color=CARD_BG,
             corner_radius=18,
             border_width=1,
             border_color=BORDER,
-            width=shell_w,
-            height=shell_h,
         )
-        shell.place(relx=0.5, rely=0.5, anchor="center")
+        shell.pack(pady=20, padx=20)
         shell.grid_columnconfigure(0, weight=1)
-        shell.grid_propagate(False)
 
         if tk is not None:
             image_box = tk.Canvas(shell, width=pil_image.width, height=pil_image.height, highlightthickness=0, bd=0)
@@ -1914,12 +1961,7 @@ class AnalyticsPage(ctk.CTkFrame):
         self._analytics_image = pil_image
         self._built = True
 
-        # Keep the page centered and sized to the rendered chart.
-        try:
-            shell.update_idletasks()
-            shell.pack_propagate(False)
-        except Exception:
-            pass
+        # Kept the page centered and sized to the rendered chart.
 
 
 class HistoryPage(PlaceholderPage):
@@ -1947,14 +1989,14 @@ class SettingsPage(PlaceholderPage):
         )
         logout_title.grid(row=0, column=0, sticky="w", padx=18, pady=(16, 4))
 
-        logout_info = ctk.CTkLabel(
+        self.logout_info = ctk.CTkLabel(
             logout_card,
             text=f"Login sebagai {_display_name(self.current_user)}",
             font=("Arial", 12),
             text_color=TEXT_SUBTLE,
             anchor="w",
         )
-        logout_info.grid(row=1, column=0, sticky="w", padx=18)
+        self.logout_info.grid(row=1, column=0, sticky="w", padx=18)
 
         logout_button = ctk.CTkButton(
             logout_card,
@@ -1974,7 +2016,10 @@ class SettingsPage(PlaceholderPage):
             self.logout_callback()
 
     def refresh(self, *args, **kwargs):
+        super().refresh(*args, **kwargs)
         self.message_text = "Fitur Settings belum tersedia\n\nComing soon..."
+        if hasattr(self, "logout_info"):
+            self.logout_info.configure(text=f"Login sebagai {_display_name(self.current_user)}")
 
 
 class App(ctk.CTk):
@@ -1992,6 +2037,8 @@ class App(ctk.CTk):
         self.controller = IntegrationController()
         self.kos_data = self.controller.get_all_for_ui()
         self.favorites = []
+        if session.current_session.check_auth():
+            self.favorites = database.get_user_favorites(session.current_session.get_username(), self.kos_data)
         self.compare_list = []
         self.detail_item = None
         self.active_menu = "search"
@@ -2007,6 +2054,7 @@ class App(ctk.CTk):
 
         self.frames = {}
         self.active_frame = "search"
+        self._previous_frame = "search"
         self._build_pages()
         self.show_frame("search")
 
@@ -2042,14 +2090,14 @@ class App(ctk.CTk):
         )
         subtitle.pack(fill="x", pady=(0, 22))
 
-        user_badge = ctk.CTkLabel(
+        self.user_badge = ctk.CTkLabel(
             shell,
             text=f"Welcome, {_display_name(self.current_user)}",
             font=("Arial", 12, "bold"),
             text_color=ACCENT_COLOR,
             anchor="w",
         )
-        user_badge.pack(fill="x", pady=(0, 18))
+        self.user_badge.pack(fill="x", pady=(0, 18))
 
         # Menu buttons container
         self.menu_buttons = {}
@@ -2105,6 +2153,11 @@ class App(ctk.CTk):
                 btn.configure(fg_color="transparent")
 
     def _build_pages(self):
+        self.frames["login"] = LoginPage(
+            self.content_frame,
+            on_login_success=self._on_login_success,
+            fg_color="transparent",
+        )
         self.frames["search"] = SearchPage(
             self.content_frame,
             search_callback=self.search_items,
@@ -2149,7 +2202,7 @@ class App(ctk.CTk):
         )
         self.frames["detail"] = DetailPage(
             self.content_frame,
-            back_callback=lambda: self.show_frame("search"),
+            back_callback=self.go_back_from_detail,
             toggle_favorite=self.toggle_favorite,
             toggle_compare=self.toggle_compare,
             fg_color="transparent",
@@ -2158,19 +2211,44 @@ class App(ctk.CTk):
         for frame in self.frames.values():
             frame.grid(row=0, column=0, sticky="nsew")
 
+    def update_user_display(self):
+        """Memperbarui tulisan nama pengguna pada sidebar."""
+        if hasattr(self, 'user_badge'):
+            self.user_badge.configure(text=f"Welcome, {_display_name(self.current_user)}")
+            
+        # Update references on all pages so refresh() uses the correct user
+        if hasattr(self, 'frames'):
+            for frame in self.frames.values():
+                if hasattr(frame, 'current_user'):
+                    frame.current_user = self.current_user
+
+    def _on_login_success(self):
+        self.current_user = session.current_session.get_current_user()
+        username = session.current_session.get_username()
+        
+        # Sinkronisasi favorit sementara (in-memory) ke DB
+        db_favorites = database.get_user_favorites(username, self.kos_data)
+        for temp_item in self.favorites:
+            if not any(_item_key(x) == _item_key(temp_item) for x in db_favorites):
+                database.add_favorite(username, temp_item)
+                
+        self.favorites = database.get_user_favorites(username, self.kos_data)
+        self.update_user_display()
+        
+        target = getattr(self, "_pending_login_target", "search")
+        self.show_frame(target)
+
     def show_frame(self, frame_name):
         # ─── GERBANG TOL LOGIN SI PENCOS ───
         if frame_name == "favorites":
             if not session.current_session.check_auth():
-                # Panggil window login
-                login_win = AuthWindow()
-                login_win.mainloop()
-                if session.current_session.check_auth():
-                    self.current_user = session.current_session.get_current_user()
-                # Stop eksekusi di sini agar tidak pindah halaman!
-                if not session.current_session.check_auth():
-                    return
+                self._pending_login_target = "favorites"
+                self.show_frame("login")
+                return
         # ───────────────────────────────────
+
+        if frame_name != "detail" and self.active_frame != frame_name and self.active_frame != "detail":
+            self._previous_frame = self.active_frame
 
         frame = self.frames.get(frame_name)
         if not frame:
@@ -2189,7 +2267,7 @@ class App(ctk.CTk):
         elif frame_name == "favorites":
             frame.refresh(self.favorites, self.compare_list)
         elif frame_name == "compare":
-            frame.refresh(self.compare_list)
+            frame.refresh(self.compare_list, self.favorites)
         elif frame_name == "history":
             frame.refresh()
         elif frame_name == "settings":
@@ -2217,14 +2295,44 @@ class App(ctk.CTk):
 
     def toggle_favorite(self, kos_item):
         if not isinstance(kos_item, dict):
-            return
+            return False
 
+        if not session.current_session.check_auth():
+            # Simpan sementara di memory (BUG-003)
+            added = False
+            if self._contains(self.favorites, kos_item):
+                self.favorites = [item for item in self.favorites if _item_key(item) != _item_key(kos_item)]
+            else:
+                self.favorites.insert(0, kos_item)
+                added = True
+            
+            # Update UI di frame pencarian atau detail agar tombol favorit berubah statusnya
+            if self.active_frame in ["search", "detail"]:
+                frame = self.frames.get(self.active_frame)
+                if self.active_frame == "search":
+                    frame.refresh(self.kos_data, self.favorites, self.compare_list)
+                elif self.active_frame == "detail":
+                    frame.set_detail(
+                        self.detail_item,
+                        is_favorite=self._contains(self.favorites, self.detail_item),
+                        is_compared=self._contains(self.compare_list, self.detail_item),
+                    )
+            return added
+
+        username = session.current_session.get_username()
+        added = False
         if self._contains(self.favorites, kos_item):
             self.favorites = [item for item in self.favorites if _item_key(item) != _item_key(kos_item)]
+            database.remove_favorite(username, kos_item)
         else:
             self.favorites.insert(0, kos_item)
+            database.add_favorite(username, kos_item)
+            added = True
 
-        self.show_frame(self.active_frame)
+        if self.active_frame in ["favorites", "compare", "detail"]:
+            self.show_frame(self.active_frame)
+            
+        return added
 
     def toggle_compare(self, kos_item):
         if not isinstance(kos_item, dict):
@@ -2232,12 +2340,15 @@ class App(ctk.CTk):
 
         if self._contains(self.compare_list, kos_item):
             self.compare_list = [item for item in self.compare_list if _item_key(item) != _item_key(kos_item)]
+            self.show_frame(self.active_frame)
         elif len(self.compare_list) < 3:
             self.compare_list.append(kos_item)
+            if self.active_frame == "favorites":
+                self.show_frame("compare")
+            else:
+                self.show_frame(self.active_frame)
         else:
-            print("[WARNING] Maksimal 3 kos untuk dibandingkan")
-
-        self.show_frame(self.active_frame)
+            messagebox.showwarning("Batas Maksimum", "Maksimal 3 kos untuk dibandingkan.")
 
     def clear_compare(self):
         self.compare_list = []
@@ -2249,14 +2360,36 @@ class App(ctk.CTk):
 
         self.detail_item = kos_item
         self.show_frame("detail")
+        
+    def go_back_from_detail(self):
+        self.show_frame(getattr(self, "_previous_frame", "search"))
 
     def logout_and_close(self):
+        # 1. Update session to logged out
         session.current_session.logout()
-        self.logout_requested = True
-        self.destroy()
+        
+        # 2. Reset App state
+        self.current_user = None
+        self.favorites = []
+        self.compare_list = []
+        self.detail_item = None
+        
+        # 3. Update the UI display (Sidebar name to 'Guest' etc.)
+        self.update_user_display()
+        
+        # 4. Redirect user to "search" page
+        self.show_frame("search")
 
     def _on_close(self):
-        self.destroy()
+        try:
+            self.quit()
+        except Exception:
+            pass
+        finally:
+            try:
+                self.destroy()
+            except Exception:
+                pass
 
 
 def main():
