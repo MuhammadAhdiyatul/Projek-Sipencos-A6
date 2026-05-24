@@ -11,6 +11,7 @@ from search_page import SearchPage
 import session
 from login_ui import LoginPage
 from history import HistoryPage, add_history
+from ui_settings import SettingsViewModern as SettingsPage
 import database
 import tkinter.messagebox as messagebox
 
@@ -1968,56 +1969,7 @@ class AnalyticsPage(ctk.CTkFrame):
 
 
 
-class SettingsPage(PlaceholderPage):
-    def __init__(self, parent, logout_callback=None, *args, **kwargs):
-        current_user = kwargs.pop("current_user", None)
-        super().__init__(parent, "⚙️ Settings", "Fitur Settings belum tersedia\n\nComing soon...", current_user=current_user, *args, **kwargs)
-        self.logout_callback = logout_callback
 
-        logout_card = ctk.CTkFrame(self, fg_color=CARD_BG, corner_radius=18, border_width=1, border_color=BORDER_COLOR)
-        logout_card.grid(row=1, column=0, sticky="ew", padx=24, pady=(18, 0))
-        logout_card.grid_columnconfigure(0, weight=1)
-
-        logout_title = ctk.CTkLabel(
-            logout_card,
-            text="Session",
-            font=("Arial", 15, "bold"),
-            text_color=PRIMARY_COLOR,
-            anchor="w",
-        )
-        logout_title.grid(row=0, column=0, sticky="w", padx=18, pady=(16, 4))
-
-        self.logout_info = ctk.CTkLabel(
-            logout_card,
-            text=f"Login sebagai {_display_name(self.current_user)}",
-            font=("Arial", 12),
-            text_color=TEXT_SUBTLE,
-            anchor="w",
-        )
-        self.logout_info.grid(row=1, column=0, sticky="w", padx=18)
-
-        logout_button = ctk.CTkButton(
-            logout_card,
-            text="Logout",
-            fg_color=ACCENT_COLOR,
-            hover_color="#B45E24",
-            text_color="white",
-            corner_radius=12,
-            height=40,
-            font=("Arial", 13, "bold"),
-            command=self._on_logout,
-        )
-        logout_button.grid(row=2, column=0, sticky="w", padx=18, pady=(14, 18))
-
-    def _on_logout(self):
-        if callable(self.logout_callback):
-            self.logout_callback()
-
-    def refresh(self, *args, **kwargs):
-        super().refresh(*args, **kwargs)
-        self.message_text = "Fitur Settings belum tersedia\n\nComing soon..."
-        if hasattr(self, "logout_info"):
-            self.logout_info.configure(text=f"Login sebagai {_display_name(self.current_user)}")
 
 
 class App(ctk.CTk):
@@ -2196,7 +2148,6 @@ class App(ctk.CTk):
             self.content_frame,
             logout_callback=self.logout_and_close,
             current_user=self.current_user,
-            fg_color="transparent",
         )
         self.frames["detail"] = DetailPage(
             self.content_frame,

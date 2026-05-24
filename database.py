@@ -43,6 +43,18 @@ def init_db():
         )
     """)
     
+    # Create riwayat table
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS riwayat (
+            id_riwayat INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT,
+            keyword TEXT,
+            filter TEXT,
+            timestamp TEXT,
+            item_data TEXT
+        )
+    """)
+    
     # Seed data_kos if empty
     cursor.execute("SELECT COUNT(*) FROM data_kos")
     if cursor.fetchone()[0] == 0:
@@ -136,6 +148,73 @@ def get_user_favorites(username, all_kos_data):
             result.append(lookup[fid])
             
     return result
+
+def add_history_db(username, keyword, filter_type, item_data_dict):
+    if not username or str(username).lower() == "guest":
+        return
+        
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    timestamp = datetime.datetime.now().strftime("%d-%m-%Y %H:%M")
+    
+    cursor.execute("SELECT id_riwayat, keyword, filter FROM riwayat WHERE username = ? ORDER BY id_riwayat DESC LIMIT 1", (username,))
+    last_row = cursor.fetchone()
+    
+    item_str = json.dumps(item_data_dict) if item_data_dict else "{}"
+    
+    if last_row:
+        last_id, last_kw, last_filter = last_row
+        if filter_type == "DETAIL":
+            if last_kw == keyword and last_filter == "DETAIL":
+                cursor.execute("UPDATE riwayat SET timestamp = ? WHERE id_riwayat = ?", (timestamp, last_id))
+                conn.commit()
+                conn.close()
+                return
+        else:
+            if last_kw == keyword and last_filter != "DETAIL":
+                cursor.execute("UPDATE riwayat SET timestamp = ?, filter = ? WHERE id_riwayat = ?", (timestamp, filter_type, last_id))
+                conn.commit()
+                conn.close()
+                return
+                
+    cursor.execute("INSERT INTO riwayat (username, keyword, filter, timestamp, item_data) VALUES (?, ?, ?, ?, ?)",
+                   (username, keyword, filter_type, timestamp, item_str))
+    conn.commit()
+    conn.close()
+
+def get_history_db(username):
+    if not username or str(username).lower() == "guest":
+        return []
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    cursor.execute("SELECT keyword, filter, timestamp, item_data FROM riwayat WHERE username = ? ORDER BY id_riwayat DESC", (username,))
+    rows = cursor.fetchall()
+    conn.close()
+    
+    histories = []
+    for row in rows:
+        kw, flt, ts, item_str = row
+        try:
+            item_data = json.loads(item_str)
+        except Exception:
+            item_data = {}
+        histories.append({
+            "keyword": kw,
+            "filter": flt,
+            "timestamp": ts,
+            "item_data": item_data if item_data else None
+        })
+    return histories
+
+def clear_history_db(username):
+    if not username or str(username).lower() == "guest":
+        return False
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM riwayat WHERE username = ?", (username,))
+    conn.commit()
+    conn.close()
+    return True
 
 # Initialize DB on import
 init_db()

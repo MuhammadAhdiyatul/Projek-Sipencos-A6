@@ -67,8 +67,10 @@ class SiPencosDashboard(ctk.CTk):
             self.nav_buttons.append(btn)
 
 class SettingsViewModern(ctk.CTkFrame):
-    def __init__(self, master, **kwargs):
+    def __init__(self, master, current_user=None, logout_callback=None, **kwargs):
         super().__init__(master, fg_color=COLOR_BG_MAIN, corner_radius=0, **kwargs)
+        self.current_user = current_user
+        self.logout_callback = logout_callback
 
         self.header_panel = ctk.CTkFrame(self, fg_color="transparent")
         self.header_panel.pack(fill="x", pady=(0, 30))
@@ -84,33 +86,34 @@ class SettingsViewModern(ctk.CTkFrame):
         self.profile_panel.grid(row=0, column=1, rowspan=2, padx=(30, 0), sticky="ne", ipadx=10, ipady=10)
         
         ctk.CTkLabel(self.profile_panel, text="👤", font=ctk.CTkFont(size=24), text_color=COLOR_ACCENT_ORANGE).pack(side="left", padx=10)
-        ctk.CTkLabel(self.profile_panel, text="Username", justify="left", font=ctk.CTkFont(size=14, weight="normal"), text_color=COLOR_TEXT_SECONDARY).pack(side="left", padx=10)
+        self.lbl_username = ctk.CTkLabel(self.profile_panel, text="Username", justify="left", font=ctk.CTkFont(size=14, weight="normal"), text_color=COLOR_TEXT_SECONDARY)
+        self.lbl_username.pack(side="left", padx=10)
 
-        # Kategori 1: Aplikasi & Antarmuka
-        self.card_interface = ctk.CTkFrame(self, fg_color=COLOR_BG_CARD, corner_radius=16)
-        self.card_interface.pack(fill="x", pady=(0, 30), ipadx=5, ipady=5)
-        self.card_interface.grid_columnconfigure(0, weight=0) 
-        self.card_interface.grid_columnconfigure(1, weight=1) 
-        self.card_interface.grid_columnconfigure(2, weight=0) 
-
-        ctk.CTkLabel(self.card_interface, text="🎨", font=ctk.CTkFont(size=20), text_color=COLOR_ACCENT_ORANGE).grid(row=0, column=0, padx=20, pady=20)
-        ctk.CTkLabel(self.card_interface, text="Tema Aplikasi", font=ctk.CTkFont(size=16, weight="bold"), text_color=COLOR_TEXT_PRIMARY).grid(row=0, column=1, sticky="w", pady=(20, 0))
-        ctk.CTkLabel(self.card_interface, text="Sesuaikan tampilan antarmuka sesuai kenyamanan mata.", font=ctk.CTkFont(size=14), text_color=COLOR_TEXT_SECONDARY).grid(row=0, column=1, sticky="w", pady=(0, 20))
+        # Kategori 1: Informasi Lengkap Akun
+        self.card_account_info = ctk.CTkFrame(self, fg_color=COLOR_BG_CARD, corner_radius=16)
+        self.card_account_info.pack(fill="x", pady=(0, 30), ipadx=5, ipady=5)
+        self.card_account_info.grid_columnconfigure(0, weight=1)
         
-        self.seg_tema = ctk.CTkSegmentedButton(
-            self.card_interface, 
-            values=["☀️ Light Mode", "🌙 Dark Mode"], 
-            command=self.ubah_tema,
-            corner_radius=10,
-            fg_color=COLOR_LINE,
-            selected_color=COLOR_ACCENT_ORANGE,
-            unselected_color=COLOR_LINE,
-            text_color=COLOR_TEXT_PRIMARY,
-            width=250,
-            height=35
-        )
-        self.seg_tema.set("☀️ Light Mode")
-        self.seg_tema.grid(row=0, column=2, padx=20, pady=20)
+        ctk.CTkLabel(self.card_account_info, text="Informasi Lengkap Akun", font=ctk.CTkFont(size=16, weight="bold"), text_color=COLOR_TEXT_PRIMARY).grid(row=0, column=0, sticky="w", padx=20, pady=(20, 5))
+        ctk.CTkLabel(self.card_account_info, text="Detail profil dan status sesi login Anda saat ini.", font=ctk.CTkFont(size=14), text_color=COLOR_TEXT_SECONDARY).grid(row=1, column=0, sticky="w", padx=20, pady=(0, 20))
+        
+        self.frame_account_details = ctk.CTkFrame(self.card_account_info, fg_color=COLOR_BG_MAIN, corner_radius=12)
+        self.frame_account_details.grid(row=2, column=0, sticky="ew", padx=20, pady=(0, 20), ipadx=15, ipady=15)
+        self.frame_account_details.grid_columnconfigure(0, weight=1)
+        self.frame_account_details.grid_columnconfigure(1, weight=1)
+        self.frame_account_details.grid_columnconfigure(2, weight=1)
+
+        ctk.CTkLabel(self.frame_account_details, text="NAMA LENGKAP", font=ctk.CTkFont(size=12, weight="bold"), text_color=COLOR_TEXT_SECONDARY).grid(row=0, column=0, sticky="w", padx=10)
+        self.lbl_acc_fullname = ctk.CTkLabel(self.frame_account_details, text="-", font=ctk.CTkFont(size=18, weight="bold"), text_color=COLOR_TEXT_PRIMARY)
+        self.lbl_acc_fullname.grid(row=1, column=0, sticky="w", padx=10)
+
+        ctk.CTkLabel(self.frame_account_details, text="USERNAME", font=ctk.CTkFont(size=12, weight="bold"), text_color=COLOR_TEXT_SECONDARY).grid(row=0, column=1, sticky="w", padx=10)
+        self.lbl_acc_username = ctk.CTkLabel(self.frame_account_details, text="-", font=ctk.CTkFont(size=18, weight="bold"), text_color=COLOR_TEXT_PRIMARY)
+        self.lbl_acc_username.grid(row=1, column=1, sticky="w", padx=10)
+
+        ctk.CTkLabel(self.frame_account_details, text="STATUS AKUN", font=ctk.CTkFont(size=12, weight="bold"), text_color=COLOR_TEXT_SECONDARY).grid(row=0, column=2, sticky="w", padx=10)
+        self.lbl_acc_status = ctk.CTkLabel(self.frame_account_details, text="Guest", font=ctk.CTkFont(size=18, weight="bold"), text_color="#ef4444")
+        self.lbl_acc_status.grid(row=1, column=2, sticky="w", padx=10)
 
         # Kategori 2: Informasi Data
         self.card_data_mgmt = ctk.CTkFrame(self, fg_color=COLOR_BG_CARD, corner_radius=16)
@@ -154,17 +157,39 @@ class SettingsViewModern(ctk.CTkFrame):
         # pack(side="right") akan menempatkannya tepat di pojok kanan bawah
         self.btn_logout_referensi.pack(side="right", padx=25)
 
-    def ubah_tema(self, mode_text):
-        if "Dark" in mode_text:
-            mode = "Dark"
-        else:
-            mode = "Light"
-        ctk.set_appearance_mode(mode)
-
     def logout(self):
-        konfirmasi = messagebox.askyesno("Konfirmasi", "Anda yakin ingin keluar dari aplikasi?")
+        konfirmasi = messagebox.askyesno("Konfirmasi", "Anda yakin ingin keluar dari akun?")
         if konfirmasi:
-            print("[UI Info] User berhasil Log Out.")
+            if hasattr(self, 'logout_callback') and callable(self.logout_callback):
+                self.logout_callback()
+            else:
+                print("[UI Info] User berhasil Log Out.")
+
+    def refresh(self, *args, **kwargs):
+        try:
+            if self.current_user and str(self.current_user).lower() != "guest":
+                if isinstance(self.current_user, dict):
+                    name = self.current_user.get("display_name", str(self.current_user.get("username", self.current_user)))
+                    full_name = self.current_user.get("full_name", name)
+                    username = self.current_user.get("username", str(self.current_user))
+                else:
+                    name = getattr(self.current_user, "display_name", str(self.current_user))
+                    full_name = getattr(self.current_user, "full_name", name)
+                    username = getattr(self.current_user, "username", str(self.current_user))
+                
+                self.lbl_username.configure(text=name)
+                if hasattr(self, 'lbl_acc_fullname'):
+                    self.lbl_acc_fullname.configure(text=full_name)
+                    self.lbl_acc_username.configure(text=username)
+                    self.lbl_acc_status.configure(text="Aktif (Logged In)", text_color="#2ecc71")
+            else:
+                self.lbl_username.configure(text="Guest")
+                if hasattr(self, 'lbl_acc_fullname'):
+                    self.lbl_acc_fullname.configure(text="-")
+                    self.lbl_acc_username.configure(text="-")
+                    self.lbl_acc_status.configure(text="Guest / Belum Login", text_color="#ef4444")
+        except Exception:
+            pass
 
 
 if __name__ == "__main__":

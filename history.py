@@ -5,62 +5,15 @@ import customtkinter as ctk
 
 from ui_components import _load_remote_image_async, _normalize_foto
 
-HISTORY_FILE = "history.json"
-
-# 1. LOGIKA BACKEND (MANAJEMEN DATA)
-
-def _load_history():
-    if not os.path.exists(HISTORY_FILE):
-        with open(HISTORY_FILE, "w") as f:
-            json.dump({}, f)
-        return {}
-    try:
-        with open(HISTORY_FILE, "r") as f:
-            return json.load(f)
-    except:
-        return {}
-
-def _save_history(data):
-    with open(HISTORY_FILE, "w") as f:
-        json.dump(data, f, indent=4)
+import database
+from login_ui import LoginPage
 
 def add_history(user_email, keyword, filter_type="Semua", item_data=None):
-    """Mencatat pencarian atau detail kos yang dilihat"""
-    if not user_email or str(user_email).lower() == "guest":
-        return  
-
-    data = _load_history()
-
-    if user_email not in data:
-        data[user_email] = []
-
-    timestamp = datetime.now().strftime("%d-%m-%Y %H:%M")
-
-    new_entry = {
-        "keyword": keyword,
-        "timestamp": timestamp,
-        "filter": filter_type,
-        "item_data": item_data
-    }
-
-    if filter_type == "DETAIL" and data[user_email]:
-        if data[user_email][0].get("keyword") == keyword and data[user_email][0].get("filter") == "DETAIL":
-            data[user_email][0]["timestamp"] = timestamp
-            _save_history(data)
-            return
-
-    data[user_email].insert(0, new_entry)
-    _save_history(data)
+    """Mencatat pencarian atau detail kos yang dilihat ke database"""
+    database.add_history_db(user_email, keyword, filter_type, item_data)
 
 def clear_history(user_email):
-    if not user_email or str(user_email).lower() == "guest":
-        return False
-    data = _load_history()
-    if user_email in data:
-        data[user_email] = []
-        _save_history(data)
-        return True
-    return False
+    return database.clear_history_db(user_email)
 
 
 # 2. LOGIKA UI (HALAMAN CUSTOMTKINTER)
@@ -109,6 +62,10 @@ class HistoryPage(ctk.CTkFrame):
             self.refresh()
 
     def refresh(self):
+        if hasattr(self, 'guest_frame'):
+            self.guest_frame.pack_forget()
+        self.main_scroll.pack(fill="both", expand=True, padx=20, pady=(0, 20))
+
         if not hasattr(self, 'main_scroll') or not self.main_scroll.winfo_exists():
             return
 
@@ -121,19 +78,35 @@ class HistoryPage(ctk.CTkFrame):
         user_str = self._get_active_user_string()
 
         if not user_str or str(user_str).lower() == "guest":
-            lbl_empty = ctk.CTkLabel(
-                self.main_scroll, text="Silakan login terlebih dahulu untuk melihat riwayat pencarian.", 
-                text_color="gray", font=ctk.CTkFont(size=14)
-            )
-            lbl_empty.pack(pady=50)
+            self.main_scroll.pack_forget()
+            
+            if not hasattr(self, 'guest_frame'):
+                self.guest_frame = ctk.CTkFrame(self, fg_color="transparent")
+                
+                lbl_empty = ctk.CTkLabel(
+                    self.guest_frame, text="Silakan masuk untuk melihat dan menyimpan riwayat aktivitas Anda.", 
+                    text_color="gray", font=ctk.CTkFont(size=14)
+                )
+                lbl_empty.pack(pady=(40, 20))
+                
+                main_app = self.winfo_toplevel()
+                
+                def custom_on_success():
+                    main_app._pending_login_target = "history"
+                    if hasattr(main_app, "_on_login_success"):
+                        main_app._on_login_success()
+                
+                login_comp = LoginPage(self.guest_frame, on_login_success=custom_on_success, fg_color="transparent")
+                login_comp.pack(fill="both", expand=True)
+                
+            self.guest_frame.pack(fill="both", expand=True)
             return
 
-        data = _load_history()
-        histories = data.get(user_str, [])
+        histories = database.get_history_db(user_str)
 
         if not histories:
             lbl_empty = ctk.CTkLabel(
-                self.main_scroll, text=f"Halo {user_str}! Belum ada riwayat aktivitas.", 
+                self.main_scroll, text="Anda belum pernah mencari atau melihat kos apapun. Mulai jelajahi sekarang!", 
                 text_color="gray", font=ctk.CTkFont(size=14)
             )
             lbl_empty.pack(pady=50)
@@ -246,11 +219,13 @@ class HistoryPage(ctk.CTkFrame):
             btn_detail.pack(side="bottom")
 
         else:
-            card = ctk.CTkFrame(container, corner_radius=10, fg_color=("gray85", "gray20"))
+            card = ctk.CTkFrame(container, corner_radius=10, fg_color=("gray85", "gray20"), cursor="hand2")
             card.pack(fill="x", pady=4)
+            card.bind("<Button-1>", lambda e, k=keyword: self._on_search_click(k))
 
-            kw_label = ctk.CTkLabel(card, text=f'"{keyword}"', font=ctk.CTkFont(size=14, weight="bold"))
+            kw_label = ctk.CTkLabel(card, text=f'"{keyword}"', font=ctk.CTkFont(size=14, weight="bold"), cursor="hand2")
             kw_label.pack(side="left", padx=(15, 10), pady=12)
+            kw_label.bind("<Button-1>", lambda e, k=keyword: self._on_search_click(k))
 
             if filter_type.lower() == "putra":
                 filter_color = "#3498db"
@@ -259,15 +234,17 @@ class HistoryPage(ctk.CTkFrame):
             else:
                 filter_color = "#e67e22"
 
-            badge = ctk.CTkFrame(card, fg_color=filter_color, corner_radius=8, height=20)
+            badge = ctk.CTkFrame(card, fg_color=filter_color, corner_radius=8)
             badge.pack(side="left", padx=5)
-            badge.pack_propagate(False)
+            badge.bind("<Button-1>", lambda e, k=keyword: self._on_search_click(k))
 
-            badge_label = ctk.CTkLabel(badge, text=filter_type.upper(), text_color="white", font=ctk.CTkFont(size=10, weight="bold"))
-            badge_label.pack(padx=8, expand=True)
+            badge_label = ctk.CTkLabel(badge, text=filter_type.upper(), text_color="white", font=ctk.CTkFont(size=10, weight="bold"), cursor="hand2")
+            badge_label.pack(padx=8, pady=2)
+            badge_label.bind("<Button-1>", lambda e, k=keyword: self._on_search_click(k))
 
-            time_label = ctk.CTkLabel(card, text=timestamp, text_color="gray", font=ctk.CTkFont(size=11))
+            time_label = ctk.CTkLabel(card, text=timestamp, text_color="gray", font=ctk.CTkFont(size=11), cursor="hand2")
             time_label.pack(side="right", padx=15, pady=12)
+            time_label.bind("<Button-1>", lambda e, k=keyword: self._on_search_click(k))
 
     def _on_card_click(self, item_data):
         if not item_data: return
@@ -276,3 +253,13 @@ class HistoryPage(ctk.CTkFrame):
             main_app.detail_item = item_data
             if hasattr(main_app, "show_frame"):
                 main_app.show_frame("detail")
+
+    def _on_search_click(self, keyword):
+        main_app = self.winfo_toplevel()
+        if hasattr(main_app, "frames") and "search" in main_app.frames:
+            search_page = main_app.frames["search"]
+            search_page.entry_search.delete(0, 'end')
+            search_page.entry_search.insert(0, keyword)
+            search_page._on_search()
+            if hasattr(main_app, "show_frame"):
+                main_app.show_frame("search")
