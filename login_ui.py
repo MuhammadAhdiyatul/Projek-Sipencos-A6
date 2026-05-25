@@ -58,6 +58,7 @@ class LoginPage(QWidget):
 
     def show_login_frame(self, event=None):
         self._set_feedback(self.register_feedback, "", is_error=False)
+        self._set_feedback(self.login_feedback, "", is_error=False)
         self.stacked_widget.setCurrentWidget(self.login_widget)
 
     def show_register_frame(self, event=None):
@@ -303,6 +304,8 @@ class LoginPage(QWidget):
                 "full_name": "",
             }
             session.current_session.login(user_data)
+            self.entry_login_username.clear()
+            self.entry_login_password.clear()
             self._set_feedback(self.login_feedback, "Login berhasil.", is_error=False)
             if self.on_login_success:
                 self.on_login_success()

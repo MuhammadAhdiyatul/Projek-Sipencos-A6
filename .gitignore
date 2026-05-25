@@ -1,0 +1,13 @@
+# Mengabaikan folder __pycache__ dan file Python yang dikompilasi
+__pycache__/
+*.pyc
+*.pyo
+
+# Mengabaikan file gambar (sesuaikan dengan format yang kamu punya, misal .png, .jpg)
+*.png
+*.jpg
+*.jpeg
+
+# Jika ada file sensitif atau konfigurasi lain
+.env
+*.json
