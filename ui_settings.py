@@ -1,165 +1,166 @@
-import customtkinter as ctk
-from tkinter import messagebox
+from PyQt6.QtWidgets import (QWidget, QFrame, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, 
+                             QGridLayout, QMessageBox, QSpacerItem, QSizePolicy)
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QFont, QCursor
 
-# Menggunakan TUPLE untuk mendukung (Light Mode, Dark Mode)
-COLOR_BG_MAIN = ("#f1f5f9", "#0f172a") 
-COLOR_BG_CARD = ("#ffffff", "#1e293b") 
-COLOR_TEXT_PRIMARY = ("#1e293b", "#f8fafc") 
-COLOR_TEXT_SECONDARY = ("#64748b", "#94a3b8") 
-COLOR_LINE = ("#e2e8f0", "#334155")
-COLOR_BUTTON_BG = ("#ffffff", "#334155")
-
-# Warna Aksen (Tetap sama di kedua mode)
-COLOR_ACCENT_ORANGE = "#ff8500" 
-COLOR_ACCENT_BLUE_ACTIVE = ("#ebf3fe", "#1e3a8a") 
-
-class SiPencosDashboard(ctk.CTk):
-    def __init__(self):
-        super().__init__()
-        self.title("SiPencos - Settings UI")
-        self.geometry("1280x720")
-        self.configure(fg_color=COLOR_BG_MAIN)
-
-        self.grid_columnconfigure(0, weight=0, minsize=280) 
-        self.grid_columnconfigure(1, weight=1) 
-        self.grid_rowconfigure(0, weight=1)
-
-        self.sidebar_frame = ctk.CTkFrame(self, fg_color=COLOR_BG_CARD, corner_radius=0)
-        self.sidebar_frame.grid(row=0, column=0, sticky="nsew")
-        self.build_sidebar()
-
-        self.settings_frame = SettingsViewModern(self)
-        self.settings_frame.grid(row=0, column=1, sticky="nsew", padx=40, pady=40)
-
-    def build_sidebar(self):
-        self.logo_label = ctk.CTkLabel(self.sidebar_frame, text="SiPencos", font=ctk.CTkFont(size=28, weight="bold"), text_color=COLOR_TEXT_PRIMARY)
-        self.logo_label.pack(pady=(40, 5), padx=20, anchor="w")
-        self.subtitle_label = ctk.CTkLabel(self.sidebar_frame, text="HOUSING INTELLIGENCE", font=ctk.CTkFont(size=12, weight="normal"), text_color=COLOR_TEXT_SECONDARY)
-        self.subtitle_label.pack(pady=(0, 40), padx=20, anchor="w")
-
-        nav_items = [
-            ("🔍 Search", False),
-            ("📊 Analytics", False),
-            ("⚖️ Compare", False),
-            ("❤️ Favorites", False),
-            ("📜 History", False),
-            ("⚙️ Settings", True)
-        ]
-        
-        self.nav_buttons = []
-        for item_text, is_active in nav_items:
-            btn_fg_color = COLOR_ACCENT_BLUE_ACTIVE if is_active else "transparent"
-            btn_text_color = COLOR_ACCENT_ORANGE if is_active else COLOR_TEXT_PRIMARY
-            btn_font_weight = "bold" if is_active else "normal"
-            
-            btn = ctk.CTkButton(
-                self.sidebar_frame, 
-                text=item_text, 
-                fg_color=btn_fg_color, 
-                text_color=btn_text_color,
-                hover_color=COLOR_LINE, 
-                font=ctk.CTkFont(size=16, weight=btn_font_weight),
-                anchor="w",
-                corner_radius=10,
-                height=40
-            )
-            btn.pack(fill="x", padx=10, pady=5)
-            self.nav_buttons.append(btn)
-
-class SettingsViewModern(ctk.CTkFrame):
-    def __init__(self, master, current_user=None, logout_callback=None, **kwargs):
-        super().__init__(master, fg_color=COLOR_BG_MAIN, corner_radius=0, **kwargs)
+class SettingsViewModern(QFrame):
+    def __init__(self, parent=None, current_user=None, logout_callback=None):
+        super().__init__(parent)
         self.current_user = current_user
         self.logout_callback = logout_callback
 
-        self.header_panel = ctk.CTkFrame(self, fg_color="transparent")
-        self.header_panel.pack(fill="x", pady=(0, 30))
-        self.header_panel.grid_columnconfigure(0, weight=1)
-        self.header_panel.grid_columnconfigure(1, weight=0)
+        self.setStyleSheet("background-color: transparent;")
 
-        self.lbl_title = ctk.CTkLabel(self.header_panel, text="Pengaturan", font=ctk.CTkFont(size=36, weight="bold"), text_color=COLOR_TEXT_PRIMARY)
-        self.lbl_title.grid(row=0, column=0, sticky="w")
-        self.lbl_desc = ctk.CTkLabel(self.header_panel, text="Customize your intelligence workspace and account preferences.", font=ctk.CTkFont(size=16), text_color=COLOR_TEXT_SECONDARY)
-        self.lbl_desc.grid(row=1, column=0, sticky="w", pady=(5, 0))
+        self.main_layout = QVBoxLayout(self)
+        self.main_layout.setContentsMargins(0, 0, 0, 0)
+        self.main_layout.setSpacing(20)
 
-        self.profile_panel = ctk.CTkFrame(self.header_panel, fg_color=COLOR_BG_CARD, corner_radius=16)
-        self.profile_panel.grid(row=0, column=1, rowspan=2, padx=(30, 0), sticky="ne", ipadx=10, ipady=10)
+        # Header
+        self.header_panel = QFrame()
+        header_layout = QHBoxLayout(self.header_panel)
+        header_layout.setContentsMargins(0, 0, 0, 0)
+
+        title_layout = QVBoxLayout()
+        title_layout.setSpacing(5)
         
-        ctk.CTkLabel(self.profile_panel, text="👤", font=ctk.CTkFont(size=24), text_color=COLOR_ACCENT_ORANGE).pack(side="left", padx=10)
-        self.lbl_username = ctk.CTkLabel(self.profile_panel, text="Username", justify="left", font=ctk.CTkFont(size=14, weight="normal"), text_color=COLOR_TEXT_SECONDARY)
-        self.lbl_username.pack(side="left", padx=10)
+        lbl_title = QLabel("Pengaturan")
+        lbl_title.setStyleSheet("font-size: 36px; font-weight: bold; color: #1e293b;")
+        
+        lbl_desc = QLabel("Customize your intelligence workspace and account preferences.")
+        lbl_desc.setStyleSheet("font-size: 16px; color: #64748b;")
+        
+        title_layout.addWidget(lbl_title)
+        title_layout.addWidget(lbl_desc)
+        title_layout.addStretch()
+
+        self.profile_panel = QFrame()
+        self.profile_panel.setStyleSheet("background-color: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0;")
+        profile_layout = QHBoxLayout(self.profile_panel)
+        profile_layout.setContentsMargins(15, 10, 15, 10)
+
+        lbl_icon = QLabel("👤")
+        lbl_icon.setStyleSheet("font-size: 24px; color: #ff8500; border: none;")
+        self.lbl_username = QLabel("Username")
+        self.lbl_username.setStyleSheet("font-size: 14px; color: #64748b; border: none;")
+        
+        profile_layout.addWidget(lbl_icon)
+        profile_layout.addWidget(self.lbl_username)
+
+        header_layout.addLayout(title_layout)
+        header_layout.addStretch()
+        header_layout.addWidget(self.profile_panel, 0, Qt.AlignmentFlag.AlignTop)
+
+        self.main_layout.addWidget(self.header_panel)
 
         # Kategori 1: Informasi Lengkap Akun
-        self.card_account_info = ctk.CTkFrame(self, fg_color=COLOR_BG_CARD, corner_radius=16)
-        self.card_account_info.pack(fill="x", pady=(0, 30), ipadx=5, ipady=5)
-        self.card_account_info.grid_columnconfigure(0, weight=1)
+        self.card_account_info = QFrame()
+        self.card_account_info.setStyleSheet("QFrame { background-color: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; }")
+        acc_layout = QVBoxLayout(self.card_account_info)
+        acc_layout.setContentsMargins(20, 20, 20, 20)
+
+        lbl_acc_title = QLabel("Informasi Lengkap Akun")
+        lbl_acc_title.setStyleSheet("font-size: 16px; font-weight: bold; color: #1e293b; border: none;")
+        lbl_acc_desc = QLabel("Detail profil dan status sesi login Anda saat ini.")
+        lbl_acc_desc.setStyleSheet("font-size: 14px; color: #64748b; border: none;")
         
-        ctk.CTkLabel(self.card_account_info, text="Informasi Lengkap Akun", font=ctk.CTkFont(size=16, weight="bold"), text_color=COLOR_TEXT_PRIMARY).grid(row=0, column=0, sticky="w", padx=20, pady=(20, 5))
-        ctk.CTkLabel(self.card_account_info, text="Detail profil dan status sesi login Anda saat ini.", font=ctk.CTkFont(size=14), text_color=COLOR_TEXT_SECONDARY).grid(row=1, column=0, sticky="w", padx=20, pady=(0, 20))
+        acc_layout.addWidget(lbl_acc_title)
+        acc_layout.addWidget(lbl_acc_desc)
         
-        self.frame_account_details = ctk.CTkFrame(self.card_account_info, fg_color=COLOR_BG_MAIN, corner_radius=12)
-        self.frame_account_details.grid(row=2, column=0, sticky="ew", padx=20, pady=(0, 20), ipadx=15, ipady=15)
-        self.frame_account_details.grid_columnconfigure(0, weight=1)
-        self.frame_account_details.grid_columnconfigure(1, weight=1)
-        self.frame_account_details.grid_columnconfigure(2, weight=1)
+        frame_details = QFrame()
+        frame_details.setStyleSheet("QFrame { background-color: #f1f5f9; border-radius: 12px; border: none; }")
+        details_layout = QGridLayout(frame_details)
+        details_layout.setContentsMargins(15, 15, 15, 15)
+        details_layout.setSpacing(10)
 
-        ctk.CTkLabel(self.frame_account_details, text="NAMA LENGKAP", font=ctk.CTkFont(size=12, weight="bold"), text_color=COLOR_TEXT_SECONDARY).grid(row=0, column=0, sticky="w", padx=10)
-        self.lbl_acc_fullname = ctk.CTkLabel(self.frame_account_details, text="-", font=ctk.CTkFont(size=18, weight="bold"), text_color=COLOR_TEXT_PRIMARY)
-        self.lbl_acc_fullname.grid(row=1, column=0, sticky="w", padx=10)
+        def create_metric(row, col, title, initial_val, val_color="#1e293b"):
+            lbl_t = QLabel(title)
+            lbl_t.setStyleSheet("font-size: 12px; font-weight: bold; color: #64748b; border: none;")
+            lbl_v = QLabel(initial_val)
+            lbl_v.setStyleSheet(f"font-size: 18px; font-weight: bold; color: {val_color}; border: none;")
+            
+            vl = QVBoxLayout()
+            vl.addWidget(lbl_t)
+            vl.addWidget(lbl_v)
+            vl.addStretch()
+            
+            details_layout.addLayout(vl, row, col)
+            return lbl_v
 
-        ctk.CTkLabel(self.frame_account_details, text="USERNAME", font=ctk.CTkFont(size=12, weight="bold"), text_color=COLOR_TEXT_SECONDARY).grid(row=0, column=1, sticky="w", padx=10)
-        self.lbl_acc_username = ctk.CTkLabel(self.frame_account_details, text="-", font=ctk.CTkFont(size=18, weight="bold"), text_color=COLOR_TEXT_PRIMARY)
-        self.lbl_acc_username.grid(row=1, column=1, sticky="w", padx=10)
+        self.lbl_acc_fullname = create_metric(0, 0, "NAMA LENGKAP", "-")
+        self.lbl_acc_username = create_metric(0, 1, "USERNAME", "-")
+        self.lbl_acc_status = create_metric(0, 2, "STATUS AKUN", "Guest", "#ef4444")
 
-        ctk.CTkLabel(self.frame_account_details, text="STATUS AKUN", font=ctk.CTkFont(size=12, weight="bold"), text_color=COLOR_TEXT_SECONDARY).grid(row=0, column=2, sticky="w", padx=10)
-        self.lbl_acc_status = ctk.CTkLabel(self.frame_account_details, text="Guest", font=ctk.CTkFont(size=18, weight="bold"), text_color="#ef4444")
-        self.lbl_acc_status.grid(row=1, column=2, sticky="w", padx=10)
+        acc_layout.addWidget(frame_details)
+        self.main_layout.addWidget(self.card_account_info)
 
         # Kategori 2: Informasi Data
-        self.card_data_mgmt = ctk.CTkFrame(self, fg_color=COLOR_BG_CARD, corner_radius=16)
-        self.card_data_mgmt.pack(fill="x", pady=(0, 30), ipadx=5, ipady=5)
-        self.card_data_mgmt.grid_columnconfigure(0, weight=1)
+        self.card_data_mgmt = QFrame()
+        self.card_data_mgmt.setStyleSheet("QFrame { background-color: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; }")
+        data_layout = QVBoxLayout(self.card_data_mgmt)
+        data_layout.setContentsMargins(20, 20, 20, 20)
 
-        self.lbl_data_title = ctk.CTkLabel(self.card_data_mgmt, text="Informasi Data", font=ctk.CTkFont(size=16, weight="bold"), text_color=COLOR_TEXT_PRIMARY)
-        self.lbl_data_title.grid(row=0, column=0, sticky="w", padx=20, pady=(20, 5))
-        self.lbl_data_desc = ctk.CTkLabel(self.card_data_mgmt, text="Informasi status sinkronisasi dan riwayat pembaruan data kos.", font=ctk.CTkFont(size=14), text_color=COLOR_TEXT_SECONDARY)
-        self.lbl_data_desc.grid(row=1, column=0, sticky="w", padx=20, pady=(0, 20))
+        lbl_data_title = QLabel("Informasi Data")
+        lbl_data_title.setStyleSheet("font-size: 16px; font-weight: bold; color: #1e293b; border: none;")
+        lbl_data_desc = QLabel("Informasi status sinkronisasi dan riwayat pembaruan data kos.")
+        lbl_data_desc.setStyleSheet("font-size: 14px; color: #64748b; border: none;")
 
-        self.frame_metrik_logger = ctk.CTkFrame(self.card_data_mgmt, fg_color=COLOR_BG_MAIN, corner_radius=12)
-        self.frame_metrik_logger.grid(row=2, column=0, sticky="ew", padx=20, pady=(0, 20), ipadx=15, ipady=15)
-        self.frame_metrik_logger.grid_columnconfigure(0, weight=1)
-        self.frame_metrik_logger.grid_columnconfigure(1, weight=1)
-        self.frame_metrik_logger.grid_columnconfigure(2, weight=1)
+        data_layout.addWidget(lbl_data_title)
+        data_layout.addWidget(lbl_data_desc)
 
-        ctk.CTkLabel(self.frame_metrik_logger, text="TERAKHIR DI SCRAPING", font=ctk.CTkFont(size=12, weight="bold"), text_color=COLOR_TEXT_SECONDARY).grid(row=0, column=0, sticky="w", padx=10)
-        ctk.CTkLabel(self.frame_metrik_logger, text="24 Mei 2026", font=ctk.CTkFont(size=20, weight="bold"), text_color=COLOR_TEXT_PRIMARY).grid(row=1, column=0, sticky="w", padx=10)
+        frame_metrik = QFrame()
+        frame_metrik.setStyleSheet("QFrame { background-color: #f1f5f9; border-radius: 12px; border: none; }")
+        metrik_layout = QGridLayout(frame_metrik)
+        metrik_layout.setContentsMargins(15, 15, 15, 15)
+        metrik_layout.setSpacing(10)
 
-        ctk.CTkLabel(self.frame_metrik_logger, text="TERAKHIR UPDATE SUMBER DATA", font=ctk.CTkFont(size=12, weight="bold"), text_color=COLOR_TEXT_SECONDARY).grid(row=0, column=1, sticky="w", padx=10)
-        ctk.CTkLabel(self.frame_metrik_logger, text="22 Mei 2026", font=ctk.CTkFont(size=20, weight="bold"), text_color=COLOR_TEXT_PRIMARY).grid(row=1, column=1, sticky="w", padx=10)
+        def create_data_metric(row, col, title, initial_val, val_color="#1e293b"):
+            lbl_t = QLabel(title)
+            lbl_t.setStyleSheet("font-size: 12px; font-weight: bold; color: #64748b; border: none;")
+            lbl_v = QLabel(initial_val)
+            lbl_v.setStyleSheet(f"font-size: 20px; font-weight: bold; color: {val_color}; border: none;")
+            
+            vl = QVBoxLayout()
+            vl.addWidget(lbl_t)
+            vl.addWidget(lbl_v)
+            vl.addStretch()
+            
+            metrik_layout.addLayout(vl, row, col)
 
-        ctk.CTkLabel(self.frame_metrik_logger, text="STATUS SCRAPING", font=ctk.CTkFont(size=12, weight="bold"), text_color=COLOR_TEXT_SECONDARY).grid(row=0, column=2, sticky="w", padx=10)
-        ctk.CTkLabel(self.frame_metrik_logger, text="Berhasil", font=ctk.CTkFont(size=20, weight="bold"), text_color="#2ecc71").grid(row=1, column=2, sticky="w", padx=10)
+        create_data_metric(0, 0, "TERAKHIR DI SCRAPING", "24 Mei 2026")
+        create_data_metric(0, 1, "TERAKHIR UPDATE SUMBER DATA", "22 Mei 2026")
+        create_data_metric(0, 2, "STATUS SCRAPING", "Berhasil", "#2ecc71")
 
-        # Tombol Log Out (Bagian Bawah Kanan)
-        self.frame_logout = ctk.CTkFrame(self, fg_color="transparent")
-        self.frame_logout.pack(fill="x", pady=(10, 20))
+        data_layout.addWidget(frame_metrik)
+        self.main_layout.addWidget(self.card_data_mgmt)
 
-        self.btn_logout_referensi = ctk.CTkButton(
-            self.frame_logout, 
-            text="Log Out ➔", 
-            command=self.logout, 
-            corner_radius=10, 
-            fg_color="transparent", 
-            text_color=("#991b1b", "#ef4444"),
-            hover_color=("#fecdd3", "#7f1d1d"),
-            font=ctk.CTkFont(size=16, weight="bold")
-        )
-        # pack(side="right") akan menempatkannya tepat di pojok kanan bawah
-        self.btn_logout_referensi.pack(side="right", padx=25)
+        # Log Out Button
+        logout_layout = QHBoxLayout()
+        logout_layout.addStretch()
+        
+        self.btn_logout = QPushButton("Log Out ➔")
+        self.btn_logout.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self.btn_logout.setStyleSheet("""
+            QPushButton {
+                background-color: transparent;
+                color: #ef4444;
+                font-weight: bold;
+                font-size: 16px;
+                border: none;
+            }
+            QPushButton:hover {
+                color: #991b1b;
+            }
+        """)
+        self.btn_logout.clicked.connect(self.logout)
+        logout_layout.addWidget(self.btn_logout)
+        
+        self.main_layout.addLayout(logout_layout)
+        self.main_layout.addStretch()
 
     def logout(self):
-        konfirmasi = messagebox.askyesno("Konfirmasi", "Anda yakin ingin keluar dari akun?")
-        if konfirmasi:
+        konfirmasi = QMessageBox.question(self, "Konfirmasi", "Anda yakin ingin keluar dari akun?", 
+                                          QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+        if konfirmasi == QMessageBox.StandardButton.Yes:
             if hasattr(self, 'logout_callback') and callable(self.logout_callback):
                 self.logout_callback()
             else:
@@ -177,22 +178,16 @@ class SettingsViewModern(ctk.CTkFrame):
                     full_name = getattr(self.current_user, "full_name", name)
                     username = getattr(self.current_user, "username", str(self.current_user))
                 
-                self.lbl_username.configure(text=name)
-                if hasattr(self, 'lbl_acc_fullname'):
-                    self.lbl_acc_fullname.configure(text=full_name)
-                    self.lbl_acc_username.configure(text=username)
-                    self.lbl_acc_status.configure(text="Aktif (Logged In)", text_color="#2ecc71")
+                self.lbl_username.setText(name)
+                self.lbl_acc_fullname.setText(full_name)
+                self.lbl_acc_username.setText(username)
+                self.lbl_acc_status.setText("Aktif (Logged In)")
+                self.lbl_acc_status.setStyleSheet("font-size: 18px; font-weight: bold; color: #2ecc71; border: none;")
             else:
-                self.lbl_username.configure(text="Guest")
-                if hasattr(self, 'lbl_acc_fullname'):
-                    self.lbl_acc_fullname.configure(text="-")
-                    self.lbl_acc_username.configure(text="-")
-                    self.lbl_acc_status.configure(text="Guest / Belum Login", text_color="#ef4444")
+                self.lbl_username.setText("Guest")
+                self.lbl_acc_fullname.setText("-")
+                self.lbl_acc_username.setText("-")
+                self.lbl_acc_status.setText("Guest / Belum Login")
+                self.lbl_acc_status.setStyleSheet("font-size: 18px; font-weight: bold; color: #ef4444; border: none;")
         except Exception:
             pass
-
-
-if __name__ == "__main__":
-    ctk.set_appearance_mode("Light")
-    dashboard = SiPencosDashboard()
-    dashboard.mainloop()

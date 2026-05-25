@@ -1,212 +1,300 @@
-import customtkinter as ctk
-from auth import verify_login, register_user
+from PyQt6.QtWidgets import (QWidget, QFrame, QLabel, QLineEdit, QPushButton, 
+                             QVBoxLayout, QHBoxLayout, QGraphicsDropShadowEffect, QStackedWidget)
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QFont, QCursor, QColor
 import session
+from auth import verify_login, register_user
 
-class LoginPage(ctk.CTkFrame): 
-    def __init__(self, parent, on_login_success=None, *args, **kwargs):
-        super().__init__(parent, *args, **kwargs)
-        
+class LoginPage(QWidget): 
+    def __init__(self, parent=None, on_login_success=None):
+        super().__init__(parent)
         self.on_login_success = on_login_success
-        
-        # Center container
-        self.card_frame = ctk.CTkFrame(
-            self, 
-            fg_color="#FFFFFF", 
-            corner_radius=24,
-            border_width=1,
-            border_color="#E7EAF0",
-            width=420,
-            height=580
-        )
-        self.card_frame.place(relx=0.5, rely=0.5, anchor="center")
-        self.card_frame.pack_propagate(False)
-        self.card_frame.grid_propagate(False)
-        
-        # Inisialisasi Frame (keduanya diletakkan di dalam card_frame)
-        self.login_frame = ctk.CTkFrame(self.card_frame, fg_color="transparent")
-        self.register_frame = ctk.CTkFrame(self.card_frame, fg_color="transparent")
-        
-        # Setup isi masing-masing frame
+
+        main_layout = QVBoxLayout(self)
+        main_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        self.card_frame = QFrame(self)
+        self.card_frame.setFixedSize(420, 580)
+        self.card_frame.setStyleSheet("""
+            QFrame#LoginCard {
+                background-color: #FFFFFF;
+                border-radius: 24px;
+                border: 1px solid #E7EAF0;
+            }
+        """)
+        self.card_frame.setObjectName("LoginCard")
+
+        shadow = QGraphicsDropShadowEffect(self)
+        shadow.setBlurRadius(20)
+        shadow.setColor(QColor(0, 0, 0, 20))
+        shadow.setOffset(0, 4)
+        self.card_frame.setGraphicsEffect(shadow)
+
+        card_layout = QVBoxLayout(self.card_frame)
+        card_layout.setContentsMargins(20, 20, 20, 20)
+
+        self.stacked_widget = QStackedWidget(self.card_frame)
+        self.stacked_widget.setStyleSheet("background-color: transparent;")
+        card_layout.addWidget(self.stacked_widget)
+
+        self.login_widget = QWidget()
+        self.register_widget = QWidget()
+
         self._setup_login_frame()
         self._setup_register_frame()
-        
-        # Tampilkan frame login pertama kali
+
+        self.stacked_widget.addWidget(self.login_widget)
+        self.stacked_widget.addWidget(self.register_widget)
+
         self.show_login_frame()
+        main_layout.addWidget(self.card_frame)
 
     def _set_feedback(self, label_widget, message, is_error=True):
         if label_widget is None:
             return
         color = "#DC2626" if is_error else "#16A34A"
-        label_widget.configure(text=str(message or ""), text_color=color)
-
-
+        label_widget.setText(str(message or ""))
+        label_widget.setStyleSheet(f"color: {color}; font-size: 12px; background: transparent;")
 
     def show_login_frame(self, event=None):
-        """Menyembunyikan frame register dan menampilkan frame login"""
-        self.register_frame.pack_forget()
         self._set_feedback(self.register_feedback, "", is_error=False)
-        self.login_frame.pack(fill="both", expand=True, padx=20, pady=20)
+        self.stacked_widget.setCurrentWidget(self.login_widget)
 
     def show_register_frame(self, event=None):
-        """Menyembunyikan frame login dan menampilkan frame register"""
-        self.login_frame.pack_forget()
         self._set_feedback(self.login_feedback, "", is_error=False)
-        self.register_frame.pack(fill="both", expand=True, padx=20, pady=20)
+        self.stacked_widget.setCurrentWidget(self.register_widget)
 
     def _setup_login_frame(self):
-        # Judul dengan icon
-        title_frame = ctk.CTkFrame(self.login_frame, fg_color="transparent")
-        title_frame.pack(pady=(40, 30))
+        layout = QVBoxLayout(self.login_widget)
+        layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        layout.setContentsMargins(10, 20, 10, 10)
+        layout.setSpacing(15)
+
+        title_layout = QVBoxLayout()
+        title_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
-        icon_label = ctk.CTkLabel(title_frame, text="🔒", font=ctk.CTkFont(size=48))
-        icon_label.pack()
+        icon_label = QLabel("🔒")
+        icon_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        icon_label.setStyleSheet("font-size: 48px; background: transparent;")
         
-        label_title = ctk.CTkLabel(title_frame, text="Selamat Datang", font=ctk.CTkFont(size=26, weight="bold"), text_color="#002B49")
-        label_title.pack(pady=(12, 0))
+        label_title = QLabel("Selamat Datang")
+        label_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        label_title.setStyleSheet("font-size: 26px; font-weight: bold; color: #002B49; background: transparent;")
         
-        subtitle = ctk.CTkLabel(title_frame, text="Silakan masuk untuk melanjutkan", font=ctk.CTkFont(size=13), text_color="#6F7C85")
-        subtitle.pack()
+        subtitle = QLabel("Silakan masuk untuk melanjutkan")
+        subtitle.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        subtitle.setStyleSheet("font-size: 13px; color: #6F7C85; background: transparent;")
+        
+        title_layout.addWidget(icon_label)
+        title_layout.addWidget(label_title)
+        title_layout.addWidget(subtitle)
+        
+        layout.addLayout(title_layout)
+        layout.addSpacing(15)
 
-        # Input Username
-        self.entry_login_username = ctk.CTkEntry(
-            self.login_frame, 
-            placeholder_text="Username", 
-            width=320, 
-            height=48,
-            corner_radius=12,
-            border_color="#E7EAF0",
-            border_width=1,
-            fg_color="#F9FAFB"
-        )
-        self.entry_login_username.pack(pady=(0, 16))
+        input_style = """
+            QLineEdit {
+                background-color: #F9FAFB;
+                color: #1B2630;
+                border: 1px solid #E7EAF0;
+                border-radius: 12px;
+                padding: 10px;
+                font-size: 14px;
+            }
+            QLineEdit:focus {
+                border: 1px solid #C96A28;
+            }
+        """
 
-        # Input Password
-        self.entry_login_password = ctk.CTkEntry(
-            self.login_frame, 
-            placeholder_text="Password", 
-            show="*", 
-            width=320, 
-            height=48,
-            corner_radius=12,
-            border_color="#E7EAF0",
-            border_width=1,
-            fg_color="#F9FAFB"
-        )
-        self.entry_login_password.pack(pady=(0, 28))
+        self.entry_login_username = QLineEdit()
+        self.entry_login_username.setPlaceholderText("Username")
+        self.entry_login_username.setFixedHeight(48)
+        self.entry_login_username.setStyleSheet(input_style)
+        layout.addWidget(self.entry_login_username)
 
-        # Tombol Login
-        btn_login = ctk.CTkButton(
-            self.login_frame, 
-            text="Masuk Sekarang", 
-            width=320, 
-            height=48, 
-            corner_radius=12,
-            fg_color="#C96A28",
-            hover_color="#D96A1F",
-            text_color="white",
-            font=ctk.CTkFont(weight="bold", size=14),
-            command=self.proses_login
-        )
-        btn_login.pack(pady=(0, 20))
+        self.entry_login_password = QLineEdit()
+        self.entry_login_password.setPlaceholderText("Password")
+        self.entry_login_password.setEchoMode(QLineEdit.EchoMode.Password)
+        self.entry_login_password.setFixedHeight(48)
+        self.entry_login_password.setStyleSheet(input_style)
+        layout.addWidget(self.entry_login_password)
 
-        self.login_feedback = ctk.CTkLabel(
-            self.login_frame,
-            text="",
-            text_color="#DC2626",
-            font=ctk.CTkFont(size=12),
-            wraplength=320,
-            justify="center",
-        )
-        self.login_feedback.pack(pady=(0, 8))
+        layout.addSpacing(10)
 
-        # Bagian Bawah: Belum punya akun? Daftar sekarang
-        switch_frame = ctk.CTkFrame(self.login_frame, fg_color="transparent")
-        switch_frame.pack(pady=(10, 0))
+        btn_login = QPushButton("Masuk Sekarang")
+        btn_login.setFixedHeight(48)
+        btn_login.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        btn_login.setStyleSheet("""
+            QPushButton {
+                background-color: #C96A28;
+                color: white;
+                border-radius: 12px;
+                font-weight: bold;
+                font-size: 14px;
+            }
+            QPushButton:hover {
+                background-color: #D96A1F;
+            }
+        """)
+        btn_login.clicked.connect(self.proses_login)
+        layout.addWidget(btn_login)
 
-        label_info = ctk.CTkLabel(switch_frame, text="Belum punya akun? ", text_color="#6F7C85")
-        label_info.pack(side="left")
+        self.login_feedback = QLabel("")
+        self.login_feedback.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.login_feedback.setWordWrap(True)
+        layout.addWidget(self.login_feedback)
 
-        # Teks "Daftar sekarang" yang bisa diklik
-        label_switch = ctk.CTkLabel(switch_frame, text="Daftar sekarang", text_color="#C96A28", cursor="hand2", font=ctk.CTkFont(weight="bold"))
-        label_switch.pack(side="left")
-        label_switch.bind("<Button-1>", self.show_register_frame)
+        switch_layout = QHBoxLayout()
+        switch_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        
+        label_info = QLabel("Belum punya akun? ")
+        label_info.setStyleSheet("color: #6F7C85; background: transparent;")
+        
+        label_switch = QPushButton("Daftar sekarang")
+        label_switch.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        label_switch.setStyleSheet("""
+            QPushButton {
+                color: #C96A28;
+                font-weight: bold;
+                background: transparent;
+                border: none;
+            }
+            QPushButton:hover {
+                text-decoration: underline;
+            }
+        """)
+        label_switch.clicked.connect(self.show_register_frame)
+        
+        switch_layout.addWidget(label_info)
+        switch_layout.addWidget(label_switch)
+        
+        layout.addStretch()
+        layout.addLayout(switch_layout)
 
     def _setup_register_frame(self):
-        # Judul dengan icon
-        title_frame = ctk.CTkFrame(self.register_frame, fg_color="transparent")
-        title_frame.pack(pady=(30, 20))
+        layout = QVBoxLayout(self.register_widget)
+        layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        layout.setContentsMargins(10, 10, 10, 10)
+        layout.setSpacing(10)
+
+        title_layout = QVBoxLayout()
+        title_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
-        icon_label = ctk.CTkLabel(title_frame, text="📝", font=ctk.CTkFont(size=40))
-        icon_label.pack()
+        icon_label = QLabel("📝")
+        icon_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        icon_label.setStyleSheet("font-size: 40px; background: transparent;")
         
-        label_title = ctk.CTkLabel(title_frame, text="Buat Akun Baru", font=ctk.CTkFont(size=22, weight="bold"), text_color="#002B49")
-        label_title.pack(pady=(8, 0))
+        label_title = QLabel("Buat Akun Baru")
+        label_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        label_title.setStyleSheet("font-size: 22px; font-weight: bold; color: #002B49; background: transparent;")
+        
+        title_layout.addWidget(icon_label)
+        title_layout.addWidget(label_title)
+        
+        layout.addLayout(title_layout)
+        layout.addSpacing(10)
 
-        # Input Nama Lengkap
-        self.entry_reg_name = ctk.CTkEntry(self.register_frame, placeholder_text="Nama Lengkap", width=320, height=44, corner_radius=10, border_color="#E7EAF0", fg_color="#F9FAFB")
-        self.entry_reg_name.pack(pady=(0, 12))
+        input_style = """
+            QLineEdit {
+                background-color: #F9FAFB;
+                color: #1B2630;
+                border: 1px solid #E7EAF0;
+                border-radius: 10px;
+                padding: 10px;
+                font-size: 13px;
+            }
+            QLineEdit:focus {
+                border: 1px solid #C96A28;
+            }
+        """
 
-        # Input Username
-        self.entry_reg_username = ctk.CTkEntry(self.register_frame, placeholder_text="Username (unik)", width=320, height=44, corner_radius=10, border_color="#E7EAF0", fg_color="#F9FAFB")
-        self.entry_reg_username.pack(pady=(0, 12))
+        self.entry_reg_name = QLineEdit()
+        self.entry_reg_name.setPlaceholderText("Nama Lengkap")
+        self.entry_reg_name.setFixedHeight(44)
+        self.entry_reg_name.setStyleSheet(input_style)
+        layout.addWidget(self.entry_reg_name)
 
-        # Input Password
-        self.entry_reg_password = ctk.CTkEntry(self.register_frame, placeholder_text="Password", show="*", width=320, height=44, corner_radius=10, border_color="#E7EAF0", fg_color="#F9FAFB")
-        self.entry_reg_password.pack(pady=(0, 12))
+        self.entry_reg_username = QLineEdit()
+        self.entry_reg_username.setPlaceholderText("Username (unik)")
+        self.entry_reg_username.setFixedHeight(44)
+        self.entry_reg_username.setStyleSheet(input_style)
+        layout.addWidget(self.entry_reg_username)
 
-        # Input Confirm Password
-        self.entry_reg_confirm_password = ctk.CTkEntry(self.register_frame, placeholder_text="Konfirmasi Password", show="*", width=320, height=44, corner_radius=10, border_color="#E7EAF0", fg_color="#F9FAFB")
-        self.entry_reg_confirm_password.pack(pady=(0, 24))
+        self.entry_reg_password = QLineEdit()
+        self.entry_reg_password.setPlaceholderText("Password")
+        self.entry_reg_password.setEchoMode(QLineEdit.EchoMode.Password)
+        self.entry_reg_password.setFixedHeight(44)
+        self.entry_reg_password.setStyleSheet(input_style)
+        layout.addWidget(self.entry_reg_password)
 
-        # Tombol Daftar
-        btn_register = ctk.CTkButton(
-            self.register_frame, 
-            text="Daftar", 
-            width=320, 
-            height=44, 
-            corner_radius=10,
-            fg_color="#002B49",
-            hover_color="#013A62",
-            text_color="white",
-            font=ctk.CTkFont(weight="bold", size=14),
-            command=self.proses_register
-        )
-        btn_register.pack(pady=(0, 15))
+        self.entry_reg_confirm_password = QLineEdit()
+        self.entry_reg_confirm_password.setPlaceholderText("Konfirmasi Password")
+        self.entry_reg_confirm_password.setEchoMode(QLineEdit.EchoMode.Password)
+        self.entry_reg_confirm_password.setFixedHeight(44)
+        self.entry_reg_confirm_password.setStyleSheet(input_style)
+        layout.addWidget(self.entry_reg_confirm_password)
 
-        self.register_feedback = ctk.CTkLabel(
-            self.register_frame,
-            text="",
-            text_color="#DC2626",
-            font=ctk.CTkFont(size=12),
-            wraplength=320,
-            justify="center",
-        )
-        self.register_feedback.pack(pady=(0, 8))
+        layout.addSpacing(5)
 
-        # Bagian Bawah: Sudah punya akun? Login
-        switch_frame = ctk.CTkFrame(self.register_frame, fg_color="transparent")
-        switch_frame.pack(pady=(5, 0))
+        btn_register = QPushButton("Daftar Sekarang")
+        btn_register.setFixedHeight(44)
+        btn_register.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        btn_register.setStyleSheet("""
+            QPushButton {
+                background-color: #002B49;
+                color: white;
+                border-radius: 10px;
+                font-weight: bold;
+                font-size: 14px;
+            }
+            QPushButton:hover {
+                background-color: #013A62;
+            }
+        """)
+        btn_register.clicked.connect(self.proses_register)
+        layout.addWidget(btn_register)
 
-        label_info = ctk.CTkLabel(switch_frame, text="Sudah punya akun? ", text_color="#6F7C85")
-        label_info.pack(side="left")
+        self.register_feedback = QLabel("")
+        self.register_feedback.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.register_feedback.setWordWrap(True)
+        layout.addWidget(self.register_feedback)
 
-        # Teks "Login" yang bisa diklik
-        label_switch = ctk.CTkLabel(switch_frame, text="Masuk di sini", text_color="#002B49", cursor="hand2", font=ctk.CTkFont(weight="bold"))
-        label_switch.pack(side="left")
-        label_switch.bind("<Button-1>", self.show_login_frame)
+        switch_layout = QHBoxLayout()
+        switch_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        
+        label_info = QLabel("Sudah punya akun? ")
+        label_info.setStyleSheet("color: #6F7C85; background: transparent;")
+        
+        label_switch = QPushButton("Masuk di sini")
+        label_switch.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        label_switch.setStyleSheet("""
+            QPushButton {
+                color: #C96A28;
+                font-weight: bold;
+                background: transparent;
+                border: none;
+            }
+            QPushButton:hover {
+                text-decoration: underline;
+            }
+        """)
+        label_switch.clicked.connect(self.show_login_frame)
+        
+        switch_layout.addWidget(label_info)
+        switch_layout.addWidget(label_switch)
+        
+        layout.addStretch()
+        layout.addLayout(switch_layout)
 
-    # POSISI DEF INI SUDAH SEJAJAR DENGAN DEF LAINNYA
     def proses_login(self):
-        username = self.entry_login_username.get().strip()
-        password = self.entry_login_password.get().strip()
+        username = self.entry_login_username.text().strip()
+        password = self.entry_login_password.text().strip()
         self._set_feedback(self.login_feedback, "", is_error=False)
         
-        # Validasi input kosong
         if not username or not password:
             self._set_feedback(self.login_feedback, "Username dan Password tidak boleh kosong!", is_error=True)
             return
         
-        # Panggil fungsi verify_login dan unpack result tuple (ok, payload)
         ok, payload = verify_login(username, password)
         if ok:
             user_data = payload if isinstance(payload, dict) else {
@@ -222,10 +310,10 @@ class LoginPage(ctk.CTkFrame):
             self._set_feedback(self.login_feedback, f"Login gagal: {payload}", is_error=True)
 
     def proses_register(self):
-        name = self.entry_reg_name.get().strip()
-        username = self.entry_reg_username.get().strip()
-        password = self.entry_reg_password.get().strip()
-        confirm_pass = self.entry_reg_confirm_password.get().strip()
+        name = self.entry_reg_name.text().strip()
+        username = self.entry_reg_username.text().strip()
+        password = self.entry_reg_password.text().strip()
+        confirm_pass = self.entry_reg_confirm_password.text().strip()
         self._set_feedback(self.register_feedback, "", is_error=False)
 
         if not name or not username or not password:
@@ -242,27 +330,15 @@ class LoginPage(ctk.CTkFrame):
 
         ok, payload = register_user(username, password, full_name=name)
         if ok:
-            # Jangan auto-login / auto-close: arahkan pengguna ke frame Login
-            user_data = payload if isinstance(payload, dict) else {
-                "username": username,
-                "display_name": name or username,
-                "full_name": name,
-            }
-            # Tampilkan pesan sukses dan pindah ke form login dengan username terisi
-            self._set_feedback(self.register_feedback, "Registrasi berhasil. Silakan login.", is_error=False)
-            # Bersihkan field register (opsional) dan tunjukkan login
-            try:
-                self.entry_reg_password.delete(0, 'end')
-                self.entry_reg_confirm_password.delete(0, 'end')
-            except Exception:
-                pass
+            self._set_feedback(self.register_feedback, "Pendaftaran berhasil! Silakan login.", is_error=False)
+            self.entry_reg_name.clear()
+            self.entry_reg_username.clear()
+            self.entry_reg_password.clear()
+            self.entry_reg_confirm_password.clear()
+            
             self.show_login_frame()
-            # Prefill username di form login dan fokus ke password
-            try:
-                self.entry_login_username.delete(0, 'end')
-                self.entry_login_username.insert(0, username)
-                self.entry_login_password.focus_set()
-            except Exception:
-                pass
+            self.entry_login_username.setText(username)
+            self.entry_login_password.setFocus()
+            self._set_feedback(self.login_feedback, "Pendaftaran berhasil! Silakan login dengan password Anda.", is_error=False)
         else:
             self._set_feedback(self.register_feedback, f"Registrasi gagal: {payload}", is_error=True)
