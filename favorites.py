@@ -46,7 +46,10 @@ class FavoritesManager:
             if not isinstance(data, list):
                 return []
 
-            return self._sort_favorites(data)
+            return self._sort_favorites([
+                item for item in data
+                if item.get("owner") == self.owner_username
+            ])
         except (json.JSONDecodeError, ValueError, OSError):
             return []
 
@@ -80,6 +83,7 @@ class FavoritesManager:
             return False
 
         new_item = dict(kos_item)
+        new_item["owner"] = self.owner_username
         if not new_item.get("added_at"):
             new_item["added_at"] = datetime.utcnow().isoformat() + "Z"
 

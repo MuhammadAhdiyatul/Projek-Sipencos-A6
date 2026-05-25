@@ -344,9 +344,6 @@ class App(QMainWindow):
         username = session.current_session.get_username()
         
         db_favorites = database.get_user_favorites(username, self.kos_data)
-        for temp_item in self.favorites:
-            if not any(_item_key(x) == _item_key(temp_item) for x in db_favorites):
-                database.add_favorite(username, temp_item)
                 
         self.favorites = database.get_user_favorites(username, self.kos_data)
         self.update_user_display()
@@ -385,6 +382,8 @@ class App(QMainWindow):
             frame.refresh()
         elif frame_name == "settings":
             frame.refresh()
+        elif frame_name == "login":
+            self.frames["login"].show_login_frame()
         elif frame_name == "detail":
             if self.detail_item is not None:
                 frame.set_detail(
@@ -410,30 +409,17 @@ class App(QMainWindow):
         return any(_item_key(entry) == key for entry in collection)
 
     def toggle_favorite(self, kos_item):
-        if not isinstance(kos_item, dict): return False
+        if not isinstance(kos_item, dict): 
+            return False
 
         if not session.current_session.check_auth():
-            added = False
-            if self._contains(self.favorites, kos_item):
-                self.favorites = [item for item in self.favorites if _item_key(item) != _item_key(kos_item)]
-            else:
-                self.favorites.insert(0, kos_item)
-                added = True
-            
-            if self.active_frame in ["search", "detail"]:
-                frame = self.frames.get(self.active_frame)
-                if self.active_frame == "search":
-                    frame.refresh(self.kos_data, self.favorites, self.compare_list)
-                elif self.active_frame == "detail":
-                    frame.set_detail(
-                        self.detail_item,
-                        is_favorite=self._contains(self.favorites, self.detail_item),
-                        is_compared=self._contains(self.compare_list, self.detail_item),
-                    )
-            return added
+            self._pending_login_target = self.active_frame
+            self.show_frame("login")
+            return False
 
         username = session.current_session.get_username()
         added = False
+        
         if self._contains(self.favorites, kos_item):
             self.favorites = [item for item in self.favorites if _item_key(item) != _item_key(kos_item)]
             database.remove_favorite(username, kos_item)
