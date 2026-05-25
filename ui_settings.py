@@ -158,6 +158,10 @@ class SettingsViewModern(QFrame):
         self.main_layout.addStretch()
 
     def logout(self):
+        if not self.current_user or str(self.current_user).lower() == "guest" or str(self.current_user).lower() == "none":
+            QMessageBox.information(self, "Informasi", "Anda belum login ke dalam akun apa pun.")
+            return
+
         konfirmasi = QMessageBox.question(self, "Konfirmasi", "Anda yakin ingin keluar dari akun?", 
                                           QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
         if konfirmasi == QMessageBox.StandardButton.Yes:
