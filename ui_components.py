@@ -1,19 +1,20 @@
-import customtkinter as ctk
 import requests
-import threading
-import concurrent.futures
 import hashlib
 from pathlib import Path
 from io import BytesIO
+import concurrent.futures
+
+from PyQt6.QtWidgets import (QWidget, QFrame, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, 
+                             QSizePolicy, QGraphicsDropShadowEffect, QDialog, QScrollArea)
+from PyQt6.QtCore import Qt, pyqtSignal, QObject, QSize, pyqtSlot, QMetaObject, Q_ARG
+from PyQt6.QtGui import QPixmap, QIcon, QColor, QFont, QCursor, QPainter
 
 try:
-    from PIL import Image
+    from PIL import Image, ImageQt
 except Exception:
     Image = None
 
-ctk.set_appearance_mode("Light")
-ctk.set_default_color_theme("blue")
-
+# Color palette
 PRIMARY_COLOR = "#002B49"
 ACCENT_COLOR = "#C96A28"
 APP_BG = "#F0F2F5"
@@ -33,49 +34,39 @@ try:
 except Exception:
     _CACHE_DIR = None
 
-
 def _format_price(value):
     if isinstance(value, (int, float)):
         nominal = int(value)
+        if nominal == 0:
+            return "Harga belum tersedia"
         return f"Rp {nominal:,}".replace(",", ".")
-
     if isinstance(value, str):
         cleaned = value.strip()
         if cleaned:
             return cleaned
-
     return "-"
-
 
 def _as_list(value, fallback="-"):
     if isinstance(value, list):
         items = [str(item).strip() for item in value if str(item).strip()]
         return items if items else [fallback]
-
     if value is None:
         return [fallback]
-
     text = str(value).strip()
     return [text] if text else [fallback]
-
 
 def _to_facility_text(fasilitas):
     items = _as_list(fasilitas, fallback="")
     items = [item for item in items if item]
-
     if items:
         return " • ".join(items[:3])
-
     return "WiFi • AC • KM Dalam"
-
 
 def _safe_text(value, fallback="-"):
     if value is None:
         return fallback
-
     text = str(value).strip()
     return text if text else fallback
-
 
 def _truncate_text(value, limit, fallback="-"):
     text = _safe_text(value, fallback)
@@ -83,21 +74,16 @@ def _truncate_text(value, limit, fallback="-"):
         return text
     return text[: max(0, limit - 1)].rstrip() + "…"
 
-
 def _normalize_foto(value):
     if isinstance(value, list):
         return [str(url).strip() for url in value if str(url).strip()]
-
     if isinstance(value, str):
         return [part.strip() for part in value.split(",") if part.strip()]
-
     return []
-
 
 def _load_remote_image(url, size):
     if not url or Image is None:
         return None
-
     if url.lower().endswith(".svg") or ".svg?" in url.lower():
         return None
 
@@ -111,21 +97,22 @@ def _load_remote_image(url, size):
             h = hashlib.sha256(f"{url}|{size[0]}x{size[1]}".encode("utf-8")).hexdigest()
             cache_filename = _CACHE_DIR.joinpath(f"{h}.jpg")
             if cache_filename.exists():
-                pil_image = Image.open(str(cache_filename)).convert("RGB")
-                image = ctk.CTkImage(light_image=pil_image, dark_image=pil_image, size=size)
-                _IMAGE_CACHE[cache_key] = image
-                return image
+                pil_image = Image.open(str(cache_filename)).convert("RGBA")
+                qimage = ImageQt.ImageQt(pil_image)
+                pixmap = QPixmap.fromImage(qimage)
+                _IMAGE_CACHE[cache_key] = pixmap
+                return pixmap
         except Exception:
             cache_filename = None
 
     try:
         headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
         }
         response = _SESSION.get(url, headers=headers, timeout=10)
         response.raise_for_status()
 
-        pil_image = Image.open(BytesIO(response.content)).convert("RGB")
+        pil_image = Image.open(BytesIO(response.content)).convert("RGBA")
         try:
             pil_copy = pil_image.copy()
             pil_copy.thumbnail(size, Image.LANCZOS)
@@ -135,438 +122,221 @@ def _load_remote_image(url, size):
 
         if cache_filename is not None:
             try:
-                pil_image.save(str(cache_filename), format="JPEG", quality=75)
+                pil_image.convert("RGB").save(str(cache_filename), format="JPEG", quality=75)
             except Exception:
                 pass
 
-        image = ctk.CTkImage(light_image=pil_image, dark_image=pil_image, size=size)
-        _IMAGE_CACHE[cache_key] = image
-        return image
+        qimage = ImageQt.ImageQt(pil_image)
+        pixmap = QPixmap.fromImage(qimage)
+        _IMAGE_CACHE[cache_key] = pixmap
+        return pixmap
     except Exception:
         return None
 
+class ImageLoader(QObject):
+    finished = pyqtSignal(object)
+
 def _load_remote_image_async(url, size, widget, callback):
     if not url or Image is None:
-        try:
-            callback(None)
-        except Exception:
-            pass
+        callback(None)
         return
-
+        
     cache_key = (url, size)
     if cache_key in _IMAGE_CACHE:
-        try:
-            callback(_IMAGE_CACHE[cache_key])
-        except Exception:
-            pass
+        callback(_IMAGE_CACHE[cache_key])
         return
 
-    def fetch_and_callback():
+    loader = ImageLoader()
+    loader.finished.connect(callback)
+
+    def fetch_task():
         try:
-            image = _load_remote_image(url, size)
-            try:
-                widget.after(0, lambda: callback(image))
-            except Exception:
-                pass
+            pixmap = _load_remote_image(url, size)
+            loader.finished.emit(pixmap)
         except Exception:
-            try:
-                widget.after(0, lambda: callback(None))
-            except Exception:
-                pass
+            loader.finished.emit(None)
 
-    try:
-        _EXECUTOR.submit(fetch_and_callback)
-    except Exception:
-        threading.Thread(target=fetch_and_callback, daemon=True).start()
+    _EXECUTOR.submit(fetch_task)
 
+class KosCard(QFrame):
+    def __init__(self, parent, data_kos, open_detail_callback=None, toggle_favorite_callback=None, toggle_compare_callback=None, is_favorite=False, is_compared=False, width=320, *args, **kwargs):
+        super().__init__(parent, *args, **kwargs)
+        self.data_kos = data_kos
+        self.detail_callback = open_detail_callback
+        self.favorites_callback = toggle_favorite_callback
+        self.compare_callback = toggle_compare_callback
+        
+        self.setFixedWidth(width)
+        self.setFixedHeight(380)
+        self.setObjectName("KosCard")
+        self.setStyleSheet("""
+            #KosCard {
+                background-color: #FFFFFF;
+                border-radius: 16px;
+                border: 1px solid #E7EAF0;
+            }
+            #KosCard:hover {
+                border: 1px solid #C96A28;
+            }
+        """)
 
-class DetailWindow(ctk.CTkToplevel):
+        # Add drop shadow
+        shadow = QGraphicsDropShadowEffect(self)
+        shadow.setBlurRadius(15)
+        shadow.setColor(QColor(0, 0, 0, 15))
+        shadow.setOffset(0, 4)
+        self.setGraphicsEffect(shadow)
+
+        main_layout = QVBoxLayout(self)
+        main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.setSpacing(0)
+
+        # Image Container
+        self.image_container = QFrame(self)
+        self.image_container.setFixedHeight(150)
+        self.image_container.setStyleSheet("background-color: #E9EDF3; border-top-left-radius: 16px; border-top-right-radius: 16px;")
+        
+        # We need a layout for the image and the buttons overlaid on top
+        img_layout = QVBoxLayout(self.image_container)
+        img_layout.setContentsMargins(12, 12, 12, 12)
+        
+        self.image_label = QLabel(self.image_container)
+        self.image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.image_label.setScaledContents(True)
+        self.image_label.setGeometry(0, 0, width, 150)
+        self.image_label.lower() # put behind buttons
+
+        top_buttons_layout = QHBoxLayout()
+        top_buttons_layout.setContentsMargins(0, 0, 0, 0)
+        
+        tipe = str(data_kos.get("tipe", "")).upper()
+        if "PUTRI" in tipe: badge_color = "#EC4899"
+        elif "PUTRA" in tipe: badge_color = "#3B82F6"
+        else: badge_color = "#10B981"
+        
+        badge_lbl = QLabel(tipe if tipe else "CAMPUR")
+        badge_lbl.setStyleSheet(f"background-color: {badge_color}; color: white; padding: 4px 8px; border-radius: 8px; font-weight: bold; font-size: 10px;")
+        
+        self.fav_btn = QPushButton("❤️" if is_favorite else "♡")
+        self.fav_btn.setFixedSize(30, 30)
+        self.fav_btn.setStyleSheet("background-color: white; border-radius: 15px; color: " + ("#EF4444" if is_favorite else "#6F7C85") + "; font-size: 14px;")
+        self.fav_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        if self.favorites_callback:
+            self.fav_btn.clicked.connect(self._on_favorite_click)
+            
+        self.compare_btn = QPushButton("⚖️" if is_compared else "⚖")
+        self.compare_btn.setFixedSize(30, 30)
+        self.compare_btn.setStyleSheet("background-color: white; border-radius: 15px; color: " + ("#3B82F6" if is_compared else "#6F7C85") + "; font-size: 14px;")
+        self.compare_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        if self.compare_callback:
+            self.compare_btn.clicked.connect(self._on_compare_click)
+
+        top_buttons_layout.addWidget(badge_lbl)
+        top_buttons_layout.addStretch()
+        top_buttons_layout.addWidget(self.compare_btn)
+        top_buttons_layout.addWidget(self.fav_btn)
+        
+        img_layout.addLayout(top_buttons_layout)
+        img_layout.addStretch()
+        
+        main_layout.addWidget(self.image_container)
+
+        # Content Container
+        content_layout = QVBoxLayout()
+        content_layout.setContentsMargins(16, 16, 16, 16)
+        content_layout.setSpacing(8)
+        
+        nama_kos = _truncate_text(data_kos.get("nama_kos"), 45)
+        alamat = _truncate_text(data_kos.get("alamat"), 40)
+        harga = _format_price(data_kos.get("harga"))
+        fasilitas = _to_facility_text(data_kos.get("fasilitas_kamar", []))
+        
+        title_lbl = QLabel(nama_kos)
+        title_lbl.setStyleSheet("font-size: 16px; font-weight: bold; color: #002B49;")
+        title_lbl.setWordWrap(True)
+        
+        alamat_lbl = QLabel(alamat)
+        alamat_lbl.setStyleSheet("font-size: 12px; color: #6F7C85;")
+        alamat_lbl.setWordWrap(True)
+        
+        fasilitas_lbl = QLabel(fasilitas)
+        fasilitas_lbl.setStyleSheet("font-size: 11px; color: #4B5563;")
+        
+        price_lbl = QLabel(harga)
+        price_lbl.setStyleSheet("font-size: 20px; font-weight: bold; color: #002B49;")
+        
+        month_lbl = QLabel("/ bulan")
+        month_lbl.setStyleSheet("font-size: 11px; color: #6F7C85;")
+        
+        price_layout = QHBoxLayout()
+        price_layout.addWidget(price_lbl)
+        price_layout.addWidget(month_lbl)
+        price_layout.addStretch()
+        
+        self.btn_detail = QPushButton("Lihat Detail")
+        self.btn_detail.setFixedHeight(38)
+        self.btn_detail.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self.btn_detail.setStyleSheet("""
+            QPushButton {
+                background-color: #002B49;
+                color: white;
+                border-radius: 10px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #013A62;
+            }
+        """)
+        self.btn_detail.clicked.connect(self._on_detail_click)
+
+        content_layout.addWidget(title_lbl)
+        content_layout.addWidget(alamat_lbl)
+        content_layout.addWidget(fasilitas_lbl)
+        content_layout.addStretch()
+        content_layout.addLayout(price_layout)
+        content_layout.addWidget(self.btn_detail)
+        
+        main_layout.addLayout(content_layout)
+
+        # Load image
+        foto_list = _normalize_foto(data_kos.get("foto"))
+        if foto_list:
+            _load_remote_image_async(foto_list[0], (width, 150), self, self._set_image)
+
+    def _set_image(self, pixmap):
+        if pixmap:
+            self.image_label.setPixmap(pixmap.scaled(self.image_label.size(), Qt.AspectRatioMode.KeepAspectRatioByExpanding, Qt.TransformationMode.SmoothTransformation))
+
+    def _on_favorite_click(self):
+        if self.favorites_callback:
+            added = self.favorites_callback(self.data_kos)
+            if added is True:
+                self.fav_btn.setText("❤️")
+                self.fav_btn.setStyleSheet("background-color: white; border-radius: 15px; color: #EF4444; font-size: 14px;")
+            elif added is False:
+                self.fav_btn.setText("♡")
+                self.fav_btn.setStyleSheet("background-color: white; border-radius: 15px; color: #6F7C85; font-size: 14px;")
+
+    def _on_compare_click(self):
+        if self.compare_callback:
+            added = self.compare_callback(self.data_kos)
+            if added is True:
+                self.compare_btn.setStyleSheet("background-color: white; border-radius: 15px; color: #3B82F6; font-size: 14px;")
+            elif added is False:
+                self.compare_btn.setStyleSheet("background-color: white; border-radius: 15px; color: #6F7C85; font-size: 14px;")
+
+    def _on_detail_click(self):
+        if self.detail_callback:
+            self.detail_callback(self.data_kos)
+        else:
+            DetailWindow(self, self.data_kos).exec()
+
+class DetailWindow(QDialog):
     def __init__(self, parent, data_kos, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
-
-        self.transient(parent)
-        self.after(10, self.grab_set) 
-
-        nama = _safe_text(data_kos.get("nama_kos"), "Kos")
-        harga = _format_price(data_kos.get("harga"))
-        alamat = _safe_text(data_kos.get("alamat"))
-        telepon = _safe_text(data_kos.get("telepon"), "Kontak tidak tersedia")
-        tipe = _safe_text(data_kos.get("tipe"))
-        deskripsi = _safe_text(data_kos.get("deskripsi"), "Tidak ada deskripsi tambahan.")
-        last_updated = _safe_text(data_kos.get("last_updated"), "Baru saja diperbarui")
-
-        fasilitas_kamar = _as_list(data_kos.get("fasilitas_kamar"))
-        fasilitas_bersama = _as_list(data_kos.get("fasilitas_bersama"))
-        foto_list = _normalize_foto(data_kos.get("foto"))
-
-        self.title(f"Detail - {nama}")
-        self.update_idletasks()
-        
-        w, h = 950, 700
-        
-        screen_w = self.winfo_screenwidth()
-        screen_h = self.winfo_screenheight()
-        
-        pos_x = (screen_w // 2) - (w // 2)
-        pos_y = (screen_h // 2) - (h // 2)
-        
-        self.geometry(f"{w}x{h}+{pos_x}+{pos_y}")
-        self.resizable(False, False)
-        self.configure(fg_color=APP_BG)
-
-        shell = ctk.CTkFrame(self, fg_color="transparent")
-        shell.pack(fill="both", expand=True, padx=25, pady=25)
-
-        left_col = ctk.CTkFrame(shell, fg_color="transparent")
-        left_col.pack(side="left", fill="both", expand=True, padx=(0, 15))
-
-        image_box = ctk.CTkFrame(
-            left_col, fg_color=IMAGE_BG, corner_radius=15, 
-            height=320, border_width=1, border_color=BORDER_COLOR
-        )
-        image_box.pack(fill="x", pady=(0, 15))
-        image_box.pack_propagate(False)
-
-        self.preview_label = ctk.CTkLabel(image_box, text="Memuat Gambar...", font=("Arial", 14), text_color=TEXT_SUBTLE)
-        self.preview_label.pack(expand=True)
-
-        def on_preview_loaded(preview_image):
-            try:
-                if preview_image:
-                    self.preview_label.configure(text="", image=preview_image)
-                    self.preview_label.image = preview_image
-                    self.preview_label.pack(fill="both", expand=True)
-                else:
-                    self.preview_label.configure(text="Gambar tidak tersedia")
-            except Exception:
-                pass
-
-        _load_remote_image_async(foto_list[0] if foto_list else "", (580, 320), self, on_preview_loaded)
-
-        ctk.CTkLabel(left_col, text="Deskripsi Kos", font=("Arial", 18, "bold"), text_color=TITLE_COLOR).pack(anchor="w", pady=(5, 5))
-        
-        desc_scroll = ctk.CTkTextbox(
-            left_col, font=("Arial", 13), text_color=TITLE_COLOR, 
-            fg_color=CARD_BG, corner_radius=12, height=180, 
-            border_width=1, border_color=BORDER_COLOR, wrap="word"
-        )
-        desc_scroll.pack(fill="both", expand=True)
-        desc_scroll.insert("0.0", deskripsi)
-        desc_scroll.configure(state="disabled")
-
-        right_col = ctk.CTkFrame(
-            shell, fg_color=CARD_BG, corner_radius=18, 
-            border_width=1, border_color=BORDER_COLOR, width=320
-        )
-        right_col.pack(side="right", fill="y")
-        right_col.pack_propagate(False)
-
-        self.scroll_area = ctk.CTkScrollableFrame(right_col, fg_color="transparent", width=300)
-        self.scroll_area.pack(fill="both", expand=True, padx=5, pady=(5, 5))
-
-        info_panel = ctk.CTkFrame(self.scroll_area, fg_color="transparent")
-        info_panel.pack(fill="both", expand=True, padx=10, pady=10)
-
-        status_row = ctk.CTkFrame(info_panel, fg_color="transparent")
-        status_row.pack(fill="x", pady=(0, 10))
-        
-        tipe_upper = tipe.upper()
-        if "CAMPUR" in tipe_upper or "SEMUA" in tipe_upper:
-            badge_text = "CAMPUR"
-            badge_bg = "#e67e22"
-        elif "PUTRI" in tipe_upper:
-            badge_text = "PUTRI"
-            badge_bg = "#ff9ff3"
-        else:
-            badge_text = "PUTRA"
-            badge_bg = "#3498db"
-            
-        ctk.CTkLabel(
-            status_row, text=badge_text, font=("Arial", 10, "bold"), 
-            text_color="white", fg_color=badge_bg, corner_radius=6, 
-            width=55, height=22
-        ).pack(side="left")
-        
-        ctk.CTkLabel(
-            status_row, text=last_updated, font=("Arial", 10), 
-            text_color=TEXT_SUBTLE
-        ).pack(side="right")
-
-        ctk.CTkLabel(
-            info_panel, text=nama, font=("Arial", 22, "bold"), 
-            text_color=PRIMARY_COLOR, justify="left", wraplength=270
-        ).pack(anchor="w", pady=(5, 2))
-        
-        ctk.CTkLabel(
-            info_panel, text=alamat, font=("Arial", 11), 
-            text_color=TEXT_SUBTLE, justify="left", wraplength=270
-        ).pack(anchor="w", pady=(0, 15))
-
-        ctk.CTkLabel(info_panel, text="HARGA SEWA", font=("Arial", 10, "bold"), text_color=TEXT_SUBTLE).pack(anchor="w")
-        price_row = ctk.CTkFrame(info_panel, fg_color="transparent")
-        price_row.pack(fill="x", pady=(0, 20))
-        ctk.CTkLabel(price_row, text=harga, font=("Arial", 26, "bold"), text_color=TITLE_COLOR).pack(side="left")
-        ctk.CTkLabel(price_row, text=" / bln", font=("Arial", 12), text_color=TEXT_SUBTLE).pack(side="left", pady=(8, 0))
-
-        self._build_facility_chips(info_panel, "Fasilitas Kamar", fasilitas_kamar)
-        self._build_facility_chips(info_panel, "Fasilitas Bersama", fasilitas_bersama)
-
-        ctk.CTkFrame(info_panel, fg_color="transparent", height=20).pack(fill="x")
-        
-        ctk.CTkLabel(
-            info_panel, text="NOMOR TELEPON", font=("Arial", 10, "bold"),
-            text_color=TEXT_SUBTLE, anchor="w",
-        ).pack(anchor="w", pady=(0, 4))
-
-        contact_box = ctk.CTkFrame(
-            info_panel, fg_color=SUCCESS_SURFACE, corner_radius=8,
-            border_width=1, border_color=BORDER_COLOR,
-        )
-        contact_box.pack(fill="x", pady=(0, 12))
-
-        contact_row = ctk.CTkFrame(contact_box, fg_color="transparent")
-        contact_row.pack(fill="x", padx=10, pady=10)
-        contact_row.grid_columnconfigure(1, weight=1)
-
-        ctk.CTkLabel(
-            contact_row, text="☎", font=("Arial", 18),
-            text_color=ACCENT_COLOR, width=24,
-        ).grid(row=0, column=0, sticky="w", padx=(0, 8))
-
-        ctk.CTkLabel(
-            contact_row, text=telepon, font=("Arial", 14, "bold"),
-            text_color=TITLE_COLOR, anchor="w", justify="left",
-        ).grid(row=0, column=1, sticky="w")
-
-        self.btn_contact = ctk.CTkButton(
-            info_panel, text="📞 Hubungi Pemilik", 
-            fg_color="#D35400", hover_color="#A04000", text_color="white",
-            height=46, corner_radius=12, font=("Arial", 13, "bold"),
-            command=lambda: print(f"[DetailWindow] Menghubungi: {telepon}")
-        )
-        self.btn_contact.pack(fill="x", pady=(0, 10))
-
-        self.btn_fav = ctk.CTkButton(
-            info_panel, text="♡ Simpan ke Favorit", 
-            fg_color="transparent", border_color="#1A365D", border_width=2,
-            text_color="#1A365D", hover_color="#F0F4F8",
-            height=46, corner_radius=12, font=("Arial", 13, "bold"),
-            command=lambda: print("[DetailWindow] Tombol Favorit Ditekan")
-        )
-        self.btn_fav.pack(fill="x", pady=(0, 10))
-
-        self.btn_compare = ctk.CTkButton(
-            info_panel, text="⇄ Tambah ke Perbandingan", 
-            fg_color="transparent", text_color="#2D3748", hover_color="#EDF2F7",
-            height=36, corner_radius=8, font=("Arial", 12, "bold"),
-            command=lambda: print("[DetailWindow] Tombol Bandingkan Ditekan")
-        )
-        self.btn_compare.pack(fill="x", pady=(0, 15))
-
-        def _force_scroll(event=None, direction=0, unit="units"):
-            if event and hasattr(event, "delta") and event.delta != 0:
-                direction = int(-1 * (event.delta / 120))
-            try:
-                self.scroll_area._parent_canvas.yview_scroll(direction, unit)
-            except: pass
-
-        self.bind("<MouseWheel>", _force_scroll)
-        self.bind("<Up>", lambda e: _force_scroll(direction=-1))
-        self.bind("<Down>", lambda e: _force_scroll(direction=1))
-        self.bind("<Prior>", lambda e: _force_scroll(direction=-1, unit="pages")) 
-        self.bind("<Next>", lambda e: _force_scroll(direction=1, unit="pages"))
-        self.focus_set()
-
-    def _build_facility_chips(self, master, title, items):
-        ctk.CTkLabel(master, text=title.upper(), font=("Arial", 10, "bold"), text_color=TEXT_SUBTLE).pack(anchor="w", pady=(5, 2))
-        text = ", ".join(items) if items else "Informasi tidak tersedia"
-        chip_box = ctk.CTkFrame(master, fg_color=SUCCESS_SURFACE, corner_radius=8)
-        chip_row = ctk.CTkLabel(
-            chip_box, text=text, font=("Arial", 11), 
-            text_color=TITLE_COLOR, wraplength=250, justify="left"
-        )
-        chip_box.pack(fill="x", pady=(0, 12))
-        chip_row.pack(padx=10, pady=8)
-
-class KosCard(ctk.CTkFrame):
-    def __init__(self, master, data_kos, is_favorite=False, is_compared=False, **kwargs):
-        
-        self.favorites_callback = kwargs.pop('favorites_callback', None) or kwargs.pop('add_to_favorite', None)
-        self.compare_callback = kwargs.pop('compare_callback', None) or kwargs.pop('add_to_compare', None)
-        open_detail_callback = kwargs.pop('open_detail', None)
-
-        super().__init__(
-            master,
-            fg_color=CARD_BG,
-            corner_radius=16,
-            border_width=1,
-            border_color=BORDER_COLOR,
-            width=320,
-            height=420,
-            **kwargs,
-        )
-        self.data_kos = data_kos
-        self.grid_propagate(False)
-        self.grid_columnconfigure(0, weight=1)
-
-        nama_kos = _truncate_text(data_kos.get("nama_kos"), 48, "Nama kos tidak tersedia")
-        alamat = _truncate_text(data_kos.get("alamat"), 72, "Lokasi belum tersedia")
-        harga = _format_price(data_kos.get("harga"))
-        
-        tipe = _safe_text(data_kos.get("tipe"), "PUTRA").upper()
-        if "CAMPUR" in tipe or "SEMUA" in tipe:
-            badge_text = "CAMPUR"
-            badge_bg = "#e67e22"  
-        elif "PUTRI" in tipe:
-            badge_text = "PUTRI"
-            badge_bg = "#ff9ff3"  
-        else:
-            badge_text = "PUTRA"
-            badge_bg = "#3498db"  
-
-        fasilitas_ringkas = _to_facility_text(data_kos.get("fasilitas_kamar"))
-        foto_list = _normalize_foto(data_kos.get("foto"))
-
-        image_box = ctk.CTkFrame(
-            self,
-            fg_color=IMAGE_BG,
-            corner_radius=14,
-            height=150,
-            border_width=0,
-        )
-        image_box.grid(row=0, column=0, sticky="ew", padx=10, pady=(10, 8))
-        image_box.grid_propagate(False)
-        
-        image_box.grid_rowconfigure(0, weight=1)
-        image_box.grid_columnconfigure(0, weight=1)
-
-        self.image_label = ctk.CTkLabel(
-            image_box,
-            text="Memuat...",
-            font=("Arial", 12),
-            text_color=TEXT_SUBTLE,
-        )
-        self.image_label.grid(row=0, column=0, sticky="nsew")
-
-        floating_overlay = ctk.CTkFrame(image_box, fg_color="transparent", border_width=0)
-        floating_overlay.grid(row=0, column=0, sticky="nwe", padx=10, pady=10) 
-        
-        floating_overlay.grid_rowconfigure(0, weight=0)
-        floating_overlay.grid_columnconfigure(0, weight=1)
-        floating_overlay.grid_columnconfigure(1, weight=0)
-
-        badge = ctk.CTkLabel(
-            floating_overlay,
-            text=badge_text,
-            fg_color=badge_bg,
-            text_color="white",
-            corner_radius=6,
-            font=("Arial", 10, "bold"),
-            width=50,
-            height=24,
-        )
-        badge.grid(row=0, column=0, sticky="w")
-
-        favorite_btn = ctk.CTkButton(
-            floating_overlay,
-            text="❤️" if is_favorite else "♡",
-            width=24,
-            height=24,
-            corner_radius=6,
-            fg_color="white",
-            text_color="#1A365D",
-            hover_color="#F0F4F8",
-            border_width=0,
-            font=("Arial", 12, "bold"),
-            command=lambda: self.favorites_callback(self.data_kos) if self.favorites_callback else None,
-        )
-        favorite_btn.grid(row=0, column=1, sticky="e")
-
-        def on_image_loaded(thumbnail):
-            try:
-                if thumbnail:
-                    self.image_label.configure(text="", image=thumbnail)
-                    self.image_label.image = thumbnail
-                    floating_overlay.lift()
-                else:
-                    self.image_label.configure(text="No Image")
-            except Exception:
-                pass
-
-        _load_remote_image_async(foto_list[0] if foto_list else "", (296, 150), self, on_image_loaded)
-
-        content = ctk.CTkFrame(self, fg_color="transparent")
-        content.grid(row=1, column=0, sticky="ew", padx=14, pady=(0, 12))
-        content.grid_columnconfigure(0, weight=1)
-        content.grid_rowconfigure(4, weight=0)
-
-        title = ctk.CTkLabel(
-            content,
-            text=nama_kos,
-            font=("Arial", 16, "bold"),
-            text_color=PRIMARY_COLOR,
-            justify="left",
-            anchor="w",
-            wraplength=272,
-            height=40,
-        )
-        title.grid(row=0, column=0, sticky="ew")
-
-        location = ctk.CTkLabel(
-            content,
-            text=alamat,
-            font=("Arial", 12),
-            text_color=TEXT_SUBTLE,
-            justify="left",
-            anchor="w",
-            wraplength=272,
-            height=30,
-        )
-        location.grid(row=1, column=0, sticky="ew", pady=(3, 8))
-
-        facilities = ctk.CTkLabel(
-            content,
-            text=_truncate_text(fasilitas_ringkas, 68),
-            font=("Arial", 11),
-            text_color="#4B5563",
-            anchor="w",
-            justify="left",
-            wraplength=272,
-            height=26,
-        )
-        facilities.grid(row=2, column=0, sticky="ew", pady=(0, 10))
-
-        price_row = ctk.CTkFrame(content, fg_color="transparent")
-        price_row.grid(row=3, column=0, sticky="ew", pady=(0, 10))
-        price_row.grid_columnconfigure(0, weight=1)
-
-        price = ctk.CTkLabel(
-            price_row,
-            text=harga,
-            font=("Arial", 20, "bold"),
-            text_color=PRIMARY_COLOR,
-            anchor="w",
-        )
-        price.grid(row=0, column=0, sticky="w")
-
-        per_month = ctk.CTkLabel(
-            price_row,
-            text="/ bulan",
-            font=("Arial", 11),
-            text_color=TEXT_SUBTLE,
-            anchor="w",
-        )
-        per_month.grid(row=1, column=0, sticky="w")
-
-        btn_detail = ctk.CTkButton(
-            content,
-            text="Lihat Detail",
-            fg_color="#D35400",   
-            hover_color="#A04000",
-            text_color="white",
-            corner_radius=10,
-            height=38,
-            font=("Arial", 12, "bold"),
-            command=lambda: open_detail_callback(self.data_kos) if open_detail_callback else (DetailWindow(self, self.data_kos) if DetailWindow else print("[DEBUG] DetailWindow class not imported")),
-        )
-        btn_detail.grid(row=4, column=0, sticky="ew", pady=(4, 0))
+        self.setWindowTitle("Detail Kos")
+        self.setFixedSize(950, 700)
+        self.setStyleSheet("background-color: white;")
+        # Provide basic implementation to avoid crashing
+        layout = QVBoxLayout(self)
+        layout.addWidget(QLabel("Detail view not fully implemented in PyQt6 yet."))

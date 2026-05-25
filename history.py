@@ -1,93 +1,64 @@
-import json
 import os
-from datetime import datetime
-import customtkinter as ctk
-
+from PyQt6.QtWidgets import (QWidget, QFrame, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, 
+                             QScrollArea, QSizePolicy)
+from PyQt6.QtCore import Qt, QSize
+from PyQt6.QtGui import QFont, QCursor, QColor
+import database
+from login_ui import LoginPage
 from ui_components import _load_remote_image_async, _normalize_foto
 
-HISTORY_FILE = "history.json"
-
-# 1. LOGIKA BACKEND (MANAJEMEN DATA)
-
-def _load_history():
-    if not os.path.exists(HISTORY_FILE):
-        with open(HISTORY_FILE, "w") as f:
-            json.dump({}, f)
-        return {}
-    try:
-        with open(HISTORY_FILE, "r") as f:
-            return json.load(f)
-    except:
-        return {}
-
-def _save_history(data):
-    with open(HISTORY_FILE, "w") as f:
-        json.dump(data, f, indent=4)
-
 def add_history(user_email, keyword, filter_type="Semua", item_data=None):
-    """Mencatat pencarian atau detail kos yang dilihat"""
-    if not user_email or str(user_email).lower() == "guest":
-        return  
-
-    data = _load_history()
-
-    if user_email not in data:
-        data[user_email] = []
-
-    timestamp = datetime.now().strftime("%d-%m-%Y %H:%M")
-
-    new_entry = {
-        "keyword": keyword,
-        "timestamp": timestamp,
-        "filter": filter_type,
-        "item_data": item_data
-    }
-
-    if filter_type == "DETAIL" and data[user_email]:
-        if data[user_email][0].get("keyword") == keyword and data[user_email][0].get("filter") == "DETAIL":
-            data[user_email][0]["timestamp"] = timestamp
-            _save_history(data)
-            return
-
-    data[user_email].insert(0, new_entry)
-    _save_history(data)
+    database.add_history_db(user_email, keyword, filter_type, item_data)
 
 def clear_history(user_email):
-    if not user_email or str(user_email).lower() == "guest":
-        return False
-    data = _load_history()
-    if user_email in data:
-        data[user_email] = []
-        _save_history(data)
-        return True
-    return False
+    return database.clear_history_db(user_email)
 
-
-# 2. LOGIKA UI (HALAMAN CUSTOMTKINTER)
-
-class HistoryPage(ctk.CTkFrame):
-    def __init__(self, master, **kwargs):
-        self.current_user = kwargs.pop("current_user", None)
-        super().__init__(master, **kwargs)
+class HistoryPage(QWidget):
+    def __init__(self, parent=None, current_user=None):
+        super().__init__(parent)
+        self.current_user = current_user
         
-        # Header Utama
-        self.header_frame = ctk.CTkFrame(self, fg_color="transparent")
-        self.header_frame.pack(fill="x", pady=(20, 10), padx=20)
+        self.main_layout = QVBoxLayout(self)
+        self.main_layout.setContentsMargins(20, 20, 20, 20)
+        self.main_layout.setSpacing(10)
         
-        self.title_label = ctk.CTkLabel(
-            self.header_frame, text="Riwayat Aktivitas", font=ctk.CTkFont(size=24, weight="bold")
-        )
-        self.title_label.pack(side="left", anchor="w")
+        self.header_frame = QFrame()
+        header_layout = QHBoxLayout(self.header_frame)
+        header_layout.setContentsMargins(0, 0, 0, 0)
         
-        self.btn_clear = ctk.CTkButton(
-            self.header_frame, text="Hapus Semua", fg_color="#e74c3c", hover_color="#c0392b",
-            width=100, height=30, font=ctk.CTkFont(size=12, weight="bold"),
-            command=self._handle_clear
-        )
+        self.title_label = QLabel("Riwayat Aktivitas")
+        self.title_label.setStyleSheet("font-size: 24px; font-weight: bold; color: #1B2630; background: transparent;")
+        header_layout.addWidget(self.title_label)
         
-        # Scroll Container Utama
-        self.main_scroll = ctk.CTkScrollableFrame(self, fg_color="transparent")
-        self.main_scroll.pack(fill="both", expand=True, padx=20, pady=(0, 20))
+        header_layout.addStretch()
+        
+        self.btn_clear = QPushButton("Hapus Semua")
+        self.btn_clear.setFixedSize(100, 30)
+        self.btn_clear.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self.btn_clear.setStyleSheet("""
+            QPushButton { background-color: #e74c3c; color: white; border-radius: 5px; font-weight: bold; }
+            QPushButton:hover { background-color: #c0392b; }
+        """)
+        self.btn_clear.clicked.connect(self._handle_clear)
+        header_layout.addWidget(self.btn_clear)
+        self.btn_clear.hide()
+        
+        self.main_layout.addWidget(self.header_frame)
+        
+        self.scroll_area = QScrollArea()
+        self.scroll_area.setWidgetResizable(True)
+        self.scroll_area.setStyleSheet("QScrollArea { border: none; background: transparent; } QWidget#ScrollContent { background: transparent; }")
+        
+        self.scroll_content = QWidget()
+        self.scroll_content.setObjectName("ScrollContent")
+        self.scroll_layout = QVBoxLayout(self.scroll_content)
+        self.scroll_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.scroll_layout.setSpacing(10)
+        
+        self.scroll_area.setWidget(self.scroll_content)
+        self.main_layout.addWidget(self.scroll_area)
+        
+        self.guest_frame = None
 
     def _get_active_user_string(self):
         try:
@@ -108,58 +79,94 @@ class HistoryPage(ctk.CTkFrame):
             clear_history(user_str)
             self.refresh()
 
+    def clear_scroll_layout(self):
+        while self.scroll_layout.count():
+            item = self.scroll_layout.takeAt(0)
+            widget = item.widget()
+            if widget is not None:
+                widget.deleteLater()
+
     def refresh(self):
-        if not hasattr(self, 'main_scroll') or not self.main_scroll.winfo_exists():
-            return
+        if self.guest_frame is not None:
+            self.main_layout.removeWidget(self.guest_frame)
+            self.guest_frame.deleteLater()
+            self.guest_frame = None
 
-        self.btn_clear.pack_forget()
-
-        for widget in self.main_scroll.winfo_children():
-            if widget.winfo_exists():
-                widget.destroy()
+        self.scroll_area.show()
+        self.btn_clear.hide()
+        self.clear_scroll_layout()
 
         user_str = self._get_active_user_string()
 
         if not user_str or str(user_str).lower() == "guest":
-            lbl_empty = ctk.CTkLabel(
-                self.main_scroll, text="Silakan login terlebih dahulu untuk melihat riwayat pencarian.", 
-                text_color="gray", font=ctk.CTkFont(size=14)
-            )
-            lbl_empty.pack(pady=50)
+            self.scroll_area.hide()
+            
+            self.guest_frame = QFrame()
+            guest_layout = QVBoxLayout(self.guest_frame)
+            guest_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            
+            lbl_empty = QLabel("Silakan masuk untuk melihat dan menyimpan riwayat aktivitas Anda.")
+            lbl_empty.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            lbl_empty.setStyleSheet("color: gray; font-size: 14px; background: transparent;")
+            guest_layout.addWidget(lbl_empty)
+            guest_layout.addSpacing(20)
+            
+            main_app = self.window()
+            
+            def custom_on_success():
+                main_app._pending_login_target = "history"
+                if hasattr(main_app, "_on_login_success"):
+                    main_app._on_login_success()
+            
+            login_comp = LoginPage(self.guest_frame, on_login_success=custom_on_success)
+            guest_layout.addWidget(login_comp)
+            
+            self.main_layout.addWidget(self.guest_frame)
             return
 
-        data = _load_history()
-        histories = data.get(user_str, [])
+        histories = database.get_history_db(user_str)
 
         if not histories:
-            lbl_empty = ctk.CTkLabel(
-                self.main_scroll, text=f"Halo {user_str}! Belum ada riwayat aktivitas.", 
-                text_color="gray", font=ctk.CTkFont(size=14)
-            )
-            lbl_empty.pack(pady=50)
+            lbl_empty = QLabel("Anda belum pernah mencari atau melihat kos apapun. Mulai jelajahi sekarang!")
+            lbl_empty.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            lbl_empty.setStyleSheet("color: gray; font-size: 14px; background: transparent;")
+            self.scroll_layout.addWidget(lbl_empty)
+            self.scroll_layout.addSpacing(50)
             return
 
-        self.btn_clear.pack(side="right", anchor="e")
+        self.btn_clear.show()
 
         search_entries = [h for h in histories if h.get("filter", "").upper() != "DETAIL"]
         detail_entries = [h for h in histories if h.get("filter", "").upper() == "DETAIL"]
 
         if search_entries:
-            lbl_sec1 = ctk.CTkLabel(self.main_scroll, text="Riwayat Kata Kunci Pencarian", font=ctk.CTkFont(size=15, weight="bold"), text_color=("gray30", "gray70"))
-            lbl_sec1.pack(anchor="w", pady=(10, 5))
+            lbl_sec1 = QLabel("Riwayat Kata Kunci Pencarian")
+            lbl_sec1.setStyleSheet("font-size: 15px; font-weight: bold; color: #4b5563; background: transparent;")
+            self.scroll_layout.addWidget(lbl_sec1)
+            self.scroll_layout.addSpacing(5)
             
             for item in search_entries:
-                self._create_card(self.main_scroll, item, is_clickable=False)
+                self._create_card(self.scroll_layout, item, is_clickable=False)
+            
+            self.scroll_layout.addSpacing(15)
 
         if search_entries and detail_entries:
-            ctk.CTkFrame(self.main_scroll, height=2, fg_color=("gray80", "gray30")).pack(fill="x", pady=15)
+            sep = QFrame()
+            sep.setFrameShape(QFrame.Shape.HLine)
+            sep.setStyleSheet("border: 1px solid #d1d5db;")
+            self.scroll_layout.addWidget(sep)
+            self.scroll_layout.addSpacing(15)
 
         if detail_entries:
-            lbl_sec2 = ctk.CTkLabel(self.main_scroll, text="Kos yang Terakhir Kamu Lihat", font=ctk.CTkFont(size=15, weight="bold"), text_color=("gray30", "gray70"))
-            lbl_sec2.pack(anchor="w", pady=(10, 5))
+            lbl_sec2 = QLabel("Kos yang Terakhir Kamu Lihat")
+            lbl_sec2.setStyleSheet("font-size: 15px; font-weight: bold; color: #4b5563; background: transparent;")
+            self.scroll_layout.addWidget(lbl_sec2)
+            self.scroll_layout.addSpacing(5)
             
             for item in detail_entries:
-                self._create_card(self.main_scroll, item, is_clickable=True)
+                self._create_card(self.scroll_layout, item, is_clickable=True)
+                
+        self.scroll_layout.addStretch()
 
     def _create_card(self, container, item, is_clickable=False):
         keyword = item.get("keyword", "")
@@ -167,20 +174,33 @@ class HistoryPage(ctk.CTkFrame):
         filter_type = item.get("filter", "Semua")
         item_data = item.get("item_data")
 
+        card = QFrame()
+        
         if is_clickable and item_data:
-            card = ctk.CTkFrame(container, corner_radius=20, fg_color=("white", "gray15"), border_width=1, border_color=("gray90", "gray25"))
-            card.pack(fill="x", pady=6, padx=5)
-
-            foto_label = ctk.CTkLabel(card, text="Memuat...", width=140, height=95, corner_radius=15, fg_color="gray80")
-            foto_label.pack(side="left", padx=15, pady=15)
+            card.setStyleSheet("""
+                QFrame {
+                    background-color: white;
+                    border: 1px solid #E7EAF0;
+                    border-radius: 20px;
+                }
+            """)
+            card_layout = QHBoxLayout(card)
+            card_layout.setContentsMargins(15, 15, 15, 15)
             
-            def on_hist_image_loaded(thumbnail):
+            foto_label = QLabel()
+            foto_label.setFixedSize(140, 95)
+            foto_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            foto_label.setStyleSheet("background-color: #E9EDF3; border-radius: 15px; color: gray;")
+            foto_label.setText("Memuat...")
+            foto_label.setScaledContents(True)
+            card_layout.addWidget(foto_label)
+            
+            def on_hist_image_loaded(pixmap):
                 try:
-                    if thumbnail and foto_label.winfo_exists():
-                        foto_label.configure(text="", image=thumbnail)
-                        foto_label.image = thumbnail
+                    if pixmap:
+                        foto_label.setPixmap(pixmap)
                     else:
-                        foto_label.configure(text="No Image")
+                        foto_label.setText("No Image")
                 except Exception:
                     pass
             
@@ -188,91 +208,127 @@ class HistoryPage(ctk.CTkFrame):
             if foto_list:
                 _load_remote_image_async(foto_list[0], (140, 95), card, on_hist_image_loaded)
             else:
-                foto_label.configure(text="No Image")
+                foto_label.setText("No Image")
 
-            info_frame = ctk.CTkFrame(card, fg_color="transparent")
-            info_frame.pack(side="left", fill="both", expand=True, pady=15, padx=(5, 10))
+            info_frame = QFrame()
+            info_frame.setStyleSheet("background: transparent; border: none;")
+            info_layout = QVBoxLayout(info_frame)
+            info_layout.setContentsMargins(10, 0, 0, 0)
             
-
-            nama_lbl = ctk.CTkLabel(info_frame, text=keyword, font=ctk.CTkFont(size=16, weight="bold"), anchor="w", text_color=("#1a365d", "white"))
-            nama_lbl.pack(fill="x", anchor="w")
+            nama_lbl = QLabel(keyword)
+            nama_lbl.setStyleSheet("font-size: 16px; font-weight: bold; color: #1a365d;")
+            info_layout.addWidget(nama_lbl)
 
             alamat_raw = item_data.get("alamat") or item_data.get("lokasi") or "Alamat tidak tersedia" if isinstance(item_data, dict) else getattr(item_data, "alamat", "Alamat tidak tersedia")
-            alamat_lbl = ctk.CTkLabel(info_frame, text=alamat_raw, font=ctk.CTkFont(size=11), text_color="gray50", anchor="w")
-            alamat_lbl.pack(fill="x", anchor="w", pady=(1, 3))
+            alamat_lbl = QLabel(alamat_raw)
+            alamat_lbl.setStyleSheet("font-size: 11px; color: gray;")
+            info_layout.addWidget(alamat_lbl)
 
             harga_raw = item_data.get("harga", 0) if isinstance(item_data, dict) else getattr(item_data, "harga", 0)
-            harga_lbl = ctk.CTkLabel(info_frame, text=f"Rp {harga_raw:,}".replace(",", "."), font=ctk.CTkFont(size=14, weight="bold"), text_color="#d35400", anchor="w")
-            harga_lbl.pack(fill="x", anchor="w", pady=(0, 4))
+            harga_lbl = QLabel(f"Rp {harga_raw:,}".replace(",", "."))
+            harga_lbl.setStyleSheet("font-size: 14px; font-weight: bold; color: #d35400;")
+            info_layout.addWidget(harga_lbl)
 
-            badge_row_frame = ctk.CTkFrame(info_frame, fg_color="transparent")
-            badge_row_frame.pack(fill="x", anchor="w")
+            badge_row = QFrame()
+            badge_row.setStyleSheet("background: transparent; border: none;")
+            badge_layout = QHBoxLayout(badge_row)
+            badge_layout.setContentsMargins(0, 0, 0, 0)
+            badge_layout.setAlignment(Qt.AlignmentFlag.AlignLeft)
 
             tipe_kos = item_data.get("tipe") or item_data.get("gender") or "Semua" if isinstance(item_data, dict) else getattr(item_data, "tipe", getattr(item_data, "gender", "Semua"))
             tipe_str = str(tipe_kos).upper()
             
-            if "PUTRA" in tipe_str:
-                tipe_color = "#3498db"
-            elif "PUTRI" in tipe_str:
-                tipe_color = "#ff9ff3"
-            else:
-                tipe_color = "#e67e22"
+            if "PUTRA" in tipe_str: tipe_color = "#3498db"
+            elif "PUTRI" in tipe_str: tipe_color = "#ff9ff3"
+            else: tipe_color = "#e67e22"
 
-            badge_tipe = ctk.CTkFrame(badge_row_frame, fg_color=tipe_color, corner_radius=6, height=20)
-            badge_tipe.pack(side="left", padx=(0, 6))
-            badge_tipe_lbl = ctk.CTkLabel(badge_tipe, text=tipe_str, text_color="white", font=ctk.CTkFont(size=9, weight="bold"))
-            badge_tipe_lbl.pack(padx=8)
+            badge_tipe = QLabel(tipe_str)
+            badge_tipe.setStyleSheet(f"background-color: {tipe_color}; color: white; padding: 2px 8px; border-radius: 6px; font-size: 9px; font-weight: bold;")
+            badge_layout.addWidget(badge_tipe)
 
             fasilitas_list = item_data.get("fasilitas_kamar", []) if isinstance(item_data, dict) else getattr(item_data, "fasilitas_kamar", [])
             if fasilitas_list:
                 fas_text = str(fasilitas_list[0]).upper()
-                badge_fas = ctk.CTkFrame(badge_row_frame, fg_color="#ebf8ff", corner_radius=6, height=20)
-                badge_fas.pack(side="left")
-                badge_fas_lbl = ctk.CTkLabel(badge_fas, text=fas_text, text_color="#2b6cb0", font=ctk.CTkFont(size=9, weight="bold"))
-                badge_fas_lbl.pack(padx=8)
+                badge_fas = QLabel(fas_text)
+                badge_fas.setStyleSheet("background-color: #ebf8ff; color: #2b6cb0; padding: 2px 8px; border-radius: 6px; font-size: 9px; font-weight: bold;")
+                badge_layout.addWidget(badge_fas)
 
-            aksi_frame = ctk.CTkFrame(card, fg_color="transparent")
-            aksi_frame.pack(side="right", padx=15, fill="y", pady=15)
+            info_layout.addWidget(badge_row)
+            info_layout.addStretch()
+            card_layout.addWidget(info_frame)
 
-            time_lbl = ctk.CTkLabel(aksi_frame, text=timestamp, text_color="gray", font=ctk.CTkFont(size=11))
-            time_lbl.pack(pady=(0, 15))
+            aksi_frame = QFrame()
+            aksi_frame.setStyleSheet("background: transparent; border: none;")
+            aksi_layout = QVBoxLayout(aksi_frame)
+            aksi_layout.setContentsMargins(0, 0, 0, 0)
+            aksi_layout.setAlignment(Qt.AlignmentFlag.AlignRight)
 
-            btn_detail = ctk.CTkButton(
-                aksi_frame, text="Lihat Detail", 
-                fg_color="white", text_color="#1a365d", border_color="#1a365d", border_width=1,
-                hover_color="gray95", width=110, height=30, font=ctk.CTkFont(size=11, weight="bold"),
-                command=lambda: self._on_card_click(item_data)
-            )
-            btn_detail.pack(side="bottom")
+            time_lbl = QLabel(timestamp)
+            time_lbl.setStyleSheet("color: gray; font-size: 11px;")
+            time_lbl.setAlignment(Qt.AlignmentFlag.AlignRight)
+            aksi_layout.addWidget(time_lbl)
+            
+            aksi_layout.addStretch()
+
+            btn_detail = QPushButton("Lihat Detail")
+            btn_detail.setFixedSize(110, 30)
+            btn_detail.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+            btn_detail.setStyleSheet("""
+                QPushButton { background-color: white; color: #1a365d; border: 1px solid #1a365d; border-radius: 5px; font-weight: bold; font-size: 11px; }
+                QPushButton:hover { background-color: #f3f4f6; }
+            """)
+            btn_detail.clicked.connect(lambda: self._on_card_click(item_data))
+            aksi_layout.addWidget(btn_detail)
+
+            card_layout.addWidget(aksi_frame)
 
         else:
-            card = ctk.CTkFrame(container, corner_radius=10, fg_color=("gray85", "gray20"))
-            card.pack(fill="x", pady=4)
+            card.setStyleSheet("""
+                QFrame {
+                    background-color: #f3f4f6;
+                    border-radius: 10px;
+                }
+                QFrame:hover {
+                    background-color: #e5e7eb;
+                }
+            """)
+            card.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+            card.mousePressEvent = lambda e, k=keyword: self._on_search_click(k)
+            
+            card_layout = QHBoxLayout(card)
+            card_layout.setContentsMargins(15, 12, 15, 12)
+            
+            kw_label = QLabel(f'"{keyword}"')
+            kw_label.setStyleSheet("color: #1a365d; font-size: 14px; font-weight: bold; background: transparent; border: none;")
+            card_layout.addWidget(kw_label)
 
-            kw_label = ctk.CTkLabel(card, text=f'"{keyword}"', font=ctk.CTkFont(size=14, weight="bold"))
-            kw_label.pack(side="left", padx=(15, 10), pady=12)
+            if filter_type.lower() == "putra": filter_color = "#3498db"
+            elif filter_type.lower() == "putri": filter_color = "#ff9ff3"
+            else: filter_color = "#e67e22"
 
-            if filter_type.lower() == "putra":
-                filter_color = "#3498db"
-            elif filter_type.lower() == "putri":
-                filter_color = "#ff9ff3"
-            else:
-                filter_color = "#e67e22"
+            badge_label = QLabel(filter_type.upper())
+            badge_label.setStyleSheet(f"background-color: {filter_color}; color: white; padding: 2px 8px; border-radius: 8px; font-size: 10px; font-weight: bold;")
+            card_layout.addWidget(badge_label)
+            
+            card_layout.addStretch()
 
-            badge = ctk.CTkFrame(card, fg_color=filter_color, corner_radius=8, height=20)
-            badge.pack(side="left", padx=5)
-            badge.pack_propagate(False)
+            time_label = QLabel(timestamp)
+            time_label.setStyleSheet("color: gray; font-size: 11px; background: transparent; border: none;")
+            card_layout.addWidget(time_label)
 
-            badge_label = ctk.CTkLabel(badge, text=filter_type.upper(), text_color="white", font=ctk.CTkFont(size=10, weight="bold"))
-            badge_label.pack(padx=8, expand=True)
-
-            time_label = ctk.CTkLabel(card, text=timestamp, text_color="gray", font=ctk.CTkFont(size=11))
-            time_label.pack(side="right", padx=15, pady=12)
+        container.addWidget(card)
 
     def _on_card_click(self, item_data):
         if not item_data: return
-        main_app = self.winfo_toplevel()
-        if hasattr(main_app, "detail_item"):
-            main_app.detail_item = item_data
+        main_app = self.window()
+        if hasattr(main_app, "open_detail"):
+            main_app.open_detail(item_data, skip_history=True)
+
+    def _on_search_click(self, keyword):
+        main_app = self.window()
+        if hasattr(main_app, "frames") and "search" in main_app.frames:
+            search_page = main_app.frames["search"]
+            search_page.entry_search.setText(keyword)
+            search_page._on_search()
             if hasattr(main_app, "show_frame"):
-                main_app.show_frame("detail")
+                main_app.show_frame("search")

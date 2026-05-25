@@ -1,0 +1,52 @@
+{
+    "Luis1717": [
+        {
+            "keyword": "bogor",
+            "timestamp": "24-05-2026 19:23",
+            "filter": "Semua",
+            "item_data": null
+        },
+        {
+            "keyword": "Arvin's Friendly Kost",
+            "timestamp": "24-05-2026 19:23",
+            "filter": "DETAIL",
+            "item_data": {
+                "id": 8,
+                "nama": "Arvin's Friendly Kost",
+                "harga": 800000,
+                "lokasi": "Jl. Swasembada Barat IX No.61, Keb. Bawang \uff96 Tanjung Priok",
+                "wifi": false,
+                "deskripsi": "Fasilitas lengkap dan strategis di Jl. Swasembada Barat IX No.61, Keb. Bawang \uff96 Tanjung Priok.",
+                "nama_kos": "Arvin's Friendly Kost",
+                "alamat": "Jl. Swasembada Barat IX No.61, Keb. Bawang \uff96 Tanjung Priok",
+                "tipe": "Campur",
+                "telepon": "081399929002",
+                "fasilitas_kamar": [
+                    "-"
+                ],
+                "fasilitas_bersama": [
+                    "Dapur",
+                    "Air Minum",
+                    "Keamanan",
+                    "Parkir Motor"
+                ],
+                "foto": [
+                    "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/06-2019/ad61/arvin-s-friendly-kost-1868569815_large.jpg",
+                    "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/06-2019/ad61/arvin-s-friendly-kost-1868569815.jpg",
+                    "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/06-2019/ad61/arvin-s-friendly-272664073.jpg",
+                    "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/06-2019/ad61/arvin-s-friendly-kost-1527014171.webp",
+                    "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/06-2019/ad61/arvin-s-friendly-341076979.jpg",
+                    "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/06-2019/ad61/arvin-s-friendly-kost-286090168.webp",
+                    "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/06-2019/ad61/arvin-s-friendly-226145612.jpg",
+                    "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/06-2019/ad61/arvin-s-friendly-1724259202.jpg",
+                    "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/06-2019/ad61/arvin-s-friendly-kost-304708112.webp",
+                    "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/06-2019/ad61/arvin-s-friendly-kost-1994838403.webp",
+                    "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/06-2019/ad61/arvin-s-friendly-kost-696887948.webp",
+                    "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/06-2019/ad61/arvin-s-friendly-kost-166986808.webp",
+                    "https://sgp1.digitaloceanspaces.com/www.sewakost.com-69925f5b4547e/listings/06-2019/ad61/arvin-s-friendly-kost-506318974.webp"
+                ],
+                "harga_display": "Rp 800.000"
+            }
+        }
+    ]
+}
