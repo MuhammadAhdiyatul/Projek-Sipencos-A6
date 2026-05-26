@@ -1,5 +1,12 @@
-﻿import sys
+import sys
 import os
+
+# Mencegah crash pada PyInstaller --noconsole (Windows) karena perintah print()
+if sys.stdout is None:
+    sys.stdout = open(os.devnull, "w")
+if sys.stderr is None:
+    sys.stderr = open(os.devnull, "w")
+
 import re
 import json
 
@@ -147,9 +154,11 @@ class IntegrationController:
         return [self._normalize_item(item, idx + 1) for idx, item in enumerate(data_list)]
 
     def _load_json_if_exists(self, path):
-        if not os.path.exists(path): return []
         try:
-            with open(path, "r", encoding="utf-8") as f: return json.load(f)
+            base_path = getattr(sys, '_MEIPASS', os.path.abspath("."))
+            filepath = os.path.join(base_path, path)
+            with open(filepath, "r", encoding="utf-8") as f:
+                return json.load(f)
         except Exception: return []
 
     def _load_scraped_data(self):
@@ -371,7 +380,13 @@ class App(QMainWindow):
         if frame_name == "search":
             self.frames["search"].favorites = self.favorites
             self.frames["search"].compare_list = self.compare_list
-            frame.refresh(self.kos_data, self.favorites, self.compare_list)
+            
+            # Preserve search state if already initialized
+            if not getattr(self, "_search_initialized", False):
+                self._search_initialized = True
+                frame.refresh(self.kos_data, self.favorites, self.compare_list)
+            else:
+                frame._refresh_current_view()
         elif frame_name == "analytics":
             frame.refresh()
         elif frame_name == "favorites":
@@ -439,12 +454,14 @@ class App(QMainWindow):
         if self._contains(self.compare_list, kos_item):
             self.compare_list = [item for item in self.compare_list if _item_key(item) != _item_key(kos_item)]
             self.show_frame(self.active_frame)
+            QMessageBox.information(self, "Batal Bandingkan", f"Kos dihapus dari daftar perbandingan.\nSaat ini: {len(self.compare_list)}/3 kos dipilih.")
         elif len(self.compare_list) < 3:
             self.compare_list.append(kos_item)
             if self.active_frame == "favorites": self.show_frame("compare")
             else: self.show_frame(self.active_frame)
+            QMessageBox.information(self, "Bandingkan Kos", f"Kos berhasil ditambahkan ke daftar perbandingan!\nSaat ini: {len(self.compare_list)}/3 kos dipilih.")
         else:
-            QMessageBox.warning(self, "Batas Maksimum", "Maksimal 3 kos untuk dibandingkan.")
+            QMessageBox.warning(self, "Gagal Menambahkan", "Batas maksimal tercapai!\n\nAnda hanya dapat membandingkan maksimal 3 kos secara bersamaan. Silakan hapus salah satu kos dari halaman Bandingkan terlebih dahulu.")
 
     def clear_compare(self):
         self.compare_list = []

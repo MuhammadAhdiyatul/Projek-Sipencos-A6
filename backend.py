@@ -1,6 +1,7 @@
 import json
 import os
 import re
+import sys
 
 class BackendManager:
     def __init__(self):
@@ -10,7 +11,8 @@ class BackendManager:
 
     def load_data(self):
         """membaca file data_kos_bersih.json hasil dari pembersihan"""
-        filepath = os.path.join("output_datakos", "data_kos_bersih.json")
+        base_path = getattr(sys, '_MEIPASS', os.path.abspath("."))
+        filepath = os.path.join(base_path, "output_dataKos", "data_kos_bersih.json")
 
         try:
             with open(filepath, "r", encoding="utf-8") as f:

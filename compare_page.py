@@ -90,8 +90,12 @@ class ComparePage(QWidget):
         title = QLabel("Perbandingan Kos")
         title.setStyleSheet(f"font-size: 32px; font-weight: bold; color: {NAVY};")
         
-        subtitle = QLabel("Bandingkan hingga 3 kos secara berdampingan untuk menemukan yang terbaik.")
-        subtitle.setStyleSheet(f"font-size: 13px; color: {TEXT_SUBTLE};")
+        subtitle_text = f"Bandingkan hingga 3 kos secara berdampingan. (Kos Terpilih: {len(self.compare_list)}/3)"
+        subtitle = QLabel(subtitle_text)
+        if len(self.compare_list) == 3:
+            subtitle.setStyleSheet(f"font-size: 13px; font-weight: bold; color: #D32F2F;")
+        else:
+            subtitle.setStyleSheet(f"font-size: 13px; color: {TEXT_SUBTLE};")
         
         user_label = QLabel(f"Akun aktif: {_display_name(self.current_user)}")
         user_label.setStyleSheet(f"font-size: 12px; color: {TEXT_SUBTLE};")
@@ -159,10 +163,14 @@ class ComparePage(QWidget):
 
     def _create_property_section(self):
         section = QFrame()
-        section.setStyleSheet(f"background-color: {CARD_BG}; border-radius: 25px; border: 1px solid {BORDER};")
+        section.setStyleSheet(f"background-color: transparent;")
         layout = QHBoxLayout(section)
-        layout.setContentsMargins(20, 20, 20, 20)
+        layout.setContentsMargins(16, 0, 16, 0)
         layout.setSpacing(20)
+        
+        empty_lbl = QLabel()
+        empty_lbl.setFixedWidth(190)
+        layout.addWidget(empty_lbl)
         
         cheapest = self._get_cheapest_indexes()
 
@@ -170,6 +178,7 @@ class ComparePage(QWidget):
             card = self._create_property_card(kos, idx in cheapest)
             layout.addWidget(card)
             
+        layout.addStretch()
         self.content_layout.addWidget(section)
 
     def _create_property_card(self, kos, is_cheapest):
@@ -281,6 +290,7 @@ class ComparePage(QWidget):
         row.setStyleSheet(f"background-color: {CARD_BG}; border-radius: 20px; border: 1px solid {BORDER};")
         r_layout = QHBoxLayout(row)
         r_layout.setContentsMargins(16, 16, 16, 16)
+        r_layout.setSpacing(20)
         
         lbl = QLabel(label)
         lbl.setFixedWidth(190)
@@ -289,6 +299,7 @@ class ComparePage(QWidget):
         
         for idx, value in enumerate(values):
             cell = QFrame()
+            cell.setFixedWidth(300)
             cell.setStyleSheet("background: transparent; border: none;")
             c_layout = QVBoxLayout(cell)
             c_layout.setContentsMargins(0, 0, 0, 0)
@@ -297,6 +308,10 @@ class ComparePage(QWidget):
             t_color = ORANGE if is_highlight and highlight_color == ORANGE else NAVY
             weight = "bold" if is_highlight else "normal"
             
+            if value == "-":
+                t_color = "#94A3B8"
+                weight = "normal"
+                
             v_lbl = QLabel(value)
             v_lbl.setWordWrap(True)
             v_lbl.setStyleSheet(f"font-size: 12px; font-weight: {weight}; color: {t_color};")
@@ -310,8 +325,9 @@ class ComparePage(QWidget):
                 c_layout.addWidget(badge)
             
             c_layout.addStretch()
-            r_layout.addWidget(cell, 1)
+            r_layout.addWidget(cell)
             
+        r_layout.addStretch()
         layout.addWidget(row)
 
     def _create_facilities_row(self, layout):
@@ -319,6 +335,7 @@ class ComparePage(QWidget):
         row.setStyleSheet(f"background-color: {CARD_BG}; border-radius: 20px; border: 1px solid {BORDER};")
         r_layout = QHBoxLayout(row)
         r_layout.setContentsMargins(16, 16, 16, 16)
+        r_layout.setSpacing(20)
         
         lbl = QLabel("Semua Fasilitas")
         lbl.setFixedWidth(190)
@@ -328,6 +345,7 @@ class ComparePage(QWidget):
         
         for item in self.compare_list:
             cell = QFrame()
+            cell.setFixedWidth(300)
             cell.setStyleSheet("background: transparent; border: none;")
             c_layout = QVBoxLayout(cell)
             c_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
@@ -343,15 +361,24 @@ class ComparePage(QWidget):
                 if f_cl and f_cl != "-" and f_cl not in clean_fas: clean_fas.append(f_cl)
             if not clean_fas: clean_fas = ["-"]
             
-            for f in clean_fas:
-                f_lbl = QLabel(f"• {f}")
-                f_lbl.setWordWrap(True)
-                f_lbl.setStyleSheet(f"font-size: 11px; color: {TEXT_SUBTLE};")
+            if clean_fas == ["-"]:
+                f_lbl = QLabel("-")
+                f_lbl.setStyleSheet(f"font-size: 12px; color: #94A3B8;")
                 c_layout.addWidget(f_lbl)
+            else:
+                grid = QGridLayout()
+                grid.setContentsMargins(0, 0, 0, 0)
+                grid.setSpacing(6)
+                for i, f in enumerate(clean_fas):
+                    badge = QLabel(f)
+                    badge.setStyleSheet(f"background-color: {BG}; color: {NAVY}; padding: 4px 8px; border-radius: 6px; font-size: 10px;")
+                    grid.addWidget(badge, i // 2, i % 2)
+                c_layout.addLayout(grid)
                 
             c_layout.addStretch()
-            r_layout.addWidget(cell, 1)
+            r_layout.addWidget(cell)
             
+        r_layout.addStretch()
         layout.addWidget(row)
 
     def _create_action_button_section(self, layout):
@@ -359,9 +386,15 @@ class ComparePage(QWidget):
         row.setStyleSheet("background: transparent;")
         r_layout = QHBoxLayout(row)
         r_layout.setContentsMargins(0, 0, 0, 0)
+        r_layout.setSpacing(20)
+        
+        empty_lbl = QLabel()
+        empty_lbl.setFixedWidth(206) # 206 + 20 spacing = 226px offset
+        r_layout.addWidget(empty_lbl)
         
         for item in self.compare_list:
             cell = QFrame()
+            cell.setFixedWidth(300)
             c_layout = QVBoxLayout(cell)
             c_layout.setContentsMargins(10, 0, 10, 0)
             
@@ -382,8 +415,9 @@ class ComparePage(QWidget):
             
             c_layout.addWidget(detail_btn)
             c_layout.addWidget(fav_btn)
-            r_layout.addWidget(cell, 1)
+            r_layout.addWidget(cell)
             
+        r_layout.addStretch()
         layout.addWidget(row)
 
     def _create_recommendation_card(self):
