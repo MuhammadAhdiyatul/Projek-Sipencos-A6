@@ -3,6 +3,7 @@ AppName=SiPencos
 AppVersion=1.0
 DefaultDirName={autopf}\SiPencos
 DefaultGroupName=SiPencos
+SetupIconFile=logo.ico
 UninstallDisplayIcon={app}\SiPencos.exe
 Compression=lzma2
 SolidCompression=yes

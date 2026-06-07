@@ -76,6 +76,8 @@ class AnalyticsPage(QWidget):
 
     def _render_charts(self):
         try:
+            import matplotlib
+            matplotlib.use('Agg')
             import matplotlib.pyplot as plt
         except ImportError as e:
             self.img_label.setText(f"Modul matplotlib tidak ditemukan:\n{e}")

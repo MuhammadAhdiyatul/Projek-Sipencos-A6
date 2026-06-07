@@ -3,8 +3,9 @@ import json
 import os
 import re
 
+import sys
 
-USERS_PATH = os.path.join(os.path.dirname(__file__), "users.json")
+USERS_PATH = os.path.join(getattr(sys, '_MEIPASS', os.path.abspath(".")), "users.json")
 USERNAME_PATTERN = re.compile(r"^[a-zA-Z0-9_.]{4,20}$")
 
 

@@ -1,6 +1,7 @@
 import os
 import re
 import json
+import sys
 
 from core.backend import BackendManager
 
@@ -104,10 +105,13 @@ class IntegrationController:
         return [self._normalize_item(item, idx + 1) for idx, item in enumerate(data_list)]
 
     def _load_json_if_exists(self, path):
-        if not os.path.exists(path): return []
         try:
-            with open(path, "r", encoding="utf-8") as f: return json.load(f)
-        except Exception: return []
+            base_path = getattr(sys, '_MEIPASS', os.path.abspath("."))
+            filepath = os.path.join(base_path, path)
+            with open(filepath, "r", encoding="utf-8") as f: 
+                return json.load(f)
+        except Exception: 
+            return []
 
     def _load_scraped_data(self):
         json_path = os.path.join("output_dataKos", "data_kos_bersih.json")

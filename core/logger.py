@@ -2,8 +2,10 @@ import os
 import json
 from datetime import datetime
 
+import sys
+
 # Storage configuration
-LOG_DIR = os.path.join(os.path.dirname(__file__), "logs")
+LOG_DIR = os.path.join(getattr(sys, '_MEIPASS', os.path.abspath(".")), "logs")
 LOG_FILE = os.path.join(LOG_DIR, "scrape_log.json")
 _TS_FORMAT = "%Y-%m-%d %H:%M:%S"
 

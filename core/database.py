@@ -4,9 +4,7 @@ import os
 import sys
 import datetime
 import re
-
-DB_NAME = "sipencos.db"
-
+DB_NAME = os.path.join(getattr(sys, '_MEIPASS', os.path.abspath(".")), "sipencos.db")
 def _item_key(kos_item):
     if not isinstance(kos_item, dict):
         return None

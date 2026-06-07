@@ -1,8 +1,11 @@
 import json
 import os
+import sys
 import re
 from collections import Counter
 from datetime import datetime
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 import matplotlib.gridspec as gridspec
@@ -12,8 +15,17 @@ import numpy as np
 
 
 class KosAnalytics:
-    DATA_PATH   = "output_dataKos/data_kos_bersih.json"
-    OUTPUT_PATH = "output_dataKos/analytics.png"
+    @staticmethod
+    def get_base_path():
+        return getattr(sys, '_MEIPASS', os.path.abspath("."))
+
+    @property
+    def DATA_PATH(self):
+        return os.path.join(self.get_base_path(), "output_dataKos", "data_kos_bersih.json")
+        
+    @property
+    def OUTPUT_PATH(self):
+        return os.path.join(self.get_base_path(), "output_dataKos", "analytics.png")
 
     WARNA = {
         "navy"       : "#0F172A",
@@ -42,8 +54,8 @@ class KosAnalytics:
         "teal_muda"  : "#CFFAFE",
     }
 
-    def __init__(self, path: str = DATA_PATH):
-        self.path = path
+    def __init__(self, path: str = None):
+        self.path = path or self.DATA_PATH
         self.data = self.load_data()
         self.setup_style()
 

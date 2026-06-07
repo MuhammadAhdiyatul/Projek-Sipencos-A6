@@ -5,7 +5,7 @@ a = Analysis(
     ['main.py'],
     pathex=[],
     binaries=[],
-    datas=[('output_dataKos', 'output_dataKos'), ('sipencos.db', '.'), ('users.json', '.'), ('favorites.json', '.'), ('history.json', '.')],
+    datas=[('sipencos.db', '.'), ('users.json', '.'), ('output_dataKos', 'output_dataKos'), ('mockup', 'mockup')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
@@ -32,6 +32,7 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
+    icon=['logo.ico'],
 )
 coll = COLLECT(
     exe,
