@@ -25,12 +25,7 @@ class SettingsViewModern(QFrame):
         
         lbl_title = QLabel("Pengaturan")
         lbl_title.setStyleSheet("font-size: 36px; font-weight: bold; color: #1e293b;")
-        
-        lbl_desc = QLabel("Customize your intelligence workspace and account preferences.")
-        lbl_desc.setStyleSheet("font-size: 16px; color: #64748b;")
-        
         title_layout.addWidget(lbl_title)
-        title_layout.addWidget(lbl_desc)
         title_layout.addStretch()
 
         self.profile_panel = QFrame()
@@ -198,7 +193,7 @@ class SettingsViewModern(QFrame):
             pass
 
         try:
-            import logger
+            import core.logger as logger
             scrape_log = logger.get_last_scrape_log()
             status_text = logger.get_scrape_status_text()
             
