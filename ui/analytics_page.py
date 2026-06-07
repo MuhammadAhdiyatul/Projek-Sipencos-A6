@@ -7,6 +7,35 @@ NAVY = "#002B49"
 TEXT_SUBTLE = "#6F7C85"
 BG = "#F0F2F5"
 
+class ResizableImageLabel(QLabel):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._pixmap = None
+        self.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.setMinimumSize(50, 50)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+
+    def setPixmap(self, pixmap):
+        self._pixmap = pixmap
+        self.update()
+
+    def paintEvent(self, event):
+        if self._pixmap and not self._pixmap.isNull():
+            from PyQt6.QtGui import QPainter
+            painter = QPainter(self)
+            painter.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
+            
+            # Use self.size() to scale the pixmap
+            scaled = self._pixmap.scaled(self.size(), Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+            
+            # Center the image
+            x = (self.width() - scaled.width()) // 2
+            y = (self.height() - scaled.height()) // 2
+            
+            painter.drawPixmap(x, y, scaled)
+        else:
+            super().paintEvent(event)
+
 class AnalyticsPage(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -37,8 +66,7 @@ class AnalyticsPage(QWidget):
         self.content_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.content_layout.setContentsMargins(20, 20, 20, 20)
         
-        self.img_label = QLabel()
-        self.img_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.img_label = ResizableImageLabel()
         self.content_layout.addWidget(self.img_label)
 
         self.main_layout.addWidget(self.content_widget, 1)
@@ -88,19 +116,5 @@ class AnalyticsPage(QWidget):
 
         self.update()
         
-        # Scale to window
-        view_w = max(960, self.content_widget.width())
-        view_h = max(680, self.content_widget.height())
-        if view_w <= 1 or view_h <= 1:
-            if self.window():
-                view_w = max(960, self.window().width())
-                view_h = max(680, self.window().height() - 120)
-            else:
-                view_w, view_h = 1400, 860
-
-        max_width = int(view_w * 1.3)
-        max_height = int(view_h * 1.3)
-
-        scaled_pixmap = pixmap.scaled(max_width, max_height, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
-        self.img_label.setPixmap(scaled_pixmap)
+        self.img_label.setPixmap(pixmap)
         self.img_label.setStyleSheet("")
