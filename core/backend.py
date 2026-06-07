@@ -18,6 +18,28 @@ class BackendManager:
             with open(filepath, "r", encoding="utf-8") as f:
                 self.data_kos = json.load(f)
             print(f"[Backend Info] Berhasil memuat {len(self.data_kos)} data kos dari json.")
+            
+            # Sinkronisasi log otomatis jika data ada tapi status logger kosong/berbeda
+            try:
+                import core.logger as logger
+                from datetime import datetime
+                current_log = logger.get_last_scrape_log()
+                
+                # Jika status masih never atau jumlah data berbeda, update log
+                if current_log.get("status") == "never" or current_log.get("total_data") != len(self.data_kos):
+                    mod_time = os.path.getmtime(filepath)
+                    dt_str = datetime.fromtimestamp(mod_time).strftime("%Y-%m-%d %H:%M:%S")
+                    
+                    entry = {
+                        "last_scraped": dt_str,
+                        "status": "success",
+                        "total_data": len(self.data_kos),
+                        "message": "Data berhasil dimuat dan disinkronisasi"
+                    }
+                    logger._safe_write_json(logger.LOG_FILE, entry)
+            except Exception as e:
+                print(f"[Backend Info] Gagal sinkronisasi logger otomatis: {e}")
+                
         except FileNotFoundError:
             print("[Backend Error] File data_kos_bersih.json tidak ditemukan!")
             print("Pastikan Scraper.py sudah dijalankan dan foldernya benar.")
