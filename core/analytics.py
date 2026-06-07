@@ -66,9 +66,32 @@ class KosAnalytics:
 
     def load_data(self):
         with open(self.path, "r", encoding="utf-8") as f:
-            data = json.load(f)
-        print(f"  Data berhasil dimuat: {len(data)} kos")
-        return data
+            raw_data = json.load(f)
+            
+        data_bulanan = []
+        for item in raw_data:
+            nama = str(item.get("nama_kos", "")).lower()
+            harga = str(item.get("harga", "")).lower()
+            
+            # Deteksi indikasi non-bulanan dari teks
+            if any(k in nama for k in ["harian", "transit", "mingguan", "tahunan"]):
+                continue
+            if any(k in harga for k in ["hari", "minggu", "tahun"]):
+                continue
+                
+            # Gunakan ekstrak_harga yang ada untuk mengecek nominal
+            angka = self.ekstrak_harga(item.get("harga", ""))
+            
+            # Asumsi kos bulanan normalnya >= 400rb dan <= 30jt
+            # Jika terlalu kecil biasanya harian (meski tanpa kata 'harian')
+            # Jika terlalu besar biasanya tahunan (meski tanpa kata 'tahun')
+            if angka is None or angka < 400000 or angka > 30000000:
+                continue
+                
+            data_bulanan.append(item)
+            
+        print(f"  Data bulanan disaring: {len(data_bulanan)} kos (dari total {len(raw_data)})")
+        return data_bulanan
 
     def ambil_tanggal_scraping(self) -> str:
         try:
