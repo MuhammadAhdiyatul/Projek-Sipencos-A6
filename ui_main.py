@@ -1150,7 +1150,9 @@ class App(ctk.CTk):
             card.grid(row=row, column=col, padx=12, pady=12, sticky="n")
 
     def render_analytics_page(self):
-        """Render the analytics page."""
+        from analytics import KosAnalytics
+        from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+
         title = ctk.CTkLabel(
             self.main_frame,
             text="📊 Analytics",
@@ -1158,15 +1160,31 @@ class App(ctk.CTk):
             text_color=PRIMARY_COLOR,
             anchor="w",
         )
-        title.grid(row=0, column=0, sticky="ew", pady=(0, 20))
+        title.grid(row=0, column=0, sticky="ew", pady=(0, 12))
 
-        placeholder = ctk.CTkLabel(
-            self.main_frame,
-            text="Halaman Analytics akan segera hadir",
-            font=("Arial", 16),
-            text_color=TEXT_SUBTLE,
-        )
-        placeholder.grid(row=1, column=0, sticky="nsew", pady=100)
+        try:
+            analytics = KosAnalytics()  # baca dari file JSON seperti biasa
+            fig = analytics.buat_figure()
+
+            # Wrap dalam scrollable frame agar tidak terpotong
+            scroll = ctk.CTkScrollableFrame(
+                self.main_frame, fg_color="#EEF2F7", corner_radius=12
+            )
+            scroll.grid(row=1, column=0, sticky="nsew")
+            self.main_frame.grid_rowconfigure(1, weight=1)
+
+            canvas = FigureCanvasTkAgg(fig, master=scroll)
+            canvas.draw()
+            canvas.get_tk_widget().pack(fill="both", expand=True, padx=8, pady=8)
+
+        except FileNotFoundError:
+            ctk.CTkLabel(
+                self.main_frame,
+                text="⚠️ Data belum tersedia.\nJalankan Scraping.py terlebih dahulu.",
+                font=("Arial", 15),
+                text_color=TEXT_SUBTLE,
+                justify="center",
+            ).grid(row=1, column=0, pady=100)
 
     def render_history_page(self):
         """Render the history page."""

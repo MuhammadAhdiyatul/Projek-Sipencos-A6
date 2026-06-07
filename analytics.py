@@ -378,6 +378,61 @@ class KosAnalytics:
                     fontweight="bold", color=wc,
                     transform=ax.transData)
 
+    def buat_figure(self):
+        """Buat dan return figure matplotlib tanpa menyimpan ke file."""
+        tanggal = self.ambil_tanggal_scraping()
+
+        fig = plt.figure(figsize=(16, 12), facecolor="#EEF2F7")
+        fig.subplots_adjust(top=0.88)
+
+        fig.text(0.04, 0.955,
+                f"Jabodetabek & Bandung  —  Data diperbarui: {tanggal}",
+                fontsize=9, color=self.WARNA["teks_muda"], va="top")
+        fig.text(0.04, 0.955, "Analitik Pasar Kos",
+                fontsize=22, fontweight="bold",
+                color=self.WARNA["navy"], va="bottom",
+                bbox=dict(facecolor="#EEF2F7", edgecolor="none", pad=2))
+
+        fig.add_artist(plt.Line2D(
+            [0.04, 0.96], [0.920, 0.920],
+            transform=fig.transFigure,
+            color=self.WARNA["border"], linewidth=1.0
+        ))
+
+        gs = gridspec.GridSpec(
+            2, 1, figure=fig,
+            top=0.905, bottom=0.04,
+            height_ratios=[0.95, 3.6],
+            hspace=0.42
+        )
+
+        gs_cards = gridspec.GridSpecFromSubplotSpec(
+            1, 4, subplot_spec=gs[0], wspace=0.18
+        )
+        self.gambar_summary_cards(fig, gs_cards)
+
+        gs_grafik = gridspec.GridSpecFromSubplotSpec(
+            1, 2, subplot_spec=gs[1],
+            wspace=0.40, width_ratios=[1.25, 0.85]
+        )
+        ax_bar   = fig.add_subplot(gs_grafik[0])
+        ax_donut = fig.add_subplot(gs_grafik[1])
+
+        for ax in [ax_bar, ax_donut]:
+            ax.set_facecolor(self.WARNA["putih"])
+            for spine in ax.spines.values():
+                spine.set_edgecolor(self.WARNA["border_muda"])
+                spine.set_linewidth(1.2)
+
+        self.grafik_harga_per_kota(ax_bar)
+        self.grafik_tipe_penghuni(ax_donut)
+
+        fig.text(0.98, 0.012, "Sumber data: sewakost.com",
+                ha="right", fontsize=8,
+                color=self.WARNA["teks_muda"])
+
+        return fig  # ← return fig, bukan savefig
+
     def tampilkan_analytics(self):
         print("\n" + "=" * 55)
         print("  Analitik Data Kos — SiPencos")
