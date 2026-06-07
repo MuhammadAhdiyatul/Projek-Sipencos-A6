@@ -92,7 +92,40 @@ class SearchPage(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(10)
 
-        combo_style = f"background-color: {CARD_BG}; border: 1px solid {BORDER_COLOR}; border-radius: 18px; padding: 5px 15px; color: {TEXT_SUBTLE}; font-size: 13px;"
+        combo_style = f"""
+            QComboBox {{
+                background-color: {CARD_BG}; 
+                border: 1px solid {BORDER_COLOR}; 
+                border-radius: 18px; 
+                padding: 5px 15px; 
+                color: {TEXT_SUBTLE}; 
+                font-size: 13px;
+            }}
+            QComboBox::drop-down {{
+                border: none;
+                background: transparent;
+                width: 30px;
+            }}
+            QComboBox::down-arrow {{
+                image: none;
+                border-left: 5px solid transparent;
+                border-right: 5px solid transparent;
+                border-top: 5px solid {TEXT_SUBTLE};
+                width: 0;
+                height: 0;
+                margin-right: 10px;
+            }}
+            QComboBox QAbstractItemView {{
+                background-color: {CARD_BG};
+                color: {TEXT_SUBTLE};
+                selection-background-color: {ACCENT_COLOR};
+                selection-color: white;
+                border: 1px solid {BORDER_COLOR};
+                border-radius: 8px;
+                padding: 5px;
+                outline: none;
+            }}
+        """
 
         self.price_menu = QComboBox()
         self.price_menu.addItems(["Semua Harga", "< Rp 1.000.000", "Rp 1.000.000 - Rp 2.000.000", "> Rp 2.000.000"])

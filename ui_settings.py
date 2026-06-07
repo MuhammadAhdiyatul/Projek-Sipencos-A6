@@ -125,10 +125,11 @@ class SettingsViewModern(QFrame):
             vl.addStretch()
             
             metrik_layout.addLayout(vl, row, col)
+            return lbl_v
 
-        create_data_metric(0, 0, "TERAKHIR DI SCRAPING", "24 Mei 2026")
-        create_data_metric(0, 1, "TERAKHIR UPDATE SUMBER DATA", "22 Mei 2026")
-        create_data_metric(0, 2, "STATUS SCRAPING", "Berhasil", "#2ecc71")
+        self.lbl_last_scraped = create_data_metric(0, 0, "TERAKHIR DI SCRAPING", "-")
+        self.lbl_total_data = create_data_metric(0, 1, "JUMLAH DATA", "-")
+        self.lbl_scrape_status = create_data_metric(0, 2, "STATUS SCRAPING", "-", "#2ecc71")
 
         data_layout.addWidget(frame_metrik)
         self.main_layout.addWidget(self.card_data_mgmt)
@@ -195,3 +196,26 @@ class SettingsViewModern(QFrame):
                 self.lbl_acc_status.setStyleSheet("font-size: 18px; font-weight: bold; color: #ef4444; border: none;")
         except Exception:
             pass
+
+        try:
+            import logger
+            scrape_log = logger.get_last_scrape_log()
+            status_text = logger.get_scrape_status_text()
+            
+            self.lbl_last_scraped.setText(status_text.get("timestamp", "-"))
+            
+            total = scrape_log.get("total_data", 0)
+            self.lbl_total_data.setText(f"{total} Kos")
+            
+            status = scrape_log.get("status", "never").lower()
+            if status == "success":
+                self.lbl_scrape_status.setText("Berhasil")
+                self.lbl_scrape_status.setStyleSheet("font-size: 20px; font-weight: bold; color: #2ecc71; border: none;")
+            elif status == "never":
+                self.lbl_scrape_status.setText("Belum Pernah")
+                self.lbl_scrape_status.setStyleSheet("font-size: 20px; font-weight: bold; color: #64748b; border: none;")
+            else:
+                self.lbl_scrape_status.setText("Gagal")
+                self.lbl_scrape_status.setStyleSheet("font-size: 20px; font-weight: bold; color: #ef4444; border: none;")
+        except Exception as e:
+            print(f"[UI Settings] Error refreshing logger data: {e}")
