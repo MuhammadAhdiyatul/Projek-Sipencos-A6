@@ -1,7 +1,7 @@
-from PyQt6.QtWidgets import (QWidget, QFrame, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QScrollArea, QGridLayout)
+from PyQt6.QtWidgets import (QWidget, QFrame, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QScrollArea, QGridLayout, QSizePolicy)
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QCursor, QPixmap
-from ui_components import KosCard, _load_remote_image_async
+from ui.ui_components import KosCard, _load_remote_image_async
 
 NAVY = "#002B49"
 ORANGE = "#C96A28"
@@ -140,7 +140,7 @@ class FavoritesPage(QWidget):
         self.list_layout.addWidget(empty_state)
 
     def _create_favorite_card(self, kos_item, is_compared):
-        # We can reuse KosCard from ui_components, but the original code had a horizontal layout for favorites.
+        # We can reuse KosCard from ui.ui_components, but the original code had a horizontal layout for favorites.
         # Let's create the horizontal card directly as per the design.
         card = QFrame()
         card.setStyleSheet(f"QFrame {{ background-color: {CARD_BG}; border-radius: 24px; border: 1px solid {BORDER}; }}")
@@ -165,7 +165,7 @@ class FavoritesPage(QWidget):
         if url: _load_remote_image_async(url, (180, 130), card, on_image_loaded)
         else: image_label.setText("No Image")
 
-        layout.addWidget(image_label)
+        layout.addWidget(image_label, 0, Qt.AlignmentFlag.AlignTop)
 
         # Info
         info_frame = QFrame()
@@ -247,7 +247,10 @@ class FavoritesPage(QWidget):
         actions_layout.addWidget(compare_btn)
         actions_layout.addStretch()
 
-        layout.addWidget(info_frame)
-        layout.addWidget(actions_frame)
+        layout.addWidget(info_frame, 1, Qt.AlignmentFlag.AlignTop)
+        layout.addWidget(actions_frame, 0, Qt.AlignmentFlag.AlignTop)
+
+        # Ensure the card itself doesn't expand vertically
+        card.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
 
         return card

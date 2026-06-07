@@ -1,13 +1,42 @@
-# Mengabaikan folder __pycache__ dan file Python yang dikompilasi
+# Image cache
+.image_cache/
+
+# Python
 __pycache__/
-*.pyc
-*.pyo
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
 
-# Mengabaikan file gambar (sesuaikan dengan format yang kamu punya, misal .png, .jpg)
-*.png
-*.jpg
-*.jpeg
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
 
-# Jika ada file sensitif atau konfigurasi lain
-.env
-*.json
+# Database dan logs
+*.db
+logs/
+*.log
+
+# Aplikasi
+output_dataKos/
+data/

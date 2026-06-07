@@ -1,6 +1,7 @@
 import sqlite3
 import json
 import os
+import sys
 import datetime
 import re
 
@@ -58,7 +59,8 @@ def init_db():
     # Seed data_kos if empty
     cursor.execute("SELECT COUNT(*) FROM data_kos")
     if cursor.fetchone()[0] == 0:
-        json_path = os.path.join("output_dataKos", "data_kos_bersih.json")
+        base_path = getattr(sys, '_MEIPASS', os.path.abspath("."))
+        json_path = os.path.join(base_path, "output_dataKos", "data_kos_bersih.json")
         if os.path.exists(json_path):
             try:
                 with open(json_path, 'r', encoding='utf-8') as f:

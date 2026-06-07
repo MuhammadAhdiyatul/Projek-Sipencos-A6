@@ -3,6 +3,7 @@
 # GUI & Image Processing
 customtkinter>=5.2.2
 Pillow>=10.0.0
+PyQt6>=6.0.0
 
 # HTTP & Scraping
 requests>=2.31.0

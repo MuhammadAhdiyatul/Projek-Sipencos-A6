@@ -55,7 +55,7 @@ class AnalyticsPage(QWidget):
             return
 
         try:
-            from analytics import KosAnalytics
+            from core.analytics import KosAnalytics
         except ImportError as e:
             self.img_label.setText(f"Gagal memuat modul analytics:\n{e}")
             self.img_label.setStyleSheet("font-size: 14px; color: #EF4444;")
