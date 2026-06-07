@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import (QWidget, QFrame, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QScrollArea, QGridLayout, QSizePolicy)
 from PyQt6.QtCore import Qt, QSize
 from PyQt6.QtGui import QCursor, QFont
-from ui_components import _load_remote_image_async, _normalize_foto
+from ui.ui_components import _load_remote_image_async, _normalize_foto
 
 NAVY = "#002B49"
 ORANGE = "#C96A28"
