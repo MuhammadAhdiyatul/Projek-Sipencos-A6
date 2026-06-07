@@ -2,8 +2,8 @@ from PyQt6.QtWidgets import (QWidget, QFrame, QLabel, QLineEdit, QPushButton,
                              QVBoxLayout, QHBoxLayout, QGraphicsDropShadowEffect, QStackedWidget)
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont, QCursor, QColor
-import session
-from auth import verify_login, register_user
+import core.session as session
+from core.auth import verify_login, register_user
 
 class LoginPage(QWidget): 
     def __init__(self, parent=None, on_login_success=None):

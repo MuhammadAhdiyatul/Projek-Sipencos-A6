@@ -2,8 +2,8 @@ from PyQt6.QtWidgets import (QWidget, QFrame, QLabel, QLineEdit, QPushButton,
                              QVBoxLayout, QHBoxLayout, QScrollArea, QGridLayout, QComboBox, QSizePolicy)
 from PyQt6.QtCore import Qt, QSize
 from PyQt6.QtGui import QCursor, QFont
-from ui_components import KosCard
-from history import add_history
+from ui.ui_components import KosCard
+from ui.history import add_history
 
 PRIMARY_COLOR = "#002B49"
 ACCENT_COLOR = "#C96A28"
@@ -202,7 +202,7 @@ class SearchPage(QWidget):
         
         user_aktif = "Guest"
         try:
-            import session
+            import core.session as session
             if session.current_session.check_auth():
                 raw_user = session.current_session.get_current_user()
                 if isinstance(raw_user, str): user_aktif = raw_user

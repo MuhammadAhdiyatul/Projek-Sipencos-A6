@@ -3,9 +3,9 @@ from PyQt6.QtWidgets import (QWidget, QFrame, QLabel, QPushButton, QVBoxLayout, 
                              QScrollArea, QSizePolicy)
 from PyQt6.QtCore import Qt, QSize
 from PyQt6.QtGui import QFont, QCursor, QColor
-import database
-from login_ui import LoginPage
-from ui_components import _load_remote_image_async, _normalize_foto
+import core.database as database
+from ui.login_ui import LoginPage
+from ui.ui_components import _load_remote_image_async, _normalize_foto
 
 def add_history(user_email, keyword, filter_type="Semua", item_data=None):
     database.add_history_db(user_email, keyword, filter_type, item_data)
@@ -62,7 +62,7 @@ class HistoryPage(QWidget):
 
     def _get_active_user_string(self):
         try:
-            import session
+            import core.session as session
             if session.current_session.check_auth():
                 raw_user = session.current_session.get_current_user()
                 if isinstance(raw_user, str): return raw_user

@@ -2,7 +2,7 @@ from PyQt6.QtGui import QPixmap
 from PyQt6.QtWidgets import (QWidget, QFrame, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QScrollArea, QTextEdit, QGridLayout)
 from PyQt6.QtCore import Qt, QSize
 from PyQt6.QtGui import QCursor, QFont, QColor
-from ui_components import _load_remote_image_async, _normalize_foto
+from ui.ui_components import _load_remote_image_async, _normalize_foto
 
 PRIMARY_COLOR = "#002B49"
 ACCENT_COLOR = "#C96A28"
